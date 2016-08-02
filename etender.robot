@@ -223,6 +223,13 @@ Login
   ...      ${ARGUMENTS[0]} ==  username
   ...      ${ARGUMENTS[1]} ==  ${TENDER_UAID}
   Go To  ${USERS.users['${ARGUMENTS[0]}'].homepage}
+  Sleep  3
+  Capture Page Screenshot
+  Go To  http://google.com.ua
+  Capture Page Screenshot
+  Go To  ${USERS.users['${ARGUMENTS[0]}'].homepage}
+  Sleep  3
+  Capture Page Screenshot
   Wait Until Page Contains   Прозорі аукціони    10
   sleep  1
   Wait Until Page Contains Element    xpath=//input[@type='text']    10
