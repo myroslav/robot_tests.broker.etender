@@ -47,7 +47,7 @@ ${locator.items[0].deliveryAddress.streetAddress}              id=delivery_addre
 ${locator.items[0].classification.scheme}                      xpath=//table[contains(@class,"itemTable")]//th[contains(.,"Класифікатор ")]
 ${locator.items[0].classification.id}                          id=classification_code_00
 ${locator.items[0].classification.description}                 id=classification_name_00
-${locator.items[0].additionalClassifications[0].scheme}        xpath=//div[6]/div[3]/div/p
+${locator.items[0].additionalClassifications[0].scheme}        id=additionalClassification_scheme0
 ${locator.items[0].additionalClassifications[0].id}            id=additionalClassification_id0
 ${locator.items[0].additionalClassifications[0].description}   id=additionalClassification_desc0
 ${locator.items[0].unit.code}                                  id=item_unit_00
@@ -1178,7 +1178,7 @@ Check Is Element Loaded
   Wait Until Page Contains Element   xpath=//a[contains(@class,'btn btn-primary') and .='Редагувати закупівлю']   ${huge_timeout_for_visibility}
   Sleep  2
   Click Element              xpath=//a[contains(@class,'btn btn-primary') and .='Редагувати закупівлю']
-  Sleep  2
+  Sleep  5
   Run Keyword  Редагувати поле лота ${field}  ${lot_id}  ${new_value}
   Sleep  2
   Execute Javascript   window.scrollTo(0, document.body.scrollHeight)
@@ -1446,8 +1446,7 @@ Check Is Element Loaded
 
 Отримати інформацію про items[0].additionalClassifications[0].scheme
   ${return_value}=   Отримати текст із поля і показати на сторінці  items[0].additionalClassifications[0].scheme
-  ${return_value}=   Get Substring  ${return_value}   0   -1
-  [return]  ${return_value.split(' ')[1]}
+  [return]  ${return_value}
 
 Отримати інформацію про items[0].additionalClassifications[0].description
   ${return_value}=  Отримати текст із поля і показати на сторінці  items[0].additionalClassifications[0].description
