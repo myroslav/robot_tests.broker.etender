@@ -701,7 +701,8 @@ Enter enquiry date
 
 Пройти по цінових показниках лотів і видалити за потреби
   [Arguments]  ${feature_id}
-  ${features_count}=  Selenium2Library.Get Element Count  xpath=//input[contains(@name,"feature-lot") and @ng-model="feature.title"]
+  ${features}=  Get WebElements  xpath=//input[contains(@name,"feature-lot") and @ng-model="feature.title"]
+  ${features_count}=  Get Length  ${features}
   :FOR  ${i}  IN RANGE  ${features_count}
   \     ${feature_title}=  Get Value  name=feature-lot${i}
   \     ${contains}=  Evaluate   "${feature_id}" in """${feature_title}"""
@@ -711,7 +712,8 @@ Enter enquiry date
 
 Пройти по цінових показниках предметів і видалити за потреби
   [Arguments]  ${feature_id}
-  ${features_count}=  Selenium2Library.Get Element Count  xpath=//input[contains(@name,"feature-item") and @ng-model="feature.title"]
+  ${features}=  Get WebElements  xpath=//input[contains(@name,"feature-item") and @ng-model="feature.title"]
+  ${features_count}=  Get Length  ${features}
   :FOR  ${i}  IN RANGE  ${features_count}
   \     ${feature_title}=  Get Value  name=feature-item${i}
   \     ${contains}=  Evaluate   "${feature_id}" in """${feature_title}"""
