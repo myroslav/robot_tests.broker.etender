@@ -140,6 +140,7 @@ Login
   Input text   id=inputUsername      ${USERS.users['${ARGUMENTS[0]}'].login}
   Wait Until Page Contains Element   id=inputPassword   180
   Input text   id=inputPassword      ${USERS.users['${ARGUMENTS[0]}'].password}
+  Sleep        5
   Click Button   id=btn_submit
   Go To  ${USERS.users['${ARGUMENTS[0]}'].homepage}
 
