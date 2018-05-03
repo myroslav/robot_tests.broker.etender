@@ -1643,7 +1643,7 @@ Check Is Element Loaded
   Click Element  xpath=//label[@for="showAwards00"]  #
   Sleep  1
   # TODO move locator
-  ${return_value}=  Get Text  xpath=//td[contains(@class,"doc-name")]//a
+  ${return_value}=  Get Text  xpath=//awards-info//td[contains(@class,"doc-name")]//a
   [return]  ${return_value}
 
 Отримати посилання на аукціон для глядача
@@ -1671,8 +1671,7 @@ Check Is Element Loaded
   ${prepared_locator}=  Set Variable  ${locator_item_${field_name}}
   ${prepared_locator}=  Set Variable  ${prepared_locator.replace('XX_item_id_XX','${item_id}')}
   log  ${prepared_locator}
-  sleep   10
-  Відкрити розділ Деталі Закупівлі
+#  Відкрити розділ Деталі Закупівлі
   Wait Until Page Contains Element  ${prepared_locator}  10
   Wait Until Keyword Succeeds  10 x  5  Check Is Element Loaded  ${prepared_locator}
   ${raw_value}=   Get Text  ${prepared_locator}
@@ -1929,7 +1928,7 @@ Check Is Element Loaded
 # TODO: use qualified from dict
   Click Element              xpath=//div[@ng-if="!detailes.isLimitedReporting"]//input[1]  # Відповідність кваліфікаційним критеріям: Відповідає
   Select From List By Label  xpath=//select[@ng-model="data.country"]  ${countryName}
-  Run Keyword If  '${region}' == 'місто Київ'  Select From List By Label  xpath=//*[contains(@id,"_region")]  Київ
+  Run Keyword If  '${region}' == 'місто Київ'  Select From List By Label  xpath=//*[contains(@id,"_region")]  місто Київ
   Run Keyword If  '${region}' != 'місто Київ'  Run Keywords
   ...  Select From List By Label  xpath=//*[contains(@id,"_region")]     ${region}
   ...  AND  Input text            xpath=//*[contains(@name,"_newCity")]  ${locality}
@@ -1947,7 +1946,8 @@ Check Is Element Loaded
   Sleep  5
   Відкрити розділ Деталі Закупівлі
   Click Element  xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
-  Select From List By Label  id=docType  Повідомлення про рішення
+  Wait Until Element Is Visible     xpath=//div[@ng-controller="modalGetAwardsCtrl"]//select
+  Select From List By Label         xpath=//div[@ng-controller="modalGetAwardsCtrl"]//select  Повідомлення про рішення
   Sleep   5
   # TODO: Rework this tricky behavior someday?
   # Autotest cannot upload file directly, because there is no INPUT element on page. Need to click on button first,
