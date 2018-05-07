@@ -1956,7 +1956,7 @@ Check Is Element Loaded
   Click Element   xpath=//button[@ng-model="lists.documentsToAdd"]
   Choose File     xpath=//input[@type="file" and @ng-model="lists.documentsToAdd"]  ${document}
   Sleep   4
-  Click Element   xpath=//button[@ng-click="downloadDocsGetAward(lists.documentsToAdd)"]
+  Click Element   xpath=//button[@click-and-disable="downloadDocsGetAward(lists.documentsToAdd)"]
   Sleep   1
   Capture Page Screenshot
   Sleep   2
