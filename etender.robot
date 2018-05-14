@@ -1664,6 +1664,16 @@ Check Is Element Loaded
   ${url}=  Get Element Attribute  xpath=//*[@id="participationUrl_0"]@href
   [return]  ${url}
 
+Отримати інформацію про auctionPeriod.startDate
+  ${date}=  Get Text  id=auctionStartDate
+  ${date}=  convert_etender_date_to_iso_format_and_add_timezone  ${date}
+  [return]  ${date}
+
+Отримати інформацію про auctionPeriod.endDate
+  ${date}=  Get Text  id=auctionEndDate
+  ${date}=  convert_etender_date_to_iso_format_and_add_timezone  ${date}
+  [return]  ${date}
+
 Отримати інформацію із предмету
   [Arguments]    ${user}    ${tender_uaid}    ${item_id}    ${fieldname}
   # TODO: remove old-style keywords and locators, like Отримати інформацію про items[0].classification.description
