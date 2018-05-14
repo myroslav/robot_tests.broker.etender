@@ -1681,13 +1681,28 @@ Check Is Element Loaded
   ${prepared_locator}=  Set Variable  ${locator_item_${field_name}}
   ${prepared_locator}=  Set Variable  ${prepared_locator.replace('XX_item_id_XX','${item_id}')}
   log  ${prepared_locator}
+  ${fields_supported}=  Create List  classification.scheme  classification.id  classification.description  additionalClassifications[0].id  additionalClassifications[0].description  quantity  unit.name  unit.code  deliveryDate.endDate  deliveryAddress.countryName  deliveryAddress.postalCode  deliveryAddress.region  deliveryAddress.locality  deliveryAddress.streetAddress
 #  Відкрити розділ Деталі Закупівлі
+  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Run Keyword And Return If  '${fieldname}' not in ${fields_supported}   Отримати інформацію із предмету про ${fieldname}   ${item_id}
   Wait Until Page Contains Element  ${prepared_locator}  10
   Wait Until Keyword Succeeds  10 x  5  Check Is Element Loaded  ${prepared_locator}
   ${raw_value}=   Get Text  ${prepared_locator}
-  ${fields_supported}=  Create List  description  classification.scheme  classification.id  classification.description  additionalClassifications[0].id  additionalClassifications[0].description  quantity  unit.name  unit.code  deliveryDate.endDate  deliveryAddress.countryName  deliveryAddress.postalCode  deliveryAddress.region  deliveryAddress.locality  deliveryAddress.streetAddress
-  List Should Contain Value  ${fields_supported}  ${fieldname}
+  #List Should Contain Value  ${fields_supported}  ${fieldname}
   Run Keyword And Return  Конвертувати інформацію із предмету про ${fieldname}  ${raw_value}
+
+Отримати інформацію із предмету про description
+  [Arguments]  ${item_id}
+  Wait Until Element Is Visible     xpath=//*[@id="openAllLots"]
+  scrollIntoView by script using xpath  //*[@id="openAllLots"]
+  Click Element     xpath=//*[@id="openAllLots"]
+  ${locator}=   Set Variable    xpath=//tender-subject-info[@lot="lot"][.//p[contains(.,'${item_id}')]]//div[contains(.,'Позиції')]
+  Wait Until Element Is Visible     ${locator}
+  ${expanded}=  Get Element Attribute       ${locator}@aria-expanded
+  Run Keyword Unless  '${expanded}'=='true'     Click Element     ${locator}
+  Sleep  10
+  Run Keyword And Return  Get Text  //p[contains(.,'${item_id}')]
+
 
 Конвертувати інформацію із предмету про description
   [Arguments]  ${raw_value}
