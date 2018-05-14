@@ -121,6 +121,7 @@ ${locator.search_tender}                                       xpath=//input[@ty
   Set Window Size  @{USERS.users['${ARGUMENTS[0]}'].size}
   Set Window Position  @{USERS.users['${ARGUMENTS[0]}'].position}
   Run Keyword If  '${ARGUMENTS[0]}' != 'Etender_Viewer'  Login  ${ARGUMENTS[0]}
+  Wait Until Page Does Not Contain   ${locator_block_overlay}
 
 
 Підготувати дані для оголошення тендера
