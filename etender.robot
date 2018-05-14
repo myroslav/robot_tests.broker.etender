@@ -1769,16 +1769,15 @@ Check Is Element Loaded
 
 Отримати інформацію із запитання
   [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field}
-  Switch browser   ${username}
   Reload Page
-  ${prepared_locator}=  Set Variable  ${locator_question_${field}.replace('XX_que_id_XX','${question_id}')}
-  log  ${prepared_locator}
+  ${question_locator}=  Set Variable  xpath=//div[@id="questionBlock" and contains(.,"${question_id}")]
+  log  ${question_locator}
   sleep   10
   Відкрити розділ запитань
-  Wait Until Page Contains Element  ${prepared_locator}  10
-  Wait Until Keyword Succeeds  10 x  5  Check Is Element Loaded  ${prepared_locator}
-  ${raw_value}=   Get Text  ${prepared_locator}
-  Run Keyword And Return  Конвертувати інформацію із запитання про ${field}  ${raw_value}
+  Wait Until Element Is Visible  ${question_locator}  10
+  #Wait Until Keyword Succeeds  10 x  5  Check Is Element Loaded  ${prepared_locator}
+  Run Keyword And Return   Get Text  ${question_locator}//*[@id="question_${field}"]
+  #Run Keyword And Return  Конвертувати інформацію із запитання про ${field}  ${raw_value}
 
 Конвертувати інформацію із запитання про title
   [Arguments]  ${return_value}
