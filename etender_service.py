@@ -9,7 +9,7 @@ import os
 TZ = timezone(os.environ['TZ'] if 'TZ' in os.environ else 'Europe/Kiev')
 
 def get_all_etender_dates(initial_tender_data, key, subkey=None):
-    tender_period = initial_tender_data.data.tenderPeriod
+    tender_period = initial_tender_data.tenderPeriod
     start_dt = dateutil.parser.parse(tender_period['startDate'])
     end_dt = dateutil.parser.parse(tender_period['endDate'])
     data = {
@@ -22,8 +22,8 @@ def get_all_etender_dates(initial_tender_data, key, subkey=None):
             'time': end_dt.strftime("%H:%M"),
         },
     }
-    if 'enquiryPeriod' in initial_tender_data.data:
-        enquiry_period = initial_tender_data.data.enquiryPeriod
+    if 'enquiryPeriod' in initial_tender_data:
+        enquiry_period = initial_tender_data.enquiryPeriod
         end_period = dateutil.parser.parse(enquiry_period['endDate'])
         data['EndPeriod'] = {
             'date': end_period.strftime("%d-%m-%Y"),
@@ -35,6 +35,13 @@ def get_all_etender_dates(initial_tender_data, key, subkey=None):
     dt = data.get(key, {})
     return dt.get(subkey) if subkey else dt
 
+def get_procedure_type(methodType):
+    return {
+        'aboveThresholdUA': 'Відкриті торги',
+        'belowThreshold': 'Допорогові закупівлі',
+        'negotiation': 'Переговорна процедура',
+        'aboveThresholdEU': 'Відкриті торги з публікацією англійською мовою'
+    }[methodType].decode('utf-8')
 
 def parse_etender_date(date):
     # converts date from ui to datetime

@@ -115,14 +115,28 @@ ${locator.search_tender}                                       xpath=//input[@ty
 
 *** Keywords ***
 Підготувати клієнт для користувача
-  [Arguments]  @{ARGUMENTS}
+  [Arguments]  ${username}
   [Documentation]  Відкрити браузер, створити об’єкт api wrapper, тощо
-  Open Browser  ${USERS.users['${ARGUMENTS[0]}'].homepage}  ${USERS.users['${ARGUMENTS[0]}'].browser}  alias=${ARGUMENTS[0]}
-  Set Window Size  @{USERS.users['${ARGUMENTS[0]}'].size}
-  Set Window Position  @{USERS.users['${ARGUMENTS[0]}'].position}
-  Run Keyword If  '${ARGUMENTS[0]}' != 'Etender_Viewer'  Login  ${ARGUMENTS[0]}
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Open Browser  ${USERS.users['${username}'].homepage}  ${USERS.users['${username}'].browser}  alias=${username}
+  Set Window Size  @{USERS.users['${username}'].size}
+  Set Window Position  @{USERS.users['${username}'].position}
+  Run Keyword If  '${username}' != 'Etender_Viewer'  Login  ${username}
+  Дочекатись зникнення blockUI
 
+Wait and Click
+  [Arguments]  ${locator}  ${timeout}=5
+  [Documentation]  Wait for visibility and then click
+  Wait Until Element Is Visible  ${locator}  ${timeout}
+  Click Element  ${locator}
+
+Wait and Input
+  [Arguments]  ${locator}  ${data}  ${timeout}=5
+  [Documentation]  Wait for visibility and then input text
+  Wait Until Element Is Visible  ${locator}  ${timeout}
+  Input text  ${locator}  ${data}
+
+Дочекатись зникнення blockUI
+  Wait Until Page Does Not Contain Element  xpath=//div[@class='blockUI blockOverlay']
 
 Підготувати дані для оголошення тендера
   [Arguments]  ${username}  ${tender_data}  ${username_2}
@@ -132,103 +146,72 @@ ${locator.search_tender}                                       xpath=//input[@ty
   Log  ${username_2}
   [return]  ${tender_data}
 
-
 Login
-  [Arguments]  @{ARGUMENTS}
-  Wait Until Page Contains Element   css=a.login    180
-  Click Link    css=a.login
-  Wait Until Page Contains Element   id=inputUsername   180
-  Input text   id=inputUsername      ${USERS.users['${ARGUMENTS[0]}'].login}
-  Wait Until Page Contains Element   id=inputPassword   180
-  Input text   id=inputPassword      ${USERS.users['${ARGUMENTS[0]}'].password}
-  Sleep        5
-  Click Button   id=btn_submit
-  Go To  ${USERS.users['${ARGUMENTS[0]}'].homepage}
+  [Arguments]  ${username}
+  Wait and Click   css=a.login    15
+  Wait and Input   id=inputUsername     ${USERS.users['${username}'].login}     15
+  Wait and Input   id=inputPassword     ${USERS.users['${username}'].password}  15
+  Wait and Click   id=btn_submit
+  Go To  ${USERS.users['${username}'].homepage}
+  Дочекатись зникнення blockUI
 
 Створити тендер
-  [Arguments]  @{ARGUMENTS}
-  [Documentation]
-  ...      ${ARGUMENTS[0]} ==  username
-  ...      ${ARGUMENTS[1]} ==  tender_data
-  ${items}=             Get From Dictionary     ${ARGUMENTS[1].data}               items
-  ${title}=             Get From Dictionary     ${ARGUMENTS[1].data}               title
-  ${title_en}=             Get From Dictionary     ${ARGUMENTS[1].data}               title_en
-  ${description}=       Get From Dictionary     ${ARGUMENTS[1].data}               description
-  ${budget}=            Get From Dictionary     ${ARGUMENTS[1].data.value}         amount
+  [Arguments]  ${username}  ${tender_data}
+  ${tender_data}=       Get From Dictionary     ${tender_data}             data
+  ${items}=             Get From Dictionary     ${tender_data}             items
+  ${title}=             Get From Dictionary     ${tender_data}             title
+  ${title_en}=          Get From Dictionary     ${tender_data}             title_en
+  ${description}=       Get From Dictionary     ${tender_data}             description
+  ${budget}=            Get From Dictionary     ${tender_data.value}       amount
   ${budgetToStr}=       float_to_string_2f      ${budget}      # at least 2 fractional point precision, avoid rounding
 
-  ${methodType}=         Set Variable  ${EMPTY}
-  ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${ARGUMENTS[1].data}  procurementMethodType
+
+  ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
   log to console  check presence of procurementMethodType in dictionary: ${status}
   ${methodType}=  Run Keyword IF  '${status}' != 'PASS'  Set Variable  belowThreshold
   ...             ELSE  Set Variable  ${methodType}
-  Set To Dictionary  ${USERS.users['${ARGUMENTS[0]}']}  method_type=${methodType}
+  Set To Dictionary  ${USERS.users['${username}']}  method_type=${methodType}
 
-  ${search_tab}=  Run Keyword IF  '${methodType}' != 'negotiation'  Set Variable  КОНКУРЕНТНІ ПРОЦЕДУРИ
-  ...             ELSE  Set Variable  НЕКОНКУРЕНТНІ ПРОЦЕДУРИ
-  Set To Dictionary  ${USERS.users['${ARGUMENTS[0]}']}  HELPER_SEARCH_TAB=${search_tab}
-
-  Selenium2Library.Switch Browser    ${ARGUMENTS[0]}
-  Sleep  15
-  Click Element                     id=qa_myTenders  # Мої закупівлі
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
-  Wait Until Element Is Visible     xpath=//a[@data-target='#procedureType']  # Створити оголошення
-  Sleep  10
-  Click Element                     xpath=//a[@data-target='#procedureType']  # Створити оголошення
+  Click Element      id=qa_myTenders  # Мої закупівлі
+  Дочекатись зникнення blockUI
+  Wait and Click     xpath=//a[@data-target='#procedureType']
   Sleep  3
+  ${procedure_type}=  get_procedure_type  ${methodType}
+  Select From List By Label     id=chooseProcedureType  ${procedure_type}
+  Wait and Click        id=goToCreate  # Продовжити
+  Дочекатись зникнення blockUI
 
-  &{procedure_types}=  Create Dictionary  aboveThresholdUA=Відкриті торги  belowThreshold=Допорогові закупівлі  negotiation=Переговорна процедура  aboveThresholdEU=Відкриті торги з публікацією англійською мовою
-  ${lots}=         Set Variable  ${EMPTY}
-  ${lots_count}=   Set Variable  ${EMPTY}
-  ${status}  ${lots}=  Run Keyword And Ignore Error  Get From Dictionary  ${ARGUMENTS[1].data}  lots
+  ${status}  ${lots}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  lots
   log to console  presence of lots: ${status}
   ${lots_count}=  Run Keyword IF  '${status}' != 'PASS'  Set Variable  0
   ...             ELSE  Get Length  ${lots}
 
-  Select From List By Label         id=chooseProcedureType  &{procedure_types}[${methodType}]
-  Sleep  3
-  Click Element                     id=goToCreate  # Продовжити
-  Sleep   3
-
-  Додати лот при наявності і внести значення  ${lots_count}  ${lots}
   Input text    id=title                  ${title}
   Run Keyword If    '${methodType}' == 'aboveThresholdEU'   Input text    id=titleEN    ${title_en}
   Input text    id=description            ${description}
-  Додати причину з описом при наявності  ${ARGUMENTS[1].data}
-  ${features}=        Set Variable  ${EMPTY}
-  ${features_count}=  Set Variable  ${EMPTY}
-  ${status}  ${features}=  Run Keyword And Ignore Error  Get From Dictionary  ${ARGUMENTS[1].data}  features
-  log to console  presence of features: ${status}
-  ${features_count}=  Run Keyword IF  '${status}' != 'PASS'  Set Variable  0
-  ...                 ELSE  Get Length  ${features}
-  Додати нецінові показники при наявності  ${features_count}  ${features}
-  Додати enquiry_end_date_time при наявності  ${ARGUMENTS[1]}
-  Додати start_date_time при наявності        ${ARGUMENTS[1]}  ${methodType}
-  Додати end_date_time при наявності          ${ARGUMENTS[1]}
+  Додати причину з описом при наявності  ${tender_data}
+
+  Додати лот при наявності і внести значення  ${lots_count}  ${lots}
+
+  Додати нецінові показники при наявності       ${tender_data}
+  Додати enquiry_end_date_time при наявності    ${tender_data}
+  Додати start_date_time при наявності          ${tender_data}  ${methodType}
+  Додати end_date_time при наявності            ${tender_data}
   Input text    id=lotValue_0        ${budgetToStr}
   Sleep   1
   scrollIntoView by script using xpath  //input[@id="valueAddedTaxIncluded"]  # checkbox ПДВ
   sleep   2
   Click Element    xpath=//input[@id="valueAddedTaxIncluded"]  # checkbox ПДВ
-  Додати мінімальний крок при наявності  ${ARGUMENTS[1].data}
+  Додати мінімальний крок при наявності  ${tender_data}
   Sleep   1
   Додати предмети  ${methodType}  ${items}
   Sleep  1
   scrollIntoView by script using xpath  //*[@id="createTender"]  # scroll to createTender button
-  sleep   2
-  Wait Until Page Contains Element   id=createTender
-  Click Element   id=createTender
+  Wait and Click   id=createTender
   Sleep   60
   Reload Page
   Wait Until Keyword Succeeds        10 min  20 x  Дочекатися завершення обробки тендера
-  ${tender_UAid}=  Get Text  ${locator.tenderId}
-  Sleep  1
-  Log   ${tender_UAid}
-  ${Ids}=   Convert To String   ${tender_UAid}
-  log to console      ${Ids}
-  Log   ${Ids}
-  Run keyword if   '${mode}' == 'multi'   Set Multi Ids   ${ARGUMENTS[0]}   ${tender_UAid}
-  [return]  ${Ids}
+  Run Keyword And Return  Get Text  ${locator.tenderId}
 
 Додати лот при наявності і внести значення
   [Arguments]  ${lots_count}  ${lots}
@@ -243,13 +226,17 @@ Login
   Sleep  1
 
 Додати нецінові показники при наявності
-  [Arguments]  ${features_count}  ${features}
+  [Arguments]  ${tender_data}
+  ${status}  ${features}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  features
+  log to console  presence of features: ${status}
+  ${features_count}=  Run Keyword IF  '${status}' != 'PASS'  Set Variable  0
+  ...                 ELSE  Get Length  ${features}
   Return From Keyword If  '${features_count}' == '0'
   :FOR  ${i}  IN RANGE  ${features_count}
   \     ${feature_of}=  Get From Dictionary  ${features[${i}]}  featureOf
-  \     Run Keyword If  '${feature_of}' == 'lot'       add feature lot     ${features[${i}]}  0
-  \     Run Keyword If  '${feature_of}' == 'tenderer'  add feature tender  ${features[${i}]}  0
-  \     Run Keyword If  '${feature_of}' == 'item'      add feature item    ${features[${i}]}  0
+  \     Run Keyword If  '${feature_of}' == 'lot'       add feature  lot     ${features[${i}]}  0
+  \     Run Keyword If  '${feature_of}' == 'tenderer'  add feature  tender  ${features[${i}]}  0
+  \     Run Keyword If  '${feature_of}' == 'item'      add feature  item    ${features[${i}]}  0
 
 Додати мінімальний крок при наявності
   [Arguments]  ${data}
@@ -286,8 +273,8 @@ Login
   Return From Keyword If  '${status}' != 'PASS'
   ${end_date}=  get_all_etender_dates   ${dada_data}  EndDate  date
   ${end_time}=  get_all_etender_dates   ${dada_data}  EndDate  time
-  Input text  xpath=//input[@id="endDate"]       ${end_date}
-  Input text  xpath=//input[@id="endDate_time"]  ${end_time}
+  Input text  xpath=//input[@id="TenderPeriod"]       ${end_date}
+  Input text  xpath=//input[@id="TenderPeriod_time"]  ${end_time}
 
 Додати enquiry_end_date_time при наявності
   [Arguments]  ${dada_data}
@@ -299,83 +286,33 @@ Login
   Input text  xpath=//input[@id="enquiryPeriod"]       ${enquiry_end_date}
   Input text  xpath=//input[@id="enquiryPeriod_time"]  ${enquiry_end_time}
 
-add feature tender
-  [Arguments]  ${feature}  ${feature_index}
+add feature
+  [Arguments]  ${target}  ${feature}  ${feature_index}
   ${title}=        Get From Dictionary  ${feature}  title
   ${description}=  Get From Dictionary  ${feature}  description
   ${options}=      Get From Dictionary  ${feature}  enum
-  scrollIntoView by script using xpath  //add-features[contains(@feature-sector,"tender")]//span[@ng-click="addFeature()"]  # scroll to addFeature button - tender
+  scrollIntoView by script using xpath  //add-features[contains(@feature-sector,"${target}")]//span[@ng-click="addFeature()"]  # scroll to addFeature button - tender
   sleep   2
-  Click element  xpath=//add-features[contains(@feature-sector,"tender")]//span[@ng-click="addFeature()"]
+  Click element  xpath=//add-features[contains(@feature-sector,"${target}")]//span[@ng-click="addFeature()"]
   Sleep    2
-  Input text  name=feature-tender${feature_index}  ${title}
-  Input text  xpath=//input[@name="feature-tender${feature_index}"]/parent::td/following-sibling::td/input[@type="text"]  ${description}
+  Input text  name=feature-${target}${feature_index}  ${title}
+  Input text  xpath=//input[@name="feature-${target}${feature_index}"]/parent::td/following-sibling::td/input[@type="text"]  ${description}
   Sleep    2
   ${number_of_options}=  Get Length  ${options}
+  :FOR  ${i}  IN RANGE  ${number_of_options}-2  # 2 already exist
+  \     scrollIntoView by script using xpath  //add-features[contains(@feature-sector,"${target}")]//button[@ng-click="addFeatureOption(feature)"]
+  \     Click element  xpath=//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="addFeatureOption(feature)"]
   :FOR  ${i}  IN RANGE  ${number_of_options}
-  \     scrollIntoView by script using xpath  //add-features[contains(@feature-sector,"tender")]//button[@ng-click="addFeatureOption(feature)"]
-  \     Click element  xpath=//add-features[contains(@feature-sector,"tender")]//button[@ng-click="addFeatureOption(feature)"]
   \     Sleep    2
   \     ${opt_title}=  Get From Dictionary  ${feature.enum[${i}]}  title
   \     ${opt_value}=  Get From Dictionary  ${feature.enum[${i}]}  value
   \     ${opt_value}=  Convert To Number  ${opt_value}
   \     ${opt_value}=  Convert To Integer  ${opt_value*100}
   \     ${opt_value}=  Convert To String  ${opt_value}
-  \     Input text  name=feature-tenderOption${feature_index}${i}  ${opt_title}
-  \     Input text  id=feature-tenderOptionValue${feature_index}${i}  ${opt_value}
-
-add feature item
-  [Arguments]  ${feature}  ${feature_index}
-  ${title}=        Get From Dictionary  ${feature}  title
-  ${description}=  Get From Dictionary  ${feature}  description
-  ${options}=      Get From Dictionary  ${feature}  enum
-  scrollIntoView by script using xpath  //add-features[contains(@feature-sector,"item")]//span[@ng-click="addFeature()"]  # scroll to addFeature button - item
-  sleep   2
-  Click element  xpath=//add-features[contains(@feature-sector,"item")]//span[@ng-click="addFeature()"]
-  Sleep    2
-  Input text  name=feature-item${feature_index}  ${title}
-  Input text  xpath=//input[@name="feature-item${feature_index}"]/parent::td/following-sibling::td/input[@type="text"]  ${description}
-  Sleep    2
-  ${number_of_options}=   Get Length              ${options}
-  :FOR  ${i}  IN RANGE  ${number_of_options}
-  \     scrollIntoView by script using xpath  (//add-features[contains(@feature-sector,"item")]//button[@ng-click="addFeatureOption(feature)"])[${feature_index}+1]  # addFeatureOption - item
-  \     sleep   2
-  \     Click element  xpath=(//add-features[contains(@feature-sector,"item")]//button[@ng-click="addFeatureOption(feature)"])[${feature_index}+1]
-  \     Sleep    2
-  \     ${opt_title}=  Get From Dictionary  ${feature.enum[${i}]}  title
-  \     ${opt_value}=  Get From Dictionary  ${feature.enum[${i}]}  value
-  \     ${opt_value}=  Convert To Number  ${opt_value}
-  \     ${opt_value}=  Convert To Integer  ${opt_value*100}
-  \     ${opt_value}=  Convert To String  ${opt_value}
-  \     Input text  name=feature-itemOption${feature_index}${i}  ${opt_title}
-  \     Input text  id=feature-itemOptionValue${feature_index}${i}  ${opt_value}
-
-add feature lot
-  [Arguments]  ${feature}  ${feature_index}
-  ${title}=        Get From Dictionary  ${feature}  title
-  ${description}=  Get From Dictionary  ${feature}  description
-  ${options}=      Get From Dictionary  ${feature}  enum
-  Wait Until Page Contains Element  xpath=//add-features[contains(@feature-sector,"lot")]//span[@ng-click="addFeature()"]  30  #        addFeature button - lot
-  scrollIntoView by script using xpath    //add-features[contains(@feature-sector,"lot")]//span[@ng-click="addFeature()"]  # scroll to addFeature button - lot
-  sleep   2
-  Click element  xpath=//add-features[contains(@feature-sector,"lot")]//span[@ng-click="addFeature()"]
-  Sleep    2
-  Input text  name=feature-lot${feature_index}  ${title}
-  Input text  xpath=//input[@name="feature-lot${feature_index}"]/parent::td/following-sibling::td/input[@type="text"]  ${description}
-  Sleep    2
-  ${number_of_options}=   Get Length              ${options}
-  :FOR  ${i}  IN RANGE  ${number_of_options}
-  \     scrollIntoView by script using xpath  (//add-features[contains(@feature-sector,"lot")]//button[@ng-click="addFeatureOption(feature)"])[${feature_index}+1]  # addFeatureOption - lot
-  \     sleep   2
-  \     Click element  xpath=(//add-features[contains(@feature-sector,"lot")]//button[@ng-click="addFeatureOption(feature)"])[${feature_index}+1]
-  \     Sleep    2
-  \     ${opt_title}=  Get From Dictionary  ${feature.enum[${i}]}  title
-  \     ${opt_value}=  Get From Dictionary  ${feature.enum[${i}]}  value
-  \     ${opt_value}=  Convert To Number  ${opt_value}
-  \     ${opt_value}=  Convert To Integer  ${opt_value*100}
-  \     ${opt_value}=  Convert To String  ${opt_value}
-  \     Input text  name=feature-lotOption${feature_index}${i}  ${opt_title}
-  \     Input text  id=feature-lotOptionValue${feature_index}${i}  ${opt_value}
+  \     ${index}=   Run Keyword If  '${opt_value}'!='0'  Evaluate  ${i}+1
+  \     ...     ELSE    Set Variable  0
+  \     Input text  name=feature-${target}Option${feature_index}${index}  ${opt_title}
+  \     Run Keyword If  '${opt_value}'!='0'  Input text  id=feature-${target}OptionValue${feature_index}${index}  ${opt_value}
 
 Створити план
   [Arguments]  ${username}  ${arguments}
@@ -390,7 +327,7 @@ add feature lot
   ${amount}=            float_to_string_2f      ${amount}
   ${number_of_items}=   Get Length              ${items}
   ${cpv_id}=          Get From Dictionary       ${plan.classification}          id
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Wait Until Element Is Visible     id=qa_myPlans
   Click Element         id=qa_myPlans
   Wait Until Element Is Visible     jquery=a[href^="#/createPlan"]
@@ -420,11 +357,10 @@ add feature lot
   \     Click Element           xpath=//div[contains(@ng-model,'unit.selected')]//span[@class="ui-select-highlight"]
   scrollIntoView by script using xpath  //button[contains(., "Створити план")]
   Click element         xpath=//button[contains(., 'Створити план')]
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Wait Until Keyword Succeeds   2x  10 sec  Дочекатися завершення обробки плану
   ${plan_id}=                        Get Text  id=planId_0
   [Return]  ${plan_id}
-
 
 Опрацювати дотаткові класифікації
   [Arguments]  ${additionalClassifications}  ${index}
@@ -497,24 +433,21 @@ Enter enquiry date
   Input text    xpath=//input[@id="enquiryPeriod_time"]   ${enquiry_end_time}
   Sleep   1
 
-
 Дочекатися завершення обробки тендера
   Reload Page
   Sleep   25
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Wait Until Element Is Visible      ${locator.tenderId}  30
   ${tender_id}=                      Get Text  ${locator.tenderId}
   Should Match Regexp                ${tender_id}  UA-\\d{4}-\\d{2}-\\d{2}-\\d+.*
 
-
 Дочекатися завершення обробки плану
   Reload Page
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Wait Until Element Is Visible      id=planId_0  30
   ${plan_id}=                        Get Text  id=planId_0
   Log  ${plan_id}
   Should Match Regexp                ${plan_id}  UA-P-\\d{4}-.*
-
 
 Задати запитання на тендер
   [Arguments]  ${username}  ${tender_uaid}  ${question}
@@ -532,7 +465,7 @@ Enter enquiry date
   [Arguments]  ${entity}  ${lot_id}  ${question}
   Log  ${question}
   Відкрити розділ запитань
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Wait Until Page Contains Element   id=askQuestion
   Click Element  id=askQuestion
   Wait Until Page Does Not Contain      ${locator_block_overlay}
@@ -579,13 +512,13 @@ Enter enquiry date
   Sleep     5
 
 Додати предмети
-  [Arguments]  ${methodTypeT}  ${items}
+  [Arguments]  ${methodType}  ${items}
   ${items_count}=  Get Length  ${items}
   :FOR  ${i}  IN RANGE  ${items_count}
-  \     Додати предмет  ${methodTypeT}  ${items[${i}]}  ${i}
+  \     Додати предмет  ${methodType}  ${items[${i}]}  ${i}
 
 Додати предмет
-  [Arguments]  ${methodTypeT}  ${item}  ${index}
+  [Arguments]  ${methodType}  ${item}  ${index}
   ${items_description}=  Get From Dictionary  ${item}                   description
   ${items_descriptionEN}=  Get From Dictionary  ${item}                 description_en
   ${quantity}=           Get From Dictionary  ${item}                   quantity
@@ -604,32 +537,20 @@ Enter enquiry date
   ${locality}=           convert_common_string_to_etender_string  ${locality}
   ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
   ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
-  ${methodType}=         Set Variable  ${methodTypeT}
 
-  Run Keyword If  '${index}' != '0'  Click Element  id=addLotItem_0
-  Sleep  3
-  Input text    id=itemsDescription0${index}      ${items_description}
-  Sleep  1
-  Run Keyword If     '${methodType}' == 'aboveThresholdEU'  Input text    id=itemsDescriptionEN0${index}      ${items_descriptionEN}
-  Sleep  1
-  Input text    id=itemsQuantity0${index}         ${quantity}
-  Click Element   xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
-  Sleep  3
-  Input text    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]  ${unit}
-  Sleep  2
-  Click Element   xpath=//div[contains(@class,"selectize-dropdown") and contains(@repeat,"unit")]//div[@role="option" and contains(@class,"active")]
-  Sleep  5
+  Run Keyword If    '${index}' != '0'  Click Element  id=addLotItem_0
+  Wait and Input    id=itemsDescription0${index}      ${items_description}
+  Run Keyword If    '${methodType}' == 'aboveThresholdEU'  Wait and Input    id=itemsDescriptionEN0${index}      ${items_descriptionEN}
+  Wait and Input    id=itemsQuantity0${index}         ${quantity}
+  Wait and Click    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
+  Wait and Input    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]  ${unit}
+  Wait and Click    xpath=//div[contains(@class,"selectize-dropdown") and contains(@repeat,"unit")]//div[@role="option" and contains(@class,"active")]
   scrollIntoView by script using xpath  //input[@id="openClassificationModal0${index}"]  # openClassificationModal - main
-  sleep   2
-  Click Element  id=openClassificationModal0${index}
-  Sleep  1
-  Input text     id=classificationCode  ${cpv}
-  Wait Until Element Is Visible  xpath=//td[contains(., '${cpv}')]
-  Sleep  2
-  Click Element  xpath=//td[contains(., '${cpv}')]
-  Sleep  1
-  Click Element  id=classification_choose
-  Sleep  3
+  Wait and Click    id=openClassificationModal0${index}
+  Wait and Input    id=classificationCode  ${cpv}
+  Дочекатись зникнення blockUI
+  Wait and Click    xpath=//td[contains(., '${cpv}')]
+  Wait and Click    id=classification_choose
   ${status}  ${value}=  Run Keyword And Ignore Error  Get From Dictionary  ${item}  additionalClassifications
   log to console       Attempt to get 1st additonal classification scheme: ${status}
   Run Keyword If      '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}
@@ -740,7 +661,7 @@ Enter enquiry date
 Клацнути і дочекатися
   [Arguments]  ${tender_link}
   Click Link  jquery=a[ng-click='search()']
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Wait Until Page Contains Element   ${tender_link}  5
 
 Пошук тендера по ідентифікатору
@@ -748,16 +669,16 @@ Enter enquiry date
   Reload Page
   Run Keyword If  '${username}' != 'Etender_Owner'  Run Keyword And Return  Тимчасовий Пошук тендера по ідентифікатору для Viewer  ${username}  ${tender_uaid}
   Go To  ${USERS.users['${username}'].homepage}
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Перейти на вкладку іншого типу процедур за потреби  ${username}
   Wait Until Element Is Visible    ${locator.search_tender}    10
   Input Text    ${locator.search_tender}    ${tender_uaid}
   ${tender_link}=   Set Variable    xpath=//td[contains(.,'${tender_uaid}')]//a
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   ${passed}=  Run Keyword And Return Status  Wait Until Keyword Succeeds  30 s  0 s  Клацнути і дочекатися  ${tender_link}
   Run Keyword Unless  ${passed}  Fatal Error  Тендер не знайдено за 30 секунд
   Click Link    ${tender_link}
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Wait Until Page Contains    ${tender_uaid}   10
 
 Тимчасовий Пошук тендера по ідентифікатору для Viewer
@@ -770,12 +691,12 @@ Enter enquiry date
 
 Перейти на вкладку іншого типу процедур за потреби
   [Arguments]  ${username}
-  ${search_tab}=  Get From Dictionary  ${USERS.users['${username}']}  HELPER_SEARCH_TAB
-  Return From Keyword If  '${search_tab}' == 'КОНКУРЕНТНІ ПРОЦЕДУРИ'
+  ${methodType}=  Get From Dictionary  ${USERS.users['${username}']}  method_type
+  Return From Keyword If  '${methodType}' != 'negotiation'
   scrollIntoView by script using xpath  //*[@id="naviTitle1"]  # scroll to tab 'НЕКОНКУРЕНТНІ ПРОЦЕДУРИ'
   sleep   2
   Click Element  id=naviTitle1
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
 
 Пошук плану по ідентифікатору
   [Arguments]  ${username}  ${TENDER_UAID}
@@ -786,14 +707,13 @@ Enter enquiry date
   JavaScript scrollBy  0  -2000
   Click Element                         id=naviTitle2
   #Wait Until Page Contains Element    xpath=//input[@type='text' and @placeholder='Пошук за номером плану']    10
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   sleep  1
   Wait Until Element Is Visible    xpath=//input[@type='text' and @placeholder='Пошук за номером плану']    10
   sleep  3
   Input Text    xpath=//input[@type='text' and @placeholder='Пошук за номером плану']   ${TENDER_UAID}
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Wait Until Page Contains  ${TENDER_UAID}  10
-
 
 Завантажити документ в ставку
   [Arguments]  ${username}  ${file}  ${tender_uaid}  ${doc_type}=1
@@ -871,13 +791,13 @@ Enter enquiry date
   Run Keyword And Ignore Error      Пітдвердити чекбокси пропозиції
   Run Keyword Unless  ${features_ids} is None  Заповнити нецінові критерії  ${features_ids}  ${bid_data.data.parameters}
   Click Element     id=createBid_0
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   sleep  3
 
 Отримати інформацію із пропозиції
   [Arguments]  ${username}  ${tender_uaid}  ${field}
   etender.Пошук тендера по ідентифікатору   ${username}   ${tender_uaid}
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Run Keyword And Return If  'value' in '${field}'  Отримати інформацію про value пропозиції
   Run Keyword And Return  Отримати інформацію про ${field} пропозиції
@@ -897,7 +817,7 @@ Enter enquiry date
   Sleep    5
   Run Keyword If  '${field}'=='status'  Підтвердити пропозицію
   Run Keyword If  'value' in '${field}'  Редагувати суму пропозиції  ${value}
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Sleep    1
 
 Редагувати суму пропозиції
@@ -970,7 +890,7 @@ Enter enquiry date
   Run Keyword Unless    '${target}'=='award'    Select From List By Partial Label     id=complaintFor  ${target}
   Click Element     id=btnAddComplaint
   Sleep  10
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Run Keyword And Return  Get text  xpath=//complaint[contains(.,"${claim.data.description}")]//div[@id='complaintid']
 
 Створити чернетку вимоги про виправлення умов лоту
@@ -1115,7 +1035,7 @@ Select From List By Partial Label
   scrollIntoView by script using xpath  //li[@id="naviTitle1"]/span  # scroll to questions tab
   sleep   1
   Click Element                      xpath=//li[@id="naviTitle1"]/span  # go to questions tab
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
 
 scrollIntoView by script using xpath
   [Arguments]  ${xpath_locator}
@@ -1166,9 +1086,9 @@ Check Is Element Loaded
 Редагувати поле tenderPeriod.endDate
   [Arguments]  ${new_value_isodate}
   ${date}=  convert_date_to_etender_format  ${new_value_isodate}
-  Input text  id=endDate  ${date}
+  Input text  id=TenderPeriod  ${date}
   ${time}=  convert_time_to_etender_format  ${new_value_isodate}
-  Input text  id=endDate_time  ${time}
+  Input text  id=TenderPeriod_time  ${time}
 
 Редагувати поле description
   [Arguments]  ${new_value}
@@ -1242,7 +1162,7 @@ Check Is Element Loaded
 Отримати інформацію про qualifications[0].status
   Reload Page
   Sleep  10
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   ${return_value}=  Отримати текст із поля і показати на сторінці  qualifications[0].status
   ${return_value}=  convert_etender_string_to_common_string  ${return_value}
@@ -1251,7 +1171,7 @@ Check Is Element Loaded
 Отримати інформацію про qualifications[1].status
   Reload Page
   Sleep  10
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   ${return_value}=  Отримати текст із поля і показати на сторінці  qualifications[1].status
   ${return_value}=  convert_etender_string_to_common_string  ${return_value}
@@ -1309,7 +1229,7 @@ Check Is Element Loaded
 Отримати інформацію про contracts[0].status
   Reload Page
   Sleep  10
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   ${return_value}=  Отримати текст із поля і показати на сторінці  contracts[0].status
   ${return_value}=  Set Variable  ${return_value.strip()}
@@ -1320,7 +1240,6 @@ Check Is Element Loaded
   ${return_value}=   Отримати текст із поля і показати на сторінці   items[0].unit.name
   ${return_value}=   convert_etender_string_to_common_string   ${return_value}
   [return]  ${return_value}
-
 
 Відмітити на сторінці поле з тендера
   [Arguments]   ${fieldname}  ${locator}
@@ -1490,31 +1409,32 @@ Check Is Element Loaded
   ${return_value}=   convert_etender_date_to_iso_format   ${return_value}, 00:00
   [return]  ${return_value}
 
-Отримати інформацію про questions[0].title
-  sleep   10
+Отримати інформацію про questions[${i}].title
+  sleep   5
+  ${locator}=  Set Variable  id=quest_title_${i}
   Відкрити розділ запитань
-  ${return_value}=   Отримати текст із поля і показати на сторінці   questions[0].title
-  [return]  ${return_value}
+  Wait Until Element Is Visible         ${locator}    30
+  Run Keyword And Return   Get Text     ${locator}
 
-Отримати інформацію про questions[0].description
-  Sleep   10
+Отримати інформацію про questions[${i}].description
+  sleep   5
+  ${locator}=  Set Variable  id=quest_descr_${i}
   Відкрити розділ запитань
-  ${return_value}=   Отримати текст із поля і показати на сторінці   questions[0].description
-  [return]  ${return_value}
+  Wait Until Element Is Visible         ${locator}    30
+  Run Keyword And Return   Get Text     ${locator}
 
 Отримати інформацію про questions[0].date
   Sleep   3
   ${return_value}=   Отримати текст із поля і показати на сторінці   questions[0].date
   [return]  ${return_value}
 
-
-Отримати інформацію про questions[0].answer
-  Sleep   3
+Отримати інформацію про questions[${i}].answer
   Reload Page
-  Sleep   10
+  sleep   5
+  ${locator}=  Set Variable  id=question_answer_${i}
   Відкрити розділ запитань
-  ${return_value}=     Отримати текст із поля і показати на сторінці     questions[0].answer
-  [return]  ${return_value}
+  Wait Until Element Is Visible         ${locator}    30
+  Run Keyword And Return   Get Text     ${locator}
 
 Отримати інформацію про awards[0].complaintPeriod.endDate
   Sleep   10
@@ -1684,7 +1604,7 @@ Check Is Element Loaded
   log  ${prepared_locator}
   ${fields_supported}=  Create List  classification.scheme  classification.id  classification.description  additionalClassifications[0].id  additionalClassifications[0].description  quantity  unit.name  unit.code  deliveryDate.endDate  deliveryAddress.countryName  deliveryAddress.postalCode  deliveryAddress.region  deliveryAddress.locality  deliveryAddress.streetAddress
 #  Відкрити розділ Деталі Закупівлі
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Run Keyword And Return If  '${fieldname}' not in ${fields_supported}   Отримати інформацію із предмету про ${fieldname}   ${item_id}
   Wait Until Page Contains Element  ${prepared_locator}  10
   Wait Until Keyword Succeeds  10 x  5  Check Is Element Loaded  ${prepared_locator}
@@ -1703,7 +1623,6 @@ Check Is Element Loaded
   Run Keyword Unless  '${expanded}'=='true'     Click Element     ${locator}
   Sleep  10
   Run Keyword And Return  Get Text  //p[contains(.,'${item_id}')]
-
 
 Конвертувати інформацію із предмету про description
   [Arguments]  ${raw_value}
@@ -1891,17 +1810,16 @@ Check Is Element Loaded
   Run Keyword And Return  Get Element Attribute  xpath=//span[contains(.,'${object_id}')]@name
 
 Відкрити розділ Деталі Закупівлі
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   scrollIntoView by script using xpath  //li[@id="naviTitle0"]/span  # scroll to Деталі Закупівлі tab
   Click Element                      xpath=//li[@id="naviTitle0"]/span  # go to Деталі Закупівлі tab
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
 
 Відкрити розділ вимог і скарг
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   scrollIntoView by script using xpath  //li[@id="naviTitle2"]/span  # scroll to complaints
   Click Element                      xpath=//li[@id="naviTitle2"]/span  # go to complaints
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
-
+  Дочекатись зникнення blockUI
 
 Створити постачальника, додати документацію і підтвердити його
   [Arguments]  ${username}  ${tender_uaid}  ${object}  ${document}
@@ -2152,7 +2070,7 @@ Wait for upload before signing
   ...   ELSE  Set Variable  ${tmp_hacked_title}
   Reload Page
   Sleep   25
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Відкрити розділ вимог і скарг
   Wait Until Element Is Visible  xpath=//a[@role="button" and @aria-expanded="false" and contains(.,"${tmp_hacked_title}")]
   Sleep  5
@@ -2180,7 +2098,7 @@ Wait for upload before signing
   ${tmp_hacked_title}=  Get From Dictionary  ${USERS.users['Tender_User'].claim_data.claim.data}  title
   Reload Page
   Sleep   10
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Відкрити розділ вимог і скарг
   Wait Until Element Is Visible  xpath=//a[@role="button" and @aria-expanded="false" and contains(.,"${tmp_hacked_title}")]
   Sleep  5
@@ -2212,7 +2130,7 @@ temporary keyword for title update
   Sleep  3
   # TODO: rework duplicated code - see "Створити постачальника, додати документацію і підтвердити його"
   etender.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Click Element  xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
   Select From List By Label  id=docType  Повідомлення про рішення
@@ -2238,7 +2156,7 @@ temporary keyword for title update
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}
   # TODO: rework duplicated code - see "Створити постачальника, додати документацію і підтвердити його"
   etender.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Sleep   4
   Відкрити розділ Деталі Закупівлі
   Click Element  xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
@@ -2272,7 +2190,7 @@ Wait for doc upload in qualification
 Завантажити документ у кваліфікацію
   [Arguments]  ${username}  ${document}  ${tender_uaid}  ${qualification_num}
   etender.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Capture Page Screenshot
   Відкрити подробиці кваліфікації за індексом  ${qualification_num}
@@ -2302,7 +2220,7 @@ Wait for doc upload in qualification
   ${qualification_num}=  Run Keyword If  '${qualification_num_p}' == '-1'  Set Variable  1
   ...              ELSE  Set Variable  ${qualification_num_p}
   etender.Пошук тендера по ідентифікатору  ${username}  ${tender_uaid}
-  Wait Until Page Does Not Contain   ${locator_block_overlay}
+  Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Відкрити подробиці кваліфікації за індексом  ${qualification_num}
   Sleep  1
