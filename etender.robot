@@ -136,6 +136,7 @@ Wait and Input
   Input text  ${locator}  ${data}
 
 Дочекатись зникнення blockUI
+  [Arguments]  ${timeout}=5
   Wait Until Page Does Not Contain Element  xpath=//div[@class='blockUI blockOverlay']
 
 Підготувати дані для оголошення тендера
@@ -153,7 +154,7 @@ Login
   Wait and Input   id=inputPassword     ${USERS.users['${username}'].password}  15
   Wait and Click   id=btn_submit
   Go To  ${USERS.users['${username}'].homepage}
-  Дочекатись зникнення blockUI
+  Дочекатись зникнення blockUI  15
 
 Створити тендер
   [Arguments]  ${username}  ${tender_data}
@@ -200,8 +201,7 @@ Login
   Input text    id=lotValue_0        ${budgetToStr}
   Sleep   1
   scrollIntoView by script using xpath  //input[@id="valueAddedTaxIncluded"]  # checkbox ПДВ
-  sleep   2
-  Click Element    xpath=//input[@id="valueAddedTaxIncluded"]  # checkbox ПДВ
+  Wait and Click    xpath=//input[@id="valueAddedTaxIncluded"]  # checkbox ПДВ
   Додати мінімальний крок при наявності  ${tender_data}
   Sleep   1
   Додати предмети  ${methodType}  ${items}
@@ -216,13 +216,11 @@ Login
 Додати лот при наявності і внести значення
   [Arguments]  ${lots_count}  ${lots}
   Return From Keyword If  '${lots_count}' == '0'
-  ${title}=        Get From Dictionary  ${lots[0]}  title
-  ${description}=  Get From Dictionary  ${lots[0]}  description
-  Click Element  id=isMultilots  # checkbox Мультилотова закупівля
-  Sleep  2
-  Input text     id=lotTitle_0  ${title}
-  Sleep  1
-  Input text     id=lotDescription_0  ${description}
+  ${title}=         Get From Dictionary  ${lots[0]}  title
+  ${description}=   Get From Dictionary  ${lots[0]}  description
+  Click Element     id=isMultilots  # checkbox Мультилотова закупівля
+  Wait and Input    id=lotTitle_0  ${title}
+  Wait and Input    id=lotDescription_0  ${description}
   Sleep  1
 
 Додати нецінові показники при наявності
@@ -366,61 +364,30 @@ add feature
   [Arguments]  ${additionalClassifications}  ${index}
   # TODO: Обробляти випадок коли є більше однієї додаткової класифікації
   ${scheme}=  Get From Dictionary  ${additionalClassifications[0]}  scheme
-  Run Keyword And Return  Вказати ${scheme} дотаткову класифікацію  ${additionalClassifications[0]}  ${index}
+  Run Keyword If  '${scheme}' in ('INN','ДКПП')  Вказати ${scheme} дотаткову класифікацію  ${additionalClassifications[0]}  ${index}
+  ...         ELSE  Вказати дотаткову класифікацію  ${additionalClassifications[0]}  ${index}  ${scheme}
+  Дочекатись зникнення blockUI
 
 Вказати INN дотаткову класифікацію
   [Arguments]  ${additionalClassification}  ${index}
   ${description}=  Get From Dictionary  ${additionalClassification}  description
-  Click Element  xpath=//input[@id='openAddClassificationInnModal0${index}']
-  Sleep  3
-  Input text     xpath=//div[@id="addClassificationInn_0_${index}" and contains(@class,"top")]//input  ${description}
-  Wait Until Element Is Visible  xpath=//td[contains(., '${description}')]
-  Sleep  2
-  Click Element  xpath=//td[contains(., '${description}')]
-  Sleep  1
-  Click Element  xpath=//div[@id="addClassificationInn_0_${index}" and contains(@class,"top")]//button[@id="addClassification_choose"]
+  Wait and Click    xpath=//input[@id='openAddClassificationInnModal0${index}']
+  Wait and Input    xpath=//div[@id="addClassificationInn_0_${index}" and contains(@class,"top")]//input  ${description}
+  Дочекатись зникнення blockUI
+  Wait and Click    xpath=//td[contains(., '${description}')]
+  Wait and Click    xpath=//div[@id="addClassificationInn_0_${index}" and contains(@class,"top")]//button[@id="addClassification_choose"]
 
-Вказати ДК003 дотаткову класифікацію
-  [Arguments]  ${additionalClassification}  ${index}
+Вказати дотаткову класифікацію
+  [Arguments]  ${additionalClassification}  ${index}  ${scheme}
+  [Documentation]  Works same for all DK0** schemes
   ${description}=  Get From Dictionary  ${additionalClassification}  description
-  Click Element  id=openAddClassificationModal0${index}0
-  Sleep  3
-  Select From List By Value  xpath=//div[@id="addClassification" and contains(@class,"modal")]//select[@name="dkScheme"]  ДК003
-  Sleep  3
-  Input text     xpath=//div[@id="addClassification" and contains(@class,"modal")]//input  ${description}
-  Wait Until Element Is Visible  xpath=//td[contains(., '${description}')]
+  Wait and Click    id=openAddClassificationModal0${index}0
   Sleep  2
-  Click Element  xpath=//td[contains(., '${description}')]
-  Sleep  1
-  Click Element  xpath=//div[@id="addClassification" and contains(@class,"modal")]//*[@id="addClassification_choose"]
-
-Вказати ДК018 дотаткову класифікацію
-  [Arguments]  ${additionalClassification}  ${index}
-  ${description}=  Get From Dictionary  ${additionalClassification}  description
-  Click Element  id=openAddClassificationModal0${index}0
-  Sleep  3
-  Select From List By Value  xpath=//div[@id="addClassification" and contains(@class,"modal")]//select[@name="dkScheme"]  ДК018
-  Sleep  3
-  Input text     xpath=//div[@id="addClassification" and contains(@class,"modal")]//input  ${description}
-  Wait Until Element Is Visible  xpath=//td[contains(., '${description}')]
-  Sleep  2
-  Click Element  xpath=//td[contains(., '${description}')]
-  Sleep  1
-  Click Element  xpath=//div[@id="addClassification" and contains(@class,"modal")]//*[@id="addClassification_choose"]
-
-Вказати ДК015 дотаткову класифікацію
-  [Arguments]  ${additionalClassification}  ${index}
-  ${description}=  Get From Dictionary  ${additionalClassification}  description
-  Click Element  id=openAddClassificationModal0${index}0
-  Sleep  3
-  Select From List By Value  xpath=//div[@id="addClassification" and contains(@class,"modal")]//select[@name="dkScheme"]  ДК015
-  Sleep  3
-  Input text     xpath=//div[@id="addClassification" and contains(@class,"modal")]//input  ${description}
-  Wait Until Element Is Visible  xpath=//td[contains(., '${description}')]
-  Sleep  2
-  Click Element  xpath=//td[contains(., '${description}')]
-  Sleep  1
-  Click Element  xpath=//div[@id="addClassification" and contains(@class,"modal")]//*[@id="addClassification_choose"]
+  Select From List By Value  xpath=//div[@id="addClassification" and contains(@class,"modal")]//select[@name="dkScheme"]  ${scheme}
+  Wait and Input    xpath=//div[@id="addClassification" and contains(@class,"modal")]//input  ${description}
+  Дочекатись зникнення blockUI
+  Wait and Click    xpath=//td[contains(., '${description}')]
+  Wait and Click    xpath=//div[@id="addClassification" and contains(@class,"modal")]//*[@id="addClassification_choose"]
 
 Вказати ДКПП дотаткову класифікацію
   [Arguments]  ${additionalClassification}  ${index}
@@ -521,9 +488,10 @@ Enter enquiry date
   [Arguments]  ${methodType}  ${item}  ${index}
   ${items_description}=  Get From Dictionary  ${item}                   description
   ${items_descriptionEN}=  Get From Dictionary  ${item}                 description_en
-  ${quantity}=           Get From Dictionary  ${item}                   quantity
+  ${quantity}=           set Variable   ${item.quantity}
   ${unit}=               Get From Dictionary  ${item.unit}              name
   ${cpv}=                Get From Dictionary  ${item.classification}    id
+  log  ${item}
   ${dkpp_desc}=          Get From Dictionary  ${item.additionalClassifications[0]}  description
   ${dkpp_id}=            Get From Dictionary  ${item.additionalClassifications[0]}  id
   ${deliveryDateStart}=  Get From Dictionary  ${item.deliveryDate}      startDate
@@ -545,30 +513,26 @@ Enter enquiry date
   Wait and Click    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
   Wait and Input    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]  ${unit}
   Wait and Click    xpath=//div[contains(@class,"selectize-dropdown") and contains(@repeat,"unit")]//div[@role="option" and contains(@class,"active")]
+
   scrollIntoView by script using xpath  //input[@id="openClassificationModal0${index}"]  # openClassificationModal - main
   Wait and Click    id=openClassificationModal0${index}
+  Sleep  2
   Wait and Input    id=classificationCode  ${cpv}
   Дочекатись зникнення blockUI
   Wait and Click    xpath=//td[contains(., '${cpv}')]
   Wait and Click    id=classification_choose
+  Дочекатись зникнення blockUI
+
   ${status}  ${value}=  Run Keyword And Ignore Error  Get From Dictionary  ${item}  additionalClassifications
-  log to console       Attempt to get 1st additonal classification scheme: ${status}
-  Run Keyword If      '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}
-#  Input text    id=latitude0    ${latitude}
-#  Sleep   1
-#  Input text    id=longitude0   ${longitude}
-  Sleep  2
-  Input text    id=delStartDate0${index}        ${deliveryDateStart}
-  Sleep  2
-  Input text    id=delEndDate0${index}          ${deliveryDateEnd}
+  log to console    Attempt to get 1st additonal classification scheme: ${status}
+  Run Keyword If    '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}
+  Wait and Input    id=delStartDate0${index}        ${deliveryDateStart}
+  Wait and Input    id=delEndDate0${index}          ${deliveryDateEnd}
   Sleep  2
   Select From List By Label  id=region_0${index}  ${region}
-  Sleep  2
-  #  TODO: sync this region/locality selection logic with keyword -- Створити постачальника, додати документацію і підтвердити його
   Run Keyword If  '${region}' != 'місто Київ'  Input text  name=otherCity_0${index}  ${locality}
-  Input text    id=street_0${index}   ${streetAddress}
-  Sleep  1
-  Input text    id=postIndex_0${index}    ${postalCode}
+  Wait and Input    id=street_0${index}   ${streetAddress}
+  Wait and Input    id=postIndex_0${index}    ${postalCode}
 
 Додати неціновий показник на предмет
   [Arguments]  ${username}  ${tender_uaid}  ${feature_data}  ${object_id}
@@ -694,8 +658,7 @@ Enter enquiry date
   ${methodType}=  Get From Dictionary  ${USERS.users['${username}']}  method_type
   Return From Keyword If  '${methodType}' != 'negotiation'
   scrollIntoView by script using xpath  //*[@id="naviTitle1"]  # scroll to tab 'НЕКОНКУРЕНТНІ ПРОЦЕДУРИ'
-  sleep   2
-  Click Element  id=naviTitle1
+  Wait and Click  id=naviTitle1
   Дочекатись зникнення blockUI
 
 Пошук плану по ідентифікатору
