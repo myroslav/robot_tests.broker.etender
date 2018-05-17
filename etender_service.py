@@ -8,32 +8,20 @@ import os
 
 TZ = timezone(os.environ['TZ'] if 'TZ' in os.environ else 'Europe/Kiev')
 
-def get_all_etender_dates(initial_tender_data, key, subkey=None):
+def get_all_etender_dates(initial_tender_data):
     tender_period = initial_tender_data.tenderPeriod
     start_dt = dateutil.parser.parse(tender_period['startDate'])
     end_dt = dateutil.parser.parse(tender_period['endDate'])
-    data = {
-        'StartDate': {
-            'date': start_dt.strftime("%d-%m-%Y"),
-            'time': start_dt.strftime("%H:%M"),
-        },
-        'EndDate': {
-            'date': end_dt.strftime("%d-%m-%Y"),
-            'time': end_dt.strftime("%H:%M"),
-        },
-    }
+    data = type('periods', (), {  # dynamically creating objects instead of another dict
+        'tenderStart': type('date', (), {'date': start_dt.strftime("%d-%m-%Y"),
+                                         'time': start_dt.strftime("%H:%M")}),
+        'tenderEnd': type('date', (), {'date': end_dt.strftime("%d-%m-%Y"),
+                                       'time': end_dt.strftime("%H:%M")})})
     if 'enquiryPeriod' in initial_tender_data:
-        enquiry_period = initial_tender_data.enquiryPeriod
-        end_period = dateutil.parser.parse(enquiry_period['endDate'])
-        data['EndPeriod'] = {
-            'date': end_period.strftime("%d-%m-%Y"),
-            'time': end_period.strftime("%H:%M"),
-        }
-    else:
-        if 'EndPeriod' in key:
-            raise
-    dt = data.get(key, {})
-    return dt.get(subkey) if subkey else dt
+        end_period = dateutil.parser.parse(initial_tender_data.enquiryPeriod['endDate'])
+        data.enquiryEnd = type('date', (), {'date': end_period.strftime("%d-%m-%Y"),
+                                            'time': end_period.strftime("%H:%M")}) 
+    return data
 
 def get_procedure_type(methodType):
     return {
@@ -47,6 +35,10 @@ def parse_etender_date(date):
     # converts date from ui to datetime
     return datetime.strptime(date, '%d-%m-%Y, %H:%M')
 
+def prepare_locator_to_scroll(locator):
+    if locator[:3] == 'id=':
+        return '//*[@id="{}"]'.format(locator[3:])
+    return locator[6:].replace("'", '"')  # 6 for xpath=
 
 def to_iso(date):
     return date.isoformat()
