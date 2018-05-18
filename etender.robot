@@ -1370,7 +1370,7 @@ Check Is Element Loaded
   Run Keyword And Return  Get Element Attribute  xpath=//a[contains(.,"Подивитись процедуру проведення аукціону")]@href
 
 Отримати посилання на аукціон для учасника
-  [Arguments]  @{ARGUMENTS}
+  [Arguments]  ${username}  ${tender_uaid}
   Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
   Відкрити розділ Деталі Закупівлі
   Page Should Contain Element  xpath=//a[@id='participationUrl_0']
@@ -1575,7 +1575,6 @@ Check Is Element Loaded
   Reload Page
   Run Keyword And Ignore Error  Wait Scroll Click   xpath=//div[contains(@ng-if,"lot.items") and contains(@id,"tree")]//span[@data-toggle="collapse"]/span[contains(.,"критерії оцінки")]  # open Нецінові (якісні) критерії оцінки section to make its text visible
   Sleep  2
-
   Run Keyword And Return  Отримати інформацію із нецінового показника про ${field_name}  ${object_id}
 
 Отримати інформацію із нецінового показника про title
