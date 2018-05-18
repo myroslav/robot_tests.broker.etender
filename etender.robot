@@ -111,6 +111,7 @@ ${locator_item_deliveryAddress.locality}                       xpath=//p[contain
 ${locator_item_deliveryAddress.streetAddress}                  xpath=//p[contains(.,"XX_item_id_XX")]/../../parent::tr//*[starts-with(@id,"delivery_addressStr_")]
 ${huge_timeout_for_visibility}                                 300
 ${locator.search_tender}                                       xpath=//input[@type='text' and @placeholder='Пошук за номером закупівлі']
+${tenderpage}
 
 
 *** Keywords ***
@@ -544,25 +545,33 @@ add feature
   Go To  ${USERS.users['${username}'].homepage}
   Дочекатись зникнення blockUI
   Перейти на вкладку іншого типу процедур за потреби  ${username}
-  Wait Until Element Is Visible    ${locator.search_tender}    10
-  Input Text    ${locator.search_tender}    ${tender_uaid}
+  Wait and Input    ${locator.search_tender}    ${tender_uaid}
   ${tender_link}=   Set Variable    xpath=//td[contains(.,'${tender_uaid}')]//a
   Дочекатись зникнення blockUI
-  ${passed}=  Run Keyword And Return Status  Wait Until Keyword Succeeds  30 s  0 s  Клацнути і дочекатися  ${tender_link}
+  ${passed}=  Run Keyword And Return Status  Wait Until Keyword Succeeds  120 s  30 s  Клацнути і дочекатися  ${tender_link}
   Run Keyword Unless  ${passed}  Fatal Error  Тендер не знайдено за 30 секунд
   Click Link    ${tender_link}
-  Дочекатись зникнення blockUI
+  #Дочекатись зникнення blockUI
   Wait Until Page Contains    ${tender_uaid}   10
+  ${tenderpage}=    Get Location
+  Set To Dictionary     ${USERS.users['${username}']}   tenderpage=${tenderpage.split('?')[0]}
 
 Тимчасовий Пошук тендера по ідентифікатору для Viewer
-  [Arguments]  ${username}  ${TENDER_UAID}
+  [Arguments]  ${username}  ${tender_uaid}
   # TODO: У майбутньому треба буде запровадити більш коректне рішення
   # Виникла необхідність обійти пошук по ідентифікатору через особливість тестового оточення майданчика
-  ${cleared_homepage_site}=  Set Variable  ${USERS.users['${username}'].homepage}
-  ${cleared_homepage_site}=  Set Variable  ${cleared_homepage_site.split('#')[0]}
-  Go To  ${cleared_homepage_site}tender?tenderid=${TENDER_UAID}
+  Go To  ${USERS.users['${username}'].homepage.split('#')[0]}tender?tenderid=${TENDER_UAID}
+  #Дочекатись зникнення blockUI
+  Wait Until Page Contains    ${tender_uaid}   10
   ${tenderpage}=    Get Location
-  # TODO  Set To Dictionary     ${USERS.users['${username}']}   tenderpage=${tenderpage}
+  Set To Dictionary     ${USERS.users['${username}']}   tenderpage=${tenderpage.split('?')[0]}
+
+Перейти на сторінку тендера за потреби
+  [Arguments]  ${username}  ${tender_uaid}
+  ${currentpage}=   Get Location
+  ${tenderpage}=    Get From Dictionary     ${USERS.users['${username}']}   tenderpage
+  Run Keyword If  '${currentpage}'!='${tenderpage}'  Go To  ${tenderpage}
+  Wait Until Page Contains    ${tender_uaid}   10
 
 Перейти на вкладку іншого типу процедур за потреби
   [Arguments]  ${username}
@@ -575,26 +584,21 @@ add feature
   [Arguments]  ${username}  ${TENDER_UAID}
   Log  ${username}
   Go To  ${USERS.users['${username}'].homepage}
-  Wait Until Element Is Visible         id=naviTitle2
-  Sleep  3
-  JavaScript scrollBy  0  -2000
-  Click Element                         id=naviTitle2
+  Wait Scroll Click     id=naviTitle2
   Дочекатись зникнення blockUI
-  sleep  1
   Wait and Input    xpath=//input[@type='text' and @placeholder='Пошук за номером плану']   ${TENDER_UAID}
   Дочекатись зникнення blockUI
   Wait Until Page Contains  ${TENDER_UAID}  10
 
 Завантажити документ в ставку
   [Arguments]  ${username}  ${file}  ${tender_uaid}  ${doc_type}=1
-  etender.Пошук тендера по ідентифікатору   ${username}   ${tender_uaid}
+  Перейти на сторінку тендера за потреби    ${username}  ${tender_uaid}
   Відкрити розділ Деталі Закупівлі
   Натиснути редагувати пропозицію
   Run Keyword And Ignore Error  Обрати конфіденційність документа
   ${doc_type}=          get_doc_type_index          ${doc_type}
   Select From List By Index     id=bidDocType_      ${doc_type}
-  Завантажити док  ${username}  ${file} id=addBidDoc_
-  Sleep  5
+  Завантажити док  ${username}  ${file}  id=addBidDoc_
 
 Обрати конфіденційність документа
   [Arguments]  ${conf}=1
@@ -629,9 +633,7 @@ add feature
 
 Завантажити документ в лот
   [Arguments]  ${username}  ${file}  ${tender_uaid}  ${lot_id}
-  sleep   2
-  Select From List By Label  xpath=//div[@id="treetree-01-02-0"]//select[@id="docType"]  Інші
-  Sleep   1
+  Wait and Select By Label  xpath=//div[@id="treetree-01-02-0"]//select[@id="docType"]  Інші
   Завантажити док  ${username}  ${file}  id=lot_doc_add
 
 Заповнити нецінові критерії
@@ -652,7 +654,7 @@ add feature
 
 Подати цінову пропозицію
   [Arguments]  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}
-  etender.Пошук тендера по ідентифікатору   ${username}   ${tender_uaid}
+  Перейти на сторінку тендера за потреби    ${username}  ${tender_uaid}
   sleep  5
   Відкрити розділ Деталі Закупівлі
   ${amount}=    Run Keyword If  ${lots_ids} is None  Set Variable  ${bid_data.data.value.amount}
@@ -666,8 +668,8 @@ add feature
 
 Отримати інформацію із пропозиції
   [Arguments]  ${username}  ${tender_uaid}  ${field}
-  etender.Пошук тендера по ідентифікатору   ${username}   ${tender_uaid}
-  Дочекатись зникнення blockUI
+  Перейти на сторінку тендера за потреби    ${username}  ${tender_uaid}  
+
   Відкрити розділ Деталі Закупівлі
   Run Keyword And Return If  'value' in '${field}'  Отримати інформацію про value пропозиції
   Run Keyword And Return  Отримати інформацію про ${field} пропозиції
@@ -683,12 +685,11 @@ add feature
 
 Змінити цінову пропозицію
   [Arguments]  ${username}  ${tender_uaid}  ${field}  ${value}
-  etender.Пошук тендера по ідентифікатору   ${username}   ${tender_uaid}
+  Перейти на сторінку тендера за потреби   ${username}
   Sleep    5
   Run Keyword If  '${field}'=='status'  Підтвердити пропозицію
   Run Keyword If  'value' in '${field}'  Редагувати суму пропозиції  ${value}
   Дочекатись зникнення blockUI
-  Sleep    1
 
 Редагувати суму пропозиції
   [Arguments]  ${value}
@@ -703,21 +704,13 @@ add feature
   Click Element     id=editBid_0
 
 Скасувати цінову пропозицію
-  [Arguments]  @{ARGUMENTS}
-  [Documentation]
-  ...      ${ARGUMENTS[0]} ==  username
-  ...      ${ARGUMENTS[1]} ==  ${TENDER_UAID}
-  etender.Пошук тендера по ідентифікатору   ${ARGUMENTS[0]}   ${ARGUMENTS[1]}
-  Sleep  3
-  Click Element               xpath=//button[contains(@class, 'btn-sm btn-danger')]
+  [Arguments]  ${username}  ${TENDER_UAID}
+  Перейти на сторінку тендера за потреби   ${username}
+  Wait and Click    xpath=//button[contains(@class, 'btn-sm btn-danger')]
   sleep  5
 
 Оновити сторінку з тендером
-  [Arguments]  @{ARGUMENTS}
-  [Documentation]
-  ...      ${ARGUMENTS[0]} =  username
-  ...      ${ARGUMENTS[1]} =  ${TENDER_UAID}
-  #etender.Пошук тендера по ідентифікатору    ${ARGUMENTS[0]}   ${ARGUMENTS[1]}
+  [Arguments]  ${username}  ${TENDER_UAID}
   Reload Page
 
 Оновити сторінку з планом
@@ -738,8 +731,7 @@ add feature
 
 Створити вимогу про виправлення умов
   [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${target}  ${file}  ${award_index}=0
-  etender.Пошук тендера по ідентифікатору   ${username}   ${tender_uaid}
-  sleep  5
+  Перейти на сторінку тендера за потреби   ${username}
   ${complaintID}=  Створити чернетку вимоги  ${username}  ${tender_uaid}  ${claim}  ${target}  ${award_index}
   Завантажити док  ${username}  ${file} id=addClaimDoc
   Відкрити розділ вимог і скарг
@@ -775,8 +767,7 @@ add feature
 
 Скасувати вимогу
   [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}
-  etender.Пошук тендера по ідентифікатору   ${username}   ${tender_uaid}
-  Sleep  5
+  Перейти на сторінку тендера за потреби   ${username}
   Відкрити розділ вимог і скарг
   Click Element  xpath=//div[@id='${complaintID}']//*[@name='CancelComplaint']
   Wait and Input    id=cancellationReason      ${cancellation_data.data.cancellationReason}
@@ -1490,6 +1481,7 @@ Check Is Element Loaded
 Отримати інформацію із запитання
   [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field}
   Reload Page
+  Дочекатись зникнення blockUI
   ${question_locator}=  Set Variable  xpath=//div[@id="questionBlock" and contains(.,"${question_id}")]
   log  ${question_locator}
   Відкрити розділ запитань
