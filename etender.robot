@@ -176,8 +176,7 @@ Login
 
   ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
   log to console  check presence of procurementMethodType in dictionary: ${status}
-  ${methodType}=  Run Keyword IF  '${status}' != 'PASS'  Set Variable  belowThreshold
-  ...             ELSE  Set Variable  ${methodType}
+  Run Keyword IF  '${status}' != 'PASS'   ${methodType}=  Set Variable  belowThreshold
   Set To Dictionary  ${USERS.users['${username}']}  method_type=${methodType}
 
   Click Element         id=qa_myTenders  # Мої закупівлі
@@ -430,8 +429,6 @@ add feature
   ${unit}=               Get From Dictionary  ${item.unit}              name
   ${cpv}=                Get From Dictionary  ${item.classification}    id
   log  ${item}
-  ${dkpp_desc}=          Get From Dictionary  ${item.additionalClassifications[0]}  description
-  ${dkpp_id}=            Get From Dictionary  ${item.additionalClassifications[0]}  id
   ${deliveryDateStart}=  Get From Dictionary  ${item.deliveryDate}      startDate
   ${deliveryDateEnd}=    Get From Dictionary  ${item.deliveryDate}      endDate
   ${deliveryDateStart}=  convert_date_to_etender_format  ${deliveryDateStart}
@@ -1363,15 +1360,15 @@ Check Is Element Loaded
 
 Отримати посилання на аукціон для глядача
   [Arguments]  ${username}  ${tender_uaid}
-  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
-  Sleep  60
+  Reload Page
+  Відкрити розділ Деталі Закупівлі
   Page Should Contain Element  xpath=//a[contains(.,"Подивитись процедуру проведення аукціону")]
   Sleep  3
   Run Keyword And Return  Get Element Attribute  xpath=//a[contains(.,"Подивитись процедуру проведення аукціону")]@href
 
 Отримати посилання на аукціон для учасника
   [Arguments]  ${username}  ${tender_uaid}
-  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Reload Page
   Відкрити розділ Деталі Закупівлі
   Page Should Contain Element  xpath=//a[@id='participationUrl_0']
   Sleep  3
@@ -1478,11 +1475,11 @@ Check Is Element Loaded
   [Arguments]  ${username}  ${tender_uaid}  ${question_id}  ${field}
   Reload Page
   Дочекатись зникнення blockUI
-  ${question_locator}=  Set Variable  xpath=//div[@id="questionBlock" and contains(.,"${question_id}")]
+  ${question_locator}=  Set Variable  xpath=//div[@name="questionBlock" and contains(.,"${question_id}")]
   log  ${question_locator}
   Відкрити розділ запитань
   Wait Until Element Is Visible  ${question_locator}  10
-  Run Keyword And Return   Get Text  ${question_locator}//*[@id="question_${field}"]
+  Run Keyword And Return   Get Text  ${question_locator}//*[@name="question_${field}"]
 
 Конвертувати інформацію із запитання про title
   [Arguments]  ${return_value}
@@ -1573,8 +1570,9 @@ Check Is Element Loaded
 Отримати інформацію із нецінового показника
   [Arguments]  ${username}  ${tender_uaid}  ${object_id}  ${field_name}
   Reload Page
-  Run Keyword And Ignore Error  Wait Scroll Click   xpath=//div[contains(@ng-if,"lot.items") and contains(@id,"tree")]//span[@data-toggle="collapse"]/span[contains(.,"критерії оцінки")]  # open Нецінові (якісні) критерії оцінки section to make its text visible
-  Sleep  2
+  Дочекатись зникнення blockUI
+  Run Keyword And Ignore Error  Wait Scroll Click   xpath=//tr[.//span[contains(.,'${object_id}')]]//span[@data-toggle="collapse"]
+  Capture Page Screenshot
   Run Keyword And Return  Отримати інформацію із нецінового показника про ${field_name}  ${object_id}
 
 Отримати інформацію із нецінового показника про title
