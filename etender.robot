@@ -118,7 +118,7 @@ ${tenderpage}
   Set Window Size  @{USERS.users['${username}'].size}
   Set Window Position  @{USERS.users['${username}'].position}
   Run Keyword If  '${username}' != 'Etender_Viewer'  Login  ${username}
-  Дочекатись зникнення blockUI  15
+  Дочекатись зникнення blockUI
 
 Wait Scroll Click
   [Arguments]  ${locator}  ${timeout}=5
@@ -144,8 +144,8 @@ Wait and Input
   Input text  ${locator}  ${data}
 
 Дочекатись зникнення blockUI
-  [Arguments]  ${timeout}=5
-  Wait Until Page Does Not Contain Element  xpath=//div[@class='blockUI blockOverlay']  ${timeout}
+  [Arguments]
+  Wait Until Keyword Succeeds  15x  0s  Wait Until Page Does Not Contain Element  xpath=//div[@class='blockUI blockOverlay']  2
 
 Підготувати дані для оголошення тендера
   [Arguments]  ${username}  ${tender_data}  ${username_2}
@@ -153,16 +153,17 @@ Wait and Input
   Log  ${tender_data}
   Log  ${username}
   Log  ${username_2}
-  [return]  ${tender_data}
+  [Return]  ${tender_data}
 
 Login
   [Arguments]  ${username}
   Wait and Click   id=login     15
   Wait and Input   id=inputUsername     ${USERS.users['${username}'].login}     15
   Wait and Input   id=inputPassword     ${USERS.users['${username}'].password}  15
+  Дочекатись зникнення blockUI
   Wait and Click   id=btn_submit
   Go To  ${USERS.users['${username}'].homepage}
-  Дочекатись зникнення blockUI  15
+  Дочекатись зникнення blockUI
 
 Створити тендер
   [Arguments]  ${username}  ${tender_data}
@@ -178,7 +179,7 @@ Login
   log to console  check presence of procurementMethodType in dictionary: ${status}
   Run Keyword IF  '${status}' != 'PASS'   ${methodType}=  Set Variable  belowThreshold
   Set To Dictionary  ${USERS.users['${username}']}  method_type=${methodType}
-
+  Log  ${items[0]}
   Click Element         id=qa_myTenders  # Мої закупівлі
   Дочекатись зникнення blockUI
   Wait and Click        xpath=//a[@data-target='#procedureType']
@@ -187,38 +188,68 @@ Login
   Wait and Click        id=goToCreate
   Дочекатись зникнення blockUI
 
+  Input text    id=title    ${title}
+  Input text    id=description            ${description}
+  Run Keyword If    '${methodType}' == 'aboveThresholdEU'   Input text    id=titleEN    ${title_en}
+  Wait Scroll Click     id=valueAddedTaxIncluded
+
   ${status}  ${lots}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  lots
+  Log  ${lots[0]}
   log to console  presence of lots: ${status}
   ${lots_count}=  Run Keyword IF  '${status}' != 'PASS'  Set Variable  0
   ...             ELSE  Get Length  ${lots}
+  Run Keyword If  ${lots_count}>0  Run Keywords  Wait Scroll Click  id=isMultilots  AND  Додати лоти і їх предмети  ${lots_count}  ${lots}  ${items}
+  ...           ELSE  Run Keywords  Додати мінімальний крок при наявності  ${tender_data}  AND  Input text  id=lotValue_0  ${budgetToStr}  AND  Додати предмети  ${items}  0
 
-  Input text    id=title    ${title}
-  Run Keyword If    '${methodType}' == 'aboveThresholdEU'   Input text    id=titleEN    ${title_en}
-  Input text    id=description            ${description}
   Додати причину з описом при наявності  ${tender_data}
 
-  Додати лот при наявності і внести значення  ${lots_count}  ${lots}
+  Додати дати при наявності    ${tender_data}  ${methodType}
 
   Додати нецінові показники при наявності       ${tender_data}
-  Додати дати при наявності    ${tender_data}  ${methodType}
-  Input text    id=lotValue_0        ${budgetToStr}
-  Wait Scroll Click     id=valueAddedTaxIncluded
-  Додати мінімальний крок при наявності  ${tender_data}
-  Додати предмети  ${methodType}  ${items}
   Wait Scroll Click     id=createTender
   Sleep   60
   Reload Page
   Wait Until Keyword Succeeds        10 min  30 sec  Дочекатися завершення обробки тендера
   Run Keyword And Return  Get Text  ${locator.tenderId}
 
-Додати лот при наявності і внести значення
-  [Arguments]  ${lots_count}  ${lots}
-  Return From Keyword If  '${lots_count}' == '0'
-  ${title}=         Get From Dictionary  ${lots[0]}  title
-  ${description}=   Get From Dictionary  ${lots[0]}  description
-  Click Element     id=isMultilots
-  Wait and Input    id=lotTitle_0   ${title}
-  Wait and Input    id=lotDescription_0  ${description}
+Додати лоти і їх предмети
+  [Arguments]  ${lots_count}  ${lots}  ${items}
+  Log  ${lots[0]}
+  ${items_count}=   Get Length  ${items}
+  :FOR  ${i}  IN RANGE  ${lots_count}-1
+  \     Натиснути додати лот
+  :FOR  ${i}  IN RANGE  ${lots_count}
+  \     Заповнити інформацію про лот  ${lots[${i}]}  ${i}
+  \     Додати предмети  ${items}  ${i}  ${lots[${i}].id}
+
+Натиснути додати лот
+  Wait and Click    id=addLot_
+
+Заповнити інформацію про лот
+  [Arguments]  ${lot}  ${index}
+  Wait and Input    id=lotTitle_${index}        ${lot['title']}
+  Input Text        id=lotDescription_${index}  ${lot['description']}
+  Input String      id=lotValue_${index}        ${lot['value']['amount']}
+  Input String      id=minimalStep_${index}     ${lot['minimalStep']['amount']}
+
+Створити лот із предметом закупівлі
+  [Arguments]  ${username}  ${tender_uaid}  ${lot}  ${item}
+  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Дочекатись зникнення blockUI
+  Перейти до редагування тендера
+  Натиснути додати лот
+  ${lots_count}=  Get Length  ${USERS.users['${username}'].initial_data.data['lots']}
+  Заповнити інформацію про лот  ${lot.data}  ${lots_count}
+  Додати предмет  ${item}  0  ${lots_count}  # len is 1 more than index
+  Зберегти зміни в тендері
+
+Додати предмет закупівлі в лот
+  [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${item}
+  Log   ${USERS.users['${username}'].lot_data}
+  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Дочекатись зникнення blockUI
+  Перейти до редагування тендера
+
 
 Додати нецінові показники при наявності
   [Arguments]  ${tender_data}
@@ -316,27 +347,27 @@ add feature
   Run Keyword And Return    Get Text  id=planId_0
 
 Опрацювати дотаткові класифікації
-  [Arguments]  ${additionalClassifications}  ${index}
+  [Arguments]  ${additionalClassifications}  ${index}  ${lot_index}
   # TODO: Обробляти випадок коли є більше однієї додаткової класифікації
   ${scheme}=  Get From Dictionary  ${additionalClassifications[0]}  scheme
-  Run Keyword If  '${scheme}' in ('INN','ДКПП')  Вказати ${scheme} дотаткову класифікацію  ${additionalClassifications[0]}  ${index}
-  ...         ELSE  Вказати дотаткову класифікацію  ${additionalClassifications[0]}  ${index}  ${scheme}
+  Run Keyword If  '${scheme}' in ('INN','ДКПП')  Вказати ${scheme} дотаткову класифікацію  ${additionalClassifications[0]}  ${index}  ${lot_index}
+  ...         ELSE  Вказати дотаткову класифікацію  ${additionalClassifications[0]}  ${index}  ${lot_index}  ${scheme}
   Дочекатись зникнення blockUI
 
 Вказати INN дотаткову класифікацію
-  [Arguments]  ${additionalClassification}  ${index}
+  [Arguments]  ${additionalClassification}  ${index}  ${lot_index}
   ${description}=  Get From Dictionary  ${additionalClassification}  description
-  Wait and Click    xpath=//input[@id='openAddClassificationInnModal0${index}']
-  Wait and Input    xpath=//div[@id="addClassificationInn_0_${index}" and contains(@class,"top")]//input  ${description}
+  Wait Scroll Click     xpath=//input[@id='openAddClassificationInnModal${lot_index}${index}']
+  Wait and Input    xpath=//div[@id="addClassificationInn_${lot_index}_${index}" and contains(@class,"top")]//input  ${description}
   Дочекатись зникнення blockUI
   Wait and Click    xpath=//td[contains(., '${description}')]
-  Wait and Click    xpath=//div[@id="addClassificationInn_0_${index}" and contains(@class,"top")]//button[@id="addClassification_choose"]
+  Wait and Click    xpath=//div[@id="addClassificationInn_${lot_index}_${index}" and contains(@class,"top")]//button[@id="addClassification_choose"]
 
 Вказати дотаткову класифікацію
-  [Arguments]  ${additionalClassification}  ${index}  ${scheme}
+  [Arguments]  ${additionalClassification}  ${index}  ${lot_index}  ${scheme}
   [Documentation]  Works same for all DK0** schemes
   ${description}=   Get From Dictionary  ${additionalClassification}  description
-  Wait and Click    id=openAddClassificationModal0${index}0
+  Wait and Click    id=openAddClassificationModal${lot_index}${index}0
   Wait and Select By Label  xpath=//div[@id="addClassification" and contains(@class,"modal")]//select[@name="dkScheme"]  ${scheme}
   Wait and Input    xpath=//div[@id="addClassification" and contains(@class,"modal")]//input  ${description}
   Дочекатись зникнення blockUI
@@ -344,7 +375,7 @@ add feature
   Wait and Click    xpath=//div[@id="addClassification" and contains(@class,"modal")]//*[@id="addClassification_choose"]
 
 Вказати ДКПП дотаткову класифікацію
-  [Arguments]  ${additionalClassification}  ${index}
+  [Arguments]  ${additionalClassification}  ${index}  @{arguments}
   log  Це щось старе, і його мають прибрати. Не буду нічого тут робити!  WARN
 
 Дочекатися завершення обробки тендера
@@ -416,40 +447,46 @@ add feature
   Завантажити док  ${username}  ${file}  id=tend_doc_add
 
 Додати предмети
-  [Arguments]  ${methodType}  ${items}
+  [Arguments]  ${items}  ${lot_index}  ${lot_id}
   ${items_count}=  Get Length  ${items}
-  :FOR  ${i}  IN RANGE  ${items_count}
-  \     Додати предмет  ${methodType}  ${items[${i}]}  ${i}
+  :FOR  ${j}  IN RANGE  ${items_count}-1
+  \     Wait Scroll Click  id=addLotItem_${lot_index}
+  :FOR  ${j}  IN RANGE  ${items_count}
+  \     Run Keyword If  '${lot_id}'=='${items[${j}].relatedLot}'  Додати предмет  ${items[${j}]}  ${j}  ${lot_index}
+
 
 Додати предмет
-  [Arguments]  ${methodType}  ${item}  ${index}
-  ${items_description}=  Get From Dictionary  ${item}                   description
-  ${items_descriptionEN}=  Get From Dictionary  ${item}                 description_en
-  ${quantity}=           set Variable   ${item.quantity}
-  ${unit}=               Get From Dictionary  ${item.unit}              name
-  ${cpv}=                Get From Dictionary  ${item.classification}    id
+  [Arguments]  ${item}  ${index}  ${lot_index}
+  ${items_description}=  Get From Dictionary    ${item}                     description
+  ${items_descriptionEN}=  Get From Dictionary  ${item}                     description_en
+  ${quantity}=           set Variable           ${item.quantity}
+  ${unit}=               Get From Dictionary    ${item.unit}                name
+  ${cpv}=                Get From Dictionary    ${item.classification}      id
   log  ${item}
-  ${deliveryDateStart}=  Get From Dictionary  ${item.deliveryDate}      startDate
-  ${deliveryDateEnd}=    Get From Dictionary  ${item.deliveryDate}      endDate
+  ${deliveryDateStart}=  Get From Dictionary    ${item.deliveryDate}        startDate
+  ${deliveryDateEnd}=    Get From Dictionary    ${item.deliveryDate}        endDate
   ${deliveryDateStart}=  convert_date_to_etender_format  ${deliveryDateStart}
   ${deliveryDateEnd}=    convert_date_to_etender_format  ${deliveryDateEnd}
-  ${latitude}=           Get From Dictionary  ${item.deliveryLocation}  latitude
-  ${longitude}=          Get From Dictionary  ${item.deliveryLocation}  longitude
-  ${region}=             Get From Dictionary  ${item.deliveryAddress}   region
-  ${locality}=           Get From Dictionary  ${item.deliveryAddress}   locality
+  ${latitude}=           Get From Dictionary    ${item.deliveryLocation}    latitude
+  ${longitude}=          Get From Dictionary    ${item.deliveryLocation}    longitude
+  ${region}=             Get From Dictionary    ${item.deliveryAddress}     region
+  ${locality}=           Get From Dictionary    ${item.deliveryAddress}     locality
   ${locality}=           convert_common_string_to_etender_string  ${locality}
   ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
   ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
 
-  Run Keyword If    '${index}' != '0'  Click Element  id=addLotItem_0
-  Wait and Input    id=itemsDescription0${index}      ${items_description}
-  Run Keyword If    '${methodType}' == 'aboveThresholdEU'  Wait and Input    id=itemsDescriptionEN0${index}      ${items_descriptionEN}
-  Wait and Input    id=itemsQuantity0${index}         ${quantity}
-  Wait and Click    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
-  Wait and Input    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]  ${unit}
+  Wait and Input    id=itemsDescription${lot_index}${index}      ${items_description}
+  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${items_descriptionEN}
+
+  Wait and Input    id=itemsQuantity${lot_index}${index}         ${quantity}
+  Wait and Click    xpath=//unit[@id="itemsUnit${lot_index}${index}"]//input[@type="search"]
+  #Wait and Click    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
+  ${items_count}=   Get Matching Xpath Count   xpath=//div[contains(@ng-model,"unit.selected")]//input[@type="search"]
+  #${items_count}=   Get Length  ${items_count}
+  Wait and Input    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${items_count}]  ${unit}
   Wait and Click    xpath=//div[contains(@class,"selectize-dropdown") and contains(@repeat,"unit")]//div[@role="option" and contains(@class,"active")]
 
-  Wait Scroll Click     id=openClassificationModal0${index}
+  Wait Scroll Click     id=openClassificationModal${lot_index}${index}
   Sleep  2
   Wait and Input    id=classificationCode  ${cpv}
   Дочекатись зникнення blockUI
@@ -459,22 +496,19 @@ add feature
 
   ${status}  ${value}=  Run Keyword And Ignore Error  Get From Dictionary  ${item}  additionalClassifications
   log to console    Attempt to get 1st additonal classification scheme: ${status}
-  Run Keyword If    '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}
-  Wait and Input    id=delStartDate0${index}        ${deliveryDateStart}
-  Wait and Input    id=delEndDate0${index}          ${deliveryDateEnd}
-  Wait and Select By Label  id=region_0${index}  ${region}
-  Run Keyword If  '${region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_0${index}"]  ${locality}
-  Wait and Input    id=street_0${index}   ${streetAddress}
-  Wait and Input    id=postIndex_0${index}    ${postalCode}
+  Run Keyword If    '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}  ${lot_index}
+  Wait and Input    id=delStartDate${lot_index}${index}        ${deliveryDateStart}
+  Wait and Input    id=delEndDate${lot_index}${index}          ${deliveryDateEnd}
+  Wait and Select By Label  id=region_${lot_index}${index}  ${region}
+  Run Keyword If  '${region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_${lot_index}${index}"]  ${locality}
+  Wait and Input    id=street_${lot_index}${index}   ${streetAddress}
+  Wait and Input    id=postIndex_${lot_index}${index}    ${postalCode}
 
 Додати неціновий показник на предмет
   [Arguments]  ${username}  ${tender_uaid}  ${feature_data}  ${object_id}
   Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
   Перейти до редагування тендера
-  ${feature_of}=  Get From Dictionary  ${feature_data}  featureOf
-  Run Keyword If  '${feature_of}' == 'lot'       add feature  lot     ${feature_data}  1
-  Run Keyword If  '${feature_of}' == 'tenderer'  add feature  tender  ${feature_data}  1
-  Run Keyword If  '${feature_of}' == 'item'      add feature  item    ${feature_data}  1
+  add feature   ${feature_data}  1
   Зберегти зміни в тендері
   Run Keyword And Ignore Error  Click Element  xpath=//div[@id="SignModal" and //div[contains(@class,"modal-dialog")]//div[contains(.,"будь ласка, перевірте статус")]]//button[.="Закрити"]  #close info dialog, if present
 
@@ -482,7 +516,7 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}  ${feature_data}  ${object_id}
   Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
   Перейти до редагування тендера
-  add feature lot     ${feature_data}  1
+  add feature   ${feature_data}  1
   Зберегти зміни в тендері
   Run Keyword And Ignore Error  Click Element  xpath=//div[@id="SignModal" and //div[contains(@class,"modal-dialog")]//div[contains(.,"будь ласка, перевірте статус")]]//button[.="Закрити"]  #close info dialog, if present
 
