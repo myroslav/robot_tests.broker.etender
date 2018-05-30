@@ -177,7 +177,7 @@ Login
 
   ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
   log to console  check presence of procurementMethodType in dictionary: ${status}
-  Run Keyword IF  '${status}' != 'PASS'   ${methodType}=  Set Variable  belowThreshold
+  ${methodType}=  Set Variable IF  '${status}' != 'PASS'       belowThreshold  ${methodType}
   Set To Dictionary  ${USERS.users['${username}']}  method_type=${methodType}
   Log  ${items[0]}
   Click Element         id=qa_myTenders  # Мої закупівлі
@@ -288,6 +288,15 @@ Login
   Input text  id=enquiryPeriod          ${data.enquiryEnd.date}
   Input text  id=enquiryPeriod_time     ${data.enquiryEnd.time}
 
+Додати неціновий показник на тендер
+  [Arguments]  ${username}  ${tender_uaid}  ${feature}
+  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Дочекатись зникнення blockUI
+  Перейти до редагування тендера
+  ${feature_index}=  Get Matching Xpath Count  xpath=//add-features[@feature-sector="'tender'"]//div[@ng-repeat="(fIndex, feature) in data"]
+  add feature  ${feature}  ${feature_index}
+  Зберегти зміни в тендері
+
 add feature
   [Arguments]  ${feature}  ${feature_index}
   ${target}=        Set Variable    ${feature['featureOf'].replace('tenderer', 'tender')}  #strange name from prozorro
@@ -298,7 +307,7 @@ add feature
   Wait and Input        xpath=//input[@name="feature-${target}${feature_index}"]  ${feature['title']}
   Wait and Input        xpath=//input[@name="feature-${target}${feature_index}"]/parent::td/following-sibling::td/input[@type="text"]  ${feature['description']}
   :FOR  ${i}  IN RANGE  ${number_of_options}-2  # 2 already exist
-  \     Wait Scroll Click   xpath=//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="addFeatureOption(feature)"]
+  \     Wait Scroll Click   xpath=(//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="addFeatureOption(feature)"])[${feature_index}+1]
 
   :FOR  ${i}  IN RANGE  ${number_of_options}
   \     ${opt_title}=   Get From Dictionary     ${feature.enum[${i}]}  title
@@ -524,21 +533,27 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}  ${feature_id}
   Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
   Перейти до редагування тендера
-  Пройти по цінових показниках лотів і видалити за потреби   ${feature_id}
-  Пройти по цінових показниках предметів і видалити за потреби  ${feature_id}
-  Зберегти зміни в тендері
-  Run Keyword And Ignore Error  Click Element  xpath=//div[@id="SignModal" and //div[contains(@class,"modal-dialog")]//div[contains(.,"будь ласка, перевірте статус")]]//button[.="Закрити"]  #close info dialog, if present
-
-Пройти по цінових показниках лотів і видалити за потреби
-  [Arguments]  ${feature_id}
-  ${features}=  Get WebElements  xpath=//input[contains(@name,"feature-lot") and @ng-model="feature.title"]
-  ${features_count}=  Get Length  ${features}
+  ${features}=          Set Variable    ${USERS.users['${username}'].feature_data.feature}
+  #${features_count}=    Get Length      ${features}
+  Видалити вказаний неціновий показник  ${features['featureOf']}  ${feature_id}
   :FOR  ${i}  IN RANGE  ${features_count}
-  \     ${feature_title}=  Get Value  xpath=//input[@name="feature-lot${i}"]
+  \     Log  ${features[${i}]}
+  \     Run Keyword If  '${feature_id}' in '${features[${i}].title}'  Видалити вказаний неціновий показник  ${features[${i}]['featureOf']}  ${feature_id}
+#  Пройти по цінових показниках лотів і видалити за потреби   ${feature_id}
+#  Пройти по цінових показниках предметів і видалити за потреби  ${feature_id}
+  Зберегти зміни в тендері
+
+Видалити вказаний неціновий показник
+  [Arguments]  ${target}  ${feature_id}
+  ${features_count}=  Get Get Matching Xpath Count  xpath=//input[contains(@name,"feature-${target}") and @ng-model="feature.title"]
+  :FOR  ${i}  IN RANGE  ${features_count}
+  \     ${feature_title}=  Get Value  xpath=//input[@name="feature-${target}${i}"]
   \     ${contains}=  Evaluate   "${feature_id}" in """${feature_title}"""
   \     ${target_feature_index}=  Run Keyword If  '${contains}' == 'True'  Set Variable  ${i}
   Return From Keyword If  '${target_feature_index}' == 'None'
-  Видалити вказаний неціновий показник з лоту  ${target_feature_index}  # delete feature
+  Wait Scroll Click     xpath//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="removeFeature($index)"][${target_feature_index}+1]
+
+
 # TODO merge ↕
 Пройти по цінових показниках предметів і видалити за потреби
   [Arguments]  ${feature_id}
@@ -553,11 +568,11 @@ add feature
 
 Видалити вказаний неціновий показник з предмету
   [Arguments]  ${feature_index}
-  Wait Scroll Click     xpath//add-features[contains(@feature-sector,"item")]//button[@ng-click="removeFeature($index)"][${feature_index}+1]
+  Wait Scroll Click     xpath//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="removeFeature($index)"][${feature_index}+1]
 
 Видалити вказаний неціновий показник з лоту
   [Arguments]  ${feature_index}
-  Wait Scroll Click     xpath=//add-features[contains(@feature-sector,"lot")]//button[@ng-click="removeFeature($index)"][${feature_index}+1]
+  Wait Scroll Click     xpath=//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="removeFeature($index)"][${feature_index}+1]
 
 Клацнути і дочекатися
   [Arguments]  ${tender_link}
@@ -760,7 +775,7 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${target}  ${file}  ${award_index}=0
   Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
   ${complaintID}=  Створити чернетку вимоги  ${username}  ${tender_uaid}  ${claim}  ${target}  ${award_index}
-  Завантажити док  ${username}  ${file} id=addClaimDoc
+  Завантажити док  ${username}  ${file}  id=addClaimDoc
   Відкрити розділ вимог і скарг
   Click Element     xpath=//button[contains(.,'Опублікувати вимогу')]
   [Return]  ${complaintID}
@@ -1436,7 +1451,7 @@ Check Is Element Loaded
 Отримати інформацію із предмету про description
   [Arguments]  ${item_id}
   Wait Scroll Click     id=openAllLots
-  ${locator}=   Set Variable    xpath=//tender-subject-info[@lot="lot"][.//p[contains(.,'${item_id}')]]//div[contains(.,'Позиції')]
+  ${locator}=   Set Variable    xpath=//div[contains(@id,"tree" )][.//p[contains(.,'${item_id}')]]//div[.//div[contains(text(),'Позиції')]]
   Wait Until Element Is Visible     ${locator}
   ${expanded}=  Get Element Attribute       ${locator}@aria-expanded
   Run Keyword Unless  '${expanded}'=='true'     Click Element     ${locator}
