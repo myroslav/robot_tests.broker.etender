@@ -596,6 +596,7 @@ add feature
   #Дочекатись зникнення blockUI
   Wait Until Page Contains    ${tender_uaid}   10
   ${tenderpage}=    Get Location
+  Log  ${tenderpage}  WARN
   Set To Dictionary     ${USERS.users['${username}']}   tenderpage=${tenderpage.split('?')[0]}
 
 Тимчасовий Пошук тендера по ідентифікатору для Viewer
@@ -606,6 +607,7 @@ add feature
   #Дочекатись зникнення blockUI
   Wait Until Page Contains    ${tender_uaid}   10
   ${tenderpage}=    Get Location
+  Log  ${tenderpage}  WARN
   Set To Dictionary     ${USERS.users['${username}']}   tenderpage=${tenderpage.split('?')[0]}
 
 Перейти на сторінку тендера за потреби
@@ -784,6 +786,7 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${target}  ${award_index}=-1
   Відкрити розділ вимог і скарг
   Wait Scroll Click     id=addClaim
+  Sleep  1
   Wait and Input        id=title            ${claim.data.title}
   Input Text            id=description      ${claim.data.description}
   ${award_index}=   Evaluate            ${award_index}+${1}
@@ -812,6 +815,7 @@ add feature
   Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
   Відкрити розділ вимог і скарг
   Click Element  xpath=//div[@id='${complaintID}']//*[@name='CancelComplaint']
+  Sleep  1  # wait for full input
   Wait and Input    id=cancellationReason      ${cancellation_data.data.cancellationReason}
   Click Element     id=btnCancelComplaint
   Sleep  5
