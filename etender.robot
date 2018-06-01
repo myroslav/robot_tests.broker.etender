@@ -1455,7 +1455,7 @@ Check Is Element Loaded
 Отримати інформацію із предмету про description
   [Arguments]  ${item_id}
   Wait Scroll Click     id=openAllLots
-  ${locator}=   Set Variable    xpath=//div[contains(@id,"tree" )][.//p[contains(.,'${item_id}')]]//div[.//div[contains(text(),'Позиції')]]
+  ${locator}=   Set Variable    xpath=//div[contains(@id,"tree" )][.//p[contains(.,'${item_id}')]]//div[contains(text(),'Позиції')]//..
   Wait Until Element Is Visible     ${locator}
   ${expanded}=  Get Element Attribute       ${locator}@aria-expanded
   Run Keyword Unless  '${expanded}'=='true'     Click Element     ${locator}
