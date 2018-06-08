@@ -1031,6 +1031,14 @@ Check Is Element Loaded
   ${return_value}=   Get Text  ${locator.${fieldname}}
   [return]  ${return_value}
 
+Отримати інформацію про procurementMethodType
+  ${methodType}=    Get Text   id=procedureType
+  Run Keyword And Return  get_method_type  ${methodType.lower()}
+
+Отримати інформацію про complaintPeriod.endDate
+  ${complaintperiod}=       Get Text    id=complaintPeriodEnd
+  Run Keyword And Return    convert_etender_date_to_iso_format    ${complaintperiod}
+
 Отримати інформацію про title
   ${return_value}=   Отримати текст із поля і показати на сторінці   title
   [return]  ${return_value}
@@ -1409,6 +1417,7 @@ Check Is Element Loaded
 Отримати інформацію про awards[0].documents[0].title
   Відкрити розділ Деталі Закупівлі
   Wait and Click    xpath=//label[@for="showAwards00"]
+  Sleep  1
   Run Keyword And Return  Get Text  xpath=//awards-info//td[contains(@class,"doc-name")]//a
 
 Отримати посилання на аукціон для глядача

@@ -28,8 +28,18 @@ def get_procedure_type(methodType):
         'aboveThresholdUA': 'Відкриті торги',
         'belowThreshold': 'Допорогові закупівлі',
         'negotiation': 'Переговорна процедура',
-        'aboveThresholdEU': 'Відкриті торги з публікацією англійською мовою'
+        'aboveThresholdEU': 'Відкриті торги з публікацією англійською мовою',
+        'aboveThresholdUA.defense': 'Переговорна процедура для потреб оборони'
     }[methodType].decode('utf-8')
+
+def get_method_type(procedure_name):
+    return {
+        u'переговорна процедура для потреб оборони': 'aboveThresholdUA.defense',
+        u'допорогові закупівлі': 'belowThreshold',
+        u'відкриті торги з публікацією англійською мовою': 'aboveThresholdEU',
+        u'переговорна процедура': 'negotiation',
+        u'відкриті торги': 'aboveThresholdUA'
+    }[procedure_name]
 
 def parse_etender_date(date):
     # converts date from ui to datetime
