@@ -38,7 +38,8 @@ def get_method_type(procedure_name):
         u'допорогові закупівлі': 'belowThreshold',
         u'відкриті торги з публікацією англійською мовою': 'aboveThresholdEU',
         u'переговорна процедура': 'negotiation',
-        u'відкриті торги': 'aboveThresholdUA'
+        u'відкриті торги': 'aboveThresholdUA',
+        u'конкурентний діалог 1-ий етап': 'competitiveDialogueUA'
     }[procedure_name]
 
 def parse_etender_date(date):

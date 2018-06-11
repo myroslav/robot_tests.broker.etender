@@ -780,6 +780,7 @@ add feature
   Завантажити док  ${username}  ${file}  id=addClaimDoc
   Відкрити розділ вимог і скарг
   Click Element     xpath=//button[contains(.,'Опублікувати вимогу')]
+  Sleep  15
   [Return]  ${complaintID}
 
 Створити чернетку вимоги
