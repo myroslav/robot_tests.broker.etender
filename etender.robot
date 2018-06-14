@@ -249,6 +249,7 @@ Login
   Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
   Дочекатись зникнення blockUI
   Перейти до редагування тендера
+  Додати предмет
 
 
 Додати нецінові показники при наявності
@@ -456,11 +457,14 @@ add feature
   Завантажити док  ${username}  ${file}  id=tend_doc_add
 
 Додати предмети
-  [Arguments]  ${items}  ${lot_index}  ${lot_id}
+  [Arguments]  ${items}  ${lot_index}  ${lot_id}=
   ${items_count}=  Get Length  ${items}
   :FOR  ${j}  IN RANGE  ${items_count}-1
   \     Wait Scroll Click  id=addLotItem_${lot_index}
   :FOR  ${j}  IN RANGE  ${items_count}
+  \     ${status}  ${relatedLot}    Run Keyword And Ignore Error  Get From Dictionary  ${items[${j}]}  relatedLot
+  \     Run Keyword If  '${status}'=='FAIL'  Додати предмет  ${items[${j}]}  ${j}  ${lot_index}         # This behaviour is needed to add only items of new lot
+  \     Continue For Loop If    '${status}'=='FAIL'
   \     Run Keyword If  '${lot_id}'=='${items[${j}].relatedLot}'  Додати предмет  ${items[${j}]}  ${j}  ${lot_index}
 
 
@@ -545,7 +549,7 @@ add feature
 
 Видалити вказаний неціновий показник
   [Arguments]  ${target}  ${feature_id}
-  ${features_count}=  Get Get Matching Xpath Count  xpath=//input[contains(@name,"feature-${target}") and @ng-model="feature.title"]
+  ${features_count}=  Get Matching Xpath Count  xpath=//input[contains(@name,"feature-${target}") and @ng-model="feature.title"]
   :FOR  ${i}  IN RANGE  ${features_count}
   \     ${feature_title}=  Get Value  xpath=//input[@name="feature-${target}${i}"]
   \     ${contains}=  Evaluate   "${feature_id}" in """${feature_title}"""
