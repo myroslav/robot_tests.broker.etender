@@ -204,7 +204,6 @@ Login
   Додати причину з описом при наявності  ${tender_data}
 
   Додати дати при наявності    ${tender_data}  ${methodType}
-
   Додати нецінові показники при наявності       ${tender_data}
   Wait Scroll Click     id=createTender
   Sleep   60
@@ -228,6 +227,7 @@ Login
 Заповнити інформацію про лот
   [Arguments]  ${lot}  ${index}
   Wait and Input    id=lotTitle_${index}        ${lot['title']}
+  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' in ('aboveThresholdEU', 'aboveThresholdUA.defense')  Input Text   id=lotTitleEn_${index}        ${lot['title_en']}
   Input Text        id=lotDescription_${index}  ${lot['description']}
   Input String      id=lotValue_${index}        ${lot['value']['amount']}
   Input String      id=minimalStep_${index}     ${lot['minimalStep']['amount']}
@@ -540,9 +540,9 @@ add feature
   ${features}=          Set Variable    ${USERS.users['${username}'].feature_data.feature}
   #${features_count}=    Get Length      ${features}
   Видалити вказаний неціновий показник  ${features['featureOf']}  ${feature_id}
-  :FOR  ${i}  IN RANGE  ${features_count}
-  \     Log  ${features[${i}]}
-  \     Run Keyword If  '${feature_id}' in '${features[${i}].title}'  Видалити вказаний неціновий показник  ${features[${i}]['featureOf']}  ${feature_id}
+#  :FOR  ${i}  IN RANGE  ${features_count}
+#  \     Log  ${features[${i}]}
+#  \     Run Keyword If  '${feature_id}' in '${features[${i}].title}'  Видалити вказаний неціновий показник  ${features[${i}]['featureOf']}  ${feature_id}
 #  Пройти по цінових показниках лотів і видалити за потреби   ${feature_id}
 #  Пройти по цінових показниках предметів і видалити за потреби  ${feature_id}
   Зберегти зміни в тендері
@@ -620,6 +620,7 @@ add feature
   ${tenderpage}=    Get From Dictionary     ${USERS.users['${username}']}   tenderpage
   Run Keyword If  '${currentpage}'!='${tenderpage}'  Go To  ${tenderpage}
   Wait Until Page Contains    ${tender_uaid}   10
+  Дочекатись зникнення blockUI
 
 Перейти на вкладку іншого типу процедур за потреби
   [Arguments]  ${username}
@@ -925,10 +926,11 @@ Select From List By Partial Label
   [Arguments]  ${username}  ${tender_uaid}  ${answer_data}  ${question_id}
   ${answer}=     Get From Dictionary  ${answer_data.data}  answer
   Reload Page
+  Дочекатись зникнення blockUI
   Відкрити розділ запитань
   Wait Scroll Click     id=addAnswer_0
-  Wait and Input        xpath=//*[@id="questionContainer"]/form/div/textarea            ${answer}
-  Wait Scroll Click     xpath=//*[@id="questionContainer"]/form/div/span/button[1]
+  Wait and Input        xpath=//*[@name="questionContainer"]/form/div/textarea            ${answer}
+  Wait Scroll Click     xpath=//*[@name="questionContainer"]/form/div/span/button[1]
   Sleep  5
 
 Відкрити розділ запитань
@@ -1041,7 +1043,7 @@ Check Is Element Loaded
   Run Keyword And Return  get_method_type  ${methodType.lower()}
 
 Отримати інформацію про complaintPeriod.endDate
-  ${complaintperiod}=       Get Text    id=complaintPeriodEnd
+  ${complaintperiod}=       Get Text    id=complaintPeriod
   Run Keyword And Return    convert_etender_date_to_iso_format    ${complaintperiod}
 
 Отримати інформацію про title
