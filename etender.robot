@@ -627,7 +627,6 @@ Field Value Is Not Empty
   [Arguments]  ${username}  ${tender_uaid}  ${fieldname}  ${fieldvalue}
   etender.Пошук лоту по ідентифікатору  ${username}  ${tender_uaid}
   Wait and Click  id=EditLot
-  Run Keyword If  '${fieldname}'=='auctionPeriod.startDate'  Розділити дату та заповнити поля  ${fieldvalue}
   Wait and Input  ${locator.${fieldname}}     ${fieldvalue}
   Зберегти зміни
   Дочекатись зникнення blockUI
@@ -701,6 +700,7 @@ Field Value Is Not Empty
   etender.Пошук лоту по ідентифікатору  ${username}  ${tender_uaid}
   Wait and Click    id=goToAuction_${auction_index}
   Wait and Click    id=EditAuction
+  Run Keyword If  '${fieldname}'=='auctionPeriod.startDate'  Розділити дату та заповнити поля  ${fieldvalue}
   Clear Element Text    ${locator_auction_${fieldname.replace('.','_'}}
   Input String      ${locator_auction_${fieldname.replace('.','_'}}  ${fieldvalue}
   Зберегти зміни
