@@ -701,6 +701,7 @@ Field Value Is Not Empty
   etender.Пошук лоту по ідентифікатору  ${username}  ${tender_uaid}
   Wait and Click    id=goToAuction_${auction_index}
   Wait and Click    id=EditAuction
+  Clear Element Text    ${locator_auction_${fieldname.replace('.','_'}}
   Input String      ${locator_auction_${fieldname.replace('.','_'}}  ${fieldvalue}
   Зберегти зміни
 
