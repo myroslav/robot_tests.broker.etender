@@ -21,15 +21,15 @@ def get_all_etender_dates(initial_tender_data, key, subkey=None):
     return dt.get(subkey) if subkey else dt
 
 def convert_iso8601Duration(duration):
-   if duration == u'P1M':
-    duration = u'P30D'
-   dayDuration = re.search('\d+D|$', duration).group()
-   if len(dayDuration) > 0:
-    dayDuration = dayDuration[:-1]
-   return dayDuration
+    if duration == u'P1M':
+        duration = u'P30D'
+    dayDuration = re.search('\d+D|$', duration).group()
+    if len(dayDuration) > 0:
+        dayDuration = dayDuration[:-1]
+    return dayDuration
 
 def get_etender_date_from_iso(isodate):
-    return dateutil.parser.parse(isodate).strftime('%d-%m-%Y')
+    return (dateutil.parser.parse(isodate).strftime('%d-%m-%Y'), dateutil.parser.parse(isodate).strftime('%H:%M'))
 
 def add_timezone_to_date(date_str):
     new_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
@@ -166,6 +166,7 @@ def get_helper_dictionary():
 
         u"Ілюстрації": u"illustration",
         u"Презентація": u"x_presentation",
+        u"Підстава для виключення об'єкту з переліку": u"cancellationDetails",
         u"Інформація про об'єкт малої приватизації": u"technicalSpecifications",
         u"Рішення про затвердження переліку об’єктів, що підлягають приватизації": u"notice",
         u"Інформація по оприлюдненню інформаційного повідомлення": u"informationDetails",
@@ -175,6 +176,17 @@ def get_helper_dictionary():
         u"Аукціон із зниженням стартової ціни": u"sellout.english",
         u"Аукціон за методом покрокового зниження стартової ціни та подальшого подання цінових пропозицій": u"sellout.insider"
     }
+
+def get_lot_document_name(type):
+    return {
+        u"notice": u"Рішення аукціонної комісії",
+        u"technicalSpecifications": u"Інформація про об'єкт малої приватизації",
+        u"illustration": u"Ілюстрації",
+        u"x_presentation": u"Презентація",
+        u"cancellationDetails": u"Підстава для виключення об'єкту з переліку",
+        u"x_dgfAssetFamiliarization": u"Час і місце проведення огляду об’єкта",
+        u"evaluationCriteria": u"Умови продажу та/або експлуатації об’єкта приватизації",
+        u"x_PlatformLegalDetails": u"Перелік та реквізити авторизованих електронних майданчиків"}[type]
 
 def convert_unit_name_to_unit_code(string):
     return {
