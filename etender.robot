@@ -701,6 +701,7 @@ Field Value Is Not Empty
   Wait and Click    id=goToAuction_${auction_index}
   Wait and Click    id=EditAuction
   Run Keyword If  '${fieldname}'=='auctionPeriod.startDate'  Розділити дату та заповнити поля  ${fieldvalue}
+  Run Keyword And Return If  '${fieldname}'=='auctionPeriod.startDate'  Зберегти зміни
   Clear Element Text    ${locator_auction_${fieldname.replace('.','_')}}
   Input String      ${locator_auction_${fieldname.replace('.','_')}}  ${fieldvalue}
   Зберегти зміни
