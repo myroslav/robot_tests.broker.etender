@@ -430,7 +430,6 @@ Field Value Is Not Empty
   Створити об'єкт активу  ${item}  ${index}
   Зберегти зміни
 
-
 Отримати кількість активів в об'єкті МП
   [Arguments]  ${username}  ${tender_uaid}
   Run Keyword And Return    Get Matching Xpath Count    xpath=//div[@ng-repeat="item in detailes.items"]
@@ -470,6 +469,18 @@ Field Value Is Not Empty
   Run Keyword Unless  '${region}'=='Київ'  Input Text    id=newCity${index}     ${item.address.locality}
   Input Text    id=addressStr${index}  ${item.address.streetAddress}
   Input Text    id=postIndex${index}   ${item.address.postalCode}
+  Дочекатись зникнення blockUI
+
+Обрати класифікатор
+  [Arguments]  ${id}  ${index}
+  Wait and Click  xpath=(//input[@id='openMPC'])[${index+1}]
+  Дочекатись зникнення blockUI
+  Execute JavaScript  element = document.evaluate("//input[contains(@ng-model, 'searchstring')]",document.documentElement,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null).snapshotItem(0);
+  Execute JavaScript  element.value = '${id}';
+  Execute JavaScript  angular.element(element).triggerHandler('change');
+  Дочекатись зникнення blockUI
+  Wait and Click    xpath=//td[contains(@code, '${id}')]
+  Wait and Click    id=classification_choose
   Дочекатись зникнення blockUI
 
 Створити лот
@@ -512,6 +523,7 @@ Field Value Is Not Empty
   ${page}=    Get Location
   Return From Keyword If  '${page}'=='${tenderpage}'
   Go To  ${tenderpage}
+  Дочекатись зникнення blockUI
 
 Отримати інформацію із лоту
   [Arguments]  ${username}  ${tender_uaid}  ${fieldname}
@@ -588,6 +600,7 @@ Field Value Is Not Empty
 
 Отримати інформацію з активу лоту
   [Arguments]  ${username}  ${tender_uaid}  ${item}  ${fieldname}
+  Перейти на сторінку лота за потреби
   Run Keyword And Return  Отримати інформацію з активу лоту про ${fieldname}  ${item}
 
 Отримати інформацію з активу лоту про description
@@ -715,93 +728,53 @@ Field Value Is Not Empty
   Choose File     xpath=//input[@id="tend_doc_add"]  ${filepath}
   Sleep  15
 
+Перейти на сторінку ${n} аукціона
+  Wait and Click  id=goToAuction_${n}
+
 Отримати інформацію із лоту про auctions[${n}].procurementMethodType
   ${type}=   Wait and Get Text    id=auctionType_${n}
-  ${procurementMethodType}    convert_etender_string_to_common_string     ${type}
-  [Return]  ${procurementMethodType}
+  Run Keyword And Return    convert_etender_string_to_common_string     ${type}
 
 Отримати інформацію із лоту про auctions[${n}].status
-  Перейти на сторінку лота за потреби
-  Wait and Click  id=goToAuction_${n}
-  ${status}=    Wait and Get Attribute   id=auctionStatus  status
-  Go Back
-  Дочекатись зникнення blockUI
-  [Return]  ${status}
+  Перейти на сторінку ${n} аукціона
+  Run Keyword And Return    Wait and Get Attribute   id=auctionStatus  status
 
 Отримати інформацію із лоту про auctions[${n}].tenderAttempts
-  Перейти на сторінку лота за потреби
-  Wait and Click  id=goToAuction_${n}
+  Перейти на сторінку ${n} аукціона
   ${tenderAttempts}=    Wait and Get Attribute   id=auctionStatus  tenderAttempts
-  ${tenderAttempts}=    Convert To Integer      ${tenderAttempts}
-  Go Back
-  Дочекатись зникнення blockUI
-  [Return]  ${tenderAttempts}
+  Run Keyword And Return    Convert To Integer      ${tenderAttempts}
 
 Отримати інформацію із лоту про auctions[${n}].value.amount
-  Перейти на сторінку лота за потреби
-  Wait and Click  id=goToAuction_${n}
+  Перейти на сторінку ${n} аукціона
   ${value.amount}=  Wait and Get Text    id=value
-  ${value.amount}=  Convert To Number   ${value.amount}
-  Go Back
-  Дочекатись зникнення blockUI
-  [Return]  ${value.amount}
+  Run Keyword And Return    Convert To Number   ${value.amount}
 
 Отримати інформацію із лоту про auctions[${n}].minimalStep.amount
-  Перейти на сторінку лота за потреби
-  Wait and Click  id=goToAuction_${n}
+  Перейти на сторінку ${n} аукціона
   ${minimalStep.amount}=    Wait and Get Text    id=minimalStep
-  ${minimalStep.amount}=    Convert To Number   ${minimalStep.amount}
-  Go Back
-  Дочекатись зникнення blockUI
-  [Return]  ${minimalStep.amount}
+  Run Keyword And Return    Convert To Number   ${minimalStep.amount}
 
 Отримати інформацію із лоту про auctions[${n}].guarantee.amount
-  Перейти на сторінку лота за потреби
-  Wait and Click  id=goToAuction_${n}
+  Перейти на сторінку ${n} аукціона
   ${guarantee.amount}=      Wait and Get Text    id=guarantee
-  ${guarantee.amount}=      Convert To Number   ${guarantee.amount}
-  Go Back
-  Дочекатись зникнення blockUI
-  [Return]  ${guarantee.amount}
+  Run Keyword And Return    Convert To Number   ${guarantee.amount}
 
 Отримати інформацію із лоту про auctions[${n}].registrationFee.amount
-  Перейти на сторінку лота за потреби
-  Wait and Click  id=goToAuction_${n}
+  Перейти на сторінку ${n} аукціона
   ${registrationFee.amount}=    Wait and Get Text    id=registrationFee
-  ${registrationFee.amount}=    Convert To Number   ${registrationFee.amount}
-  Go Back
-  Дочекатись зникнення blockUI
-  [Return]  ${registrationFee.amount}
+  Run Keyword And Return    Convert To Number   ${registrationFee.amount}
 
 Отримати інформацію із лоту про auctions[${n}].tenderingDuration
-  Перейти на сторінку лота за потреби
-  Wait and Click  id=goToAuction_${n}
+  Перейти на сторінку ${n} аукціона
   ${tenderingDuration}=    Wait and Get Text    id=tenderingDuration
-  Go Back
-  Дочекатись зникнення blockUI
   ${duration}=  Set Variable If  '${tenderingDuration}'=='30'   P1M  P${tenderingDuration}D
   [Return]  ${duration}
 
 Отримати інформацію із лоту про auctions[${n}].auctionPeriod.startDate
-  Перейти на сторінку лота за потреби
-  Wait and Click  id=goToAuction_${n}
-  ${auctionPeriod.startDate}=    Wait and Get Text    id=auctionStart
-  ${auctionPeriod.startDate}=    convert_etender_date_to_iso_format   ${auctionPeriod.startDate}
-  Go Back
-  Дочекатись зникнення blockUI
-  [Return]  ${auctionPeriod.startDate}
+  Перейти на сторінку ${n} аукціона
+  ${startDate}=    Wait and Get Text    id=auctionStart
+  Run Keyword And Return    convert_etender_date_to_iso_format   ${startDate}
 
-Обрати класифікатор
-  [Arguments]  ${id}  ${index}
-  Wait and Click  xpath=(//input[@id='openMPC'])[${index+1}]
-  Дочекатись зникнення blockUI
-  Execute JavaScript  element = document.evaluate("//input[contains(@ng-model, 'searchstring')]",document.documentElement,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null).snapshotItem(0);
-  Execute JavaScript  element.value = '${id}';
-  Execute JavaScript  angular.element(element).triggerHandler('change');
-  Дочекатись зникнення blockUI
-  Wait and Click    xpath=//td[contains(@code, '${id}')]
-  Wait and Click    id=classification_choose
-  Дочекатись зникнення blockUI
 
 Отримати документ
   [Arguments]  ${username}  ${tender_uaid}  ${doc_id}
@@ -826,3 +799,7 @@ Field Value Is Not Empty
   [Arguments]  ${raw_value}
   ${return_value}=  Set Variable  ${raw_value.split(',')[0]}
   [return]  ${return_value}
+
+Активувати процедуру
+  [Arguments]  @{arguments}
+  Return From Keyword

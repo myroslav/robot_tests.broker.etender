@@ -31,16 +31,18 @@ def convert_iso8601Duration(duration):
 def get_etender_date_from_iso(isodate):
     return (dateutil.parser.parse(isodate).strftime('%d-%m-%Y'), dateutil.parser.parse(isodate).strftime('%H:%M'))
 
+def parse_etender_date(date):
+    # converts date from ui to datetime
+    return datetime.strptime(date, '%d-%m-%Y, %H:%M')
+
+def convert_etender_date_to_iso_format(date):
+    return TZ.localize(parse_etender_date(date)).isoformat()
+
 def add_timezone_to_date(date_str):
     new_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
     TZ = timezone(os.environ['TZ'] if 'TZ' in os.environ else 'Europe/Kiev')
     new_date_timezone = TZ.localize(new_date)
     return new_date_timezone.strftime("%Y-%m-%d %H:%M:%S%z")
-
-def convert_etender_date_to_iso_format(date_time_from_ui):
-    new_timedata = datetime.strptime(date_time_from_ui, '%d-%m-%Y, %H:%M')
-    new_date_time_string = new_timedata.strftime("%Y-%m-%d %H:%M:%S.%f")
-    return new_date_time_string
 
 def convert_dgfDecisionDateOut_to_etender_format(date_str):
     timedata = datetime.strptime(date_str, '%d.%m.%Y')
@@ -78,14 +80,7 @@ def convert_contractPeriod_date_from_etender_format_to_isoformat(contractPeriod_
     time_string = date_with_timezone_and_shift.isoformat()
     return time_string
 
-def string_to_float(string):
-    return float(string)
 
-def float_to_string(float):
-    return str(float)
-
-def int_to_string(int):
-    return str(int)
 
 def float_to_string_2f(value):
     return '{:.2f}'.format(value)
