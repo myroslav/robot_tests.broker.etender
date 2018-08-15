@@ -7,6 +7,7 @@ from pytz import timezone
 import os
 import re
 
+TZ = timezone(os.environ['TZ'] if 'TZ' in os.environ else 'Europe/Kiev')
 
 def get_all_etender_dates(initial_tender_data, key, subkey=None):
     tender_period = initial_tender_data.data.auctionPeriod
@@ -40,9 +41,8 @@ def convert_etender_date_to_iso_format(date):
 
 def add_timezone_to_date(date_str):
     new_date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-    TZ = timezone(os.environ['TZ'] if 'TZ' in os.environ else 'Europe/Kiev')
     new_date_timezone = TZ.localize(new_date)
-    return new_date_timezone.strftime("%Y-%m-%d %H:%M:%S%z")
+    return new_date_timezone.isoformat()
 
 def convert_dgfDecisionDateOut_to_etender_format(date_str):
     timedata = datetime.strptime(date_str, '%d.%m.%Y')
