@@ -958,3 +958,58 @@ Field Value Is Not Empty
   Дочекатись зникнення blockUI
   Wait and Click    id=continueCancelling
   Wait and Click    id=cancelTender
+
+
+
+#-------------------AWARD-------------------#
+
+Відкрити вікно кваліфікації
+  Wait and Click    id=qualify
+
+Отримати кількість авардів в тендері
+  [Arguments]  ${username}  ${tender_uaid}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Run Keyword And Return    Get Matching Xpath Count    xpath=//div[@ng-repeat="award in lot.awards"]
+
+Завантажити протокол погодження в авард
+  [Arguments]  ${username}  ${tender_uaid}  ${document}  ${award_index}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Відкрити вікно кваліфікації
+  Завантажити документ  ${document}  Рішення про викуп  documentToAdd
+  Sleep 30
+
+Активувати кваліфікацію учасника
+  [Arguments]  ${username}  ${tender_uaid}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Відкрити вікно кваліфікації
+  Wait and Click    id=btn_nextStepAwards
+  Wait and Click    id=btn_Pending
+
+
+Завантажити протокол аукціону в авард
+  [Arguments]  ${username}  ${tender_uaid}  ${document}  ${award_index}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Відкрити вікно кваліфікації
+  Завантажити документ  ${document}  Протокол торгів    documentToAdd
+  Sleep 30
+
+Підтвердити постачальника
+  [Arguments]  ${username}  ${tender_uaid}  ${award_num}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Відкрити вікно кваліфікації
+  Wait and Click    id=btn_nextStepAwards
+  Wait and Click    id=btn_candidateQualify
+
+Завантажити протокол дискваліфікації в авард
+  [Arguments]  ${username}  ${tender_uaid}  ${document}  ${award_index}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Відкрити вікно кваліфікації
+  Завантажити документ  ${document}  Акт про відмову  documentToAdd
+  Sleep 30
+
+Дискваліфікувати постачальника
+  [Arguments]  ${username}  ${tender_uaid}  ${award_num}  ${description}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Відкрити вікно кваліфікації
+  Wait and Click    id=btn_nextStepAwards
+  Wait and Click    id=btn_disqualify
