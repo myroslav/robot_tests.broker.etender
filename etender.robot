@@ -976,7 +976,7 @@ Field Value Is Not Empty
   etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   Відкрити вікно кваліфікації
   Завантажити документ  ${document}  Рішення про викуп  documentToAdd
-  Sleep 30
+  Sleep  30
 
 Активувати кваліфікацію учасника
   [Arguments]  ${username}  ${tender_uaid}
@@ -991,7 +991,7 @@ Field Value Is Not Empty
   etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   Відкрити вікно кваліфікації
   Завантажити документ  ${document}  Протокол торгів    documentToAdd
-  Sleep 30
+  Sleep  30
 
 Підтвердити постачальника
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}
@@ -1005,7 +1005,7 @@ Field Value Is Not Empty
   etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   Відкрити вікно кваліфікації
   Завантажити документ  ${document}  Акт про відмову  documentToAdd
-  Sleep 30
+  Sleep  30
 
 Дискваліфікувати постачальника
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}  ${description}
