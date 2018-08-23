@@ -591,7 +591,7 @@ Field Value Is Not Empty
 Розділити дату та заповнити поля
   [Arguments]  ${date}
   ${startDate}  ${startTime}=     get_etender_date_from_iso   ${date}
-  Wait and Input    id=auctionPeriodStart  ${startDate}
+  Wait and Input    id=auctionPeriodStart   ${startDate}
   Input String      id=auctionPeriodTime    ${startTime}
 
 Внести зміни в лот
@@ -977,6 +977,8 @@ Field Value Is Not Empty
   Відкрити вікно кваліфікації
   Завантажити документ  ${document}  Рішення про викуп  documentToAdd
   Sleep  30
+  Capture Page Screenshot
+  Reload Page
 
 Активувати кваліфікацію учасника
   [Arguments]  ${username}  ${tender_uaid}
@@ -992,6 +994,7 @@ Field Value Is Not Empty
   Відкрити вікно кваліфікації
   Завантажити документ  ${document}  Протокол торгів    documentToAdd
   Sleep  30
+  Reload Page
 
 Підтвердити постачальника
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}
@@ -1006,6 +1009,7 @@ Field Value Is Not Empty
   Відкрити вікно кваліфікації
   Завантажити документ  ${document}  Акт про відмову  documentToAdd
   Sleep  30
+  Reload Page
 
 Дискваліфікувати постачальника
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}  ${description}
@@ -1013,3 +1017,45 @@ Field Value Is Not Empty
   Відкрити вікно кваліфікації
   Wait and Click    id=btn_nextStepAwards
   Wait and Click    id=btn_disqualify
+
+Скасування рішення кваліфікаційної комісії
+  [Arguments]  ${username}  ${tender_uaid}  ${award_num}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Wait and Click    id=btn_modalCancelAward
+
+Завантажити протокол скасування в контракт
+  [Arguments]  ${username}  ${tender_uaid}  ${document}  ${contract_num}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Wait and Click    id=btn_ContractActiveAwarded
+  Завантажити документ  ${document}  Рішення про відмову у затвердженні протоколу
+  Sleep  30
+  Click Element     id=saveChanges
+
+Скасувати контракт
+  [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Wait and Click    id=btn_ContractActiveAwarded
+  Wait and Click    id=btn_RejectionProtocol
+
+Встановити дату підписання угоди
+  [Arguments]  ${username}  ${tender_uaid}  ${contract_num}  ${date}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Wait and Click    id=btn_ContractActiveAwarded
+  ${date}  ${time}=     get_etender_date_from_iso   ${date}
+  Wait and Input    id=dateSigned       ${date}
+  Wait and Input    id=dateSignedTime   ${time}
+  Click Element     id=saveChanges
+
+Завантажити угоду до тендера
+  [Arguments]  ${username}  ${tender_uaid}  ${contract_num}  ${document}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Wait and Click    id=btn_ContractActiveAwarded
+  Завантажити документ  ${document}  Повідомлення про договір
+  Sleep  30
+  Click Element     id=saveChanges
+
+Підтвердити підписання контракту
+  [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
+  etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
+  Wait and Click    id=btn_ContractActiveAwarded
+  Wait and Click    id=btn_CompleteAuction
