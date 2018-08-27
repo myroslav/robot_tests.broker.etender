@@ -963,6 +963,10 @@ Field Value Is Not Empty
 
 #-------------------AWARD-------------------#
 
+Зберегти зміни в контракті
+  Click Element     id=saveChanges
+  Sleep  10
+
 Відкрити вікно кваліфікації
   Wait and Click    id=qualify
 
@@ -1029,7 +1033,7 @@ Field Value Is Not Empty
   Wait and Click    id=btn_ContractActiveAwarded
   Завантажити документ  ${document}  Рішення про відмову у затвердженні протоколу
   Sleep  30
-  Click Element     id=saveChanges
+  Зберегти зміни в контракті
 
 Скасувати контракт
   [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
@@ -1044,7 +1048,7 @@ Field Value Is Not Empty
   ${date}  ${time}=     get_etender_date_from_iso   ${date}
   Wait and Input    id=dateSigned       ${date}
   Wait and Input    id=dateSignedTime   ${time}
-  Click Element     id=saveChanges
+  Зберегти зміни в контракті
 
 Завантажити угоду до тендера
   [Arguments]  ${username}  ${tender_uaid}  ${contract_num}  ${document}
@@ -1052,7 +1056,7 @@ Field Value Is Not Empty
   Wait and Click    id=btn_ContractActiveAwarded
   Завантажити документ  ${document}  Повідомлення про договір
   Sleep  30
-  Click Element     id=saveChanges
+  Зберегти зміни в контракті
 
 Підтвердити підписання контракту
   [Arguments]  ${username}  ${tender_uaid}  ${contract_num}
