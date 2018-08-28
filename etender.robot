@@ -1054,7 +1054,7 @@ Field Value Is Not Empty
   [Arguments]  ${username}  ${tender_uaid}  ${contract_num}  ${document}
   etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   Wait and Click    id=btn_ContractActiveAwarded
-  Завантажити документ  ${document}  Повідомлення про договір
+  Завантажити документ  ${document}  Підписаний договір
   Sleep  30
   Зберегти зміни в контракті
 
