@@ -621,8 +621,8 @@ Field Value Is Not Empty
   Завантажити документ  ${filepath}  ${documentType}
 
 Завантажити документ
-  [Arguments]  ${filepath}  ${documentType}  ${locator}=tend_doc_add
-  Wait and Select By Label  id=docType  ${documentType}
+  [Arguments]  ${filepath}  ${documentType}  ${locator}=tend_doc_add  ${locator2}=docType
+  Wait and Select By Label  id=${locator2}  ${documentType}
   Choose File     xpath=//input[@id="${locator}"]  ${filepath}
   Sleep  15
 
@@ -648,6 +648,7 @@ Field Value Is Not Empty
   Wait and Click    id=editAuction_0
   Розділити дату та заповнити поля  ${auction.auctionPeriod.startDate}
   Input String      id=Value                ${auction.value.amount}
+  Run Keyword If    ${auction.value.valueAddedTaxIncluded}==${TRUE}   Click Element   id=valueTaxIncluded
   Input String      id=minimalStep          ${auction.minimalStep.amount}
   Input String      id=Guarantee            ${auction.guarantee.amount}
   Input String      id=RegistrationFee      ${auction.registrationFee.amount}
@@ -973,7 +974,8 @@ Field Value Is Not Empty
 Отримати кількість авардів в тендері
   [Arguments]  ${username}  ${tender_uaid}
   etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
-  Run Keyword And Return    Get Matching Xpath Count    xpath=//div[@ng-repeat="award in lot.awards"]
+  ${count}=     Get Matching Xpath Count    xpath=//div[@ng-repeat="award in lot.awards"]
+  Run Keyword And Return    Convert To Integer  ${count}
 
 Завантажити протокол погодження в авард
   [Arguments]  ${username}  ${tender_uaid}  ${document}  ${award_index}
@@ -1027,6 +1029,8 @@ Field Value Is Not Empty
   etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   Wait and Click    id=btn_modalCancelAward
 
+#-----------------CONTRACT------------------#
+
 Завантажити протокол скасування в контракт
   [Arguments]  ${username}  ${tender_uaid}  ${document}  ${contract_num}
   etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
@@ -1063,3 +1067,85 @@ Field Value Is Not Empty
   etender.Пошук тендера по ідентифікатору   ${username}  ${tender_uaid}
   Wait and Click    id=btn_ContractActiveAwarded
   Wait and Click    id=btn_CompleteAuction
+
+
+#----------------CONTRACTING------------------#
+
+Перейти до тендера за номером договору
+  [Arguments]  ${username}  ${contract_uaid}
+  etender.Пошук тендера по ідентифікатору  ${username}  ${contract_uaid[:-3]}
+
+Перейти на сторінку контрактингу
+  [Arguments]  ${username}  ${contract_uaid}
+  Перейти до тендера за номером договору  ${username}  ${contract_uaid}
+  Wait and Click  id=contracting
+  Wait and Click  id=goToContracting
+  Дочекатись зникнення blockUI
+
+Вказати дату для майлстоуну
+  [Arguments]  ${date_met}
+  ${date}  ${time}=     get_etender_date_from_iso   ${date_met}
+  Wait and Input    id=dateMet      ${date}
+  Wait and Input    id=dateMetHour  ${time}
+
+Активувати контракт
+  [Arguments]  @{arguments}
+  Return From Keyword
+
+Отримати інформацію із договору
+  [Arguments]  ${username}  ${contract_uaid}  ${field_name}
+  Перейти до тендера за номером договору  ${username}  ${contract_uaid}
+  Run Keyword And Return  Отримати інформацію із договору про ${field_name}
+
+Отримати інформацію із договору про status
+  Run Keyword And Return  Wait and Get Attribute  id=status  status
+
+Отримати інформацію із договору про milestones[${n}].status
+  Run Keyword And Return  Wait and Get Attribute  id=milestoneStatus_${n}  status
+
+Отримати інформацію з активу в договорі
+  [Arguments]  ${username}  ${contract_uaid}  ${item_id}  ${field_name}
+  Перейти до тендера за номером договору  ${username}  ${contract_uaid}
+  Run Keyword And Return  Отримати інформацію із предмету про description  ${item_id}
+
+Вказати дату отримання оплати
+  [Arguments]  ${username}  ${contract_uaid}  ${date_met}  ${milestone_index}
+  Перейти на сторінку контрактингу  ${username}  ${contract_uaid}
+  Вказати дату для майлстоуну  ${date_met}
+  Wait and Click    id=met
+
+Підтвердити відсутність оплати
+  [Arguments]  ${username}  ${contract_uaid}  ${milestone_index}
+  Перейти на сторінку контрактингу  ${username}  ${contract_uaid}
+  Wait and Click    id=notMet
+
+Завантажити наказ про завершення приватизації
+  [Arguments]  ${username}  ${contract_uaid}  ${document}
+  Перейти на сторінку контрактингу  ${username}  ${contract_uaid}
+  Select From List By Index  id=docType_reporting2  2
+  Choose File     id=tend_doc_add_reporting2  ${document}
+
+Вказати дату прийняття наказу
+  [Arguments]  ${username}  ${contract_uaid}  ${date_met}
+  Перейти на сторінку контрактингу  ${username}  ${contract_uaid}
+  Вказати дату для майлстоуну  ${date_met}
+  Wait and Click    id=met
+
+Підтвердити відсутність наказу про приватизацію
+  [Arguments]  ${username}  ${contract_uaid}  ${document}
+  Перейти на сторінку контрактингу  ${username}  ${contract_uaid}
+  Завантажити документ  ${document}  Рішення про відмову у затвердженні протоколу  tend_doc_add_approval1  docType_approval1
+  Sleep  15
+  Reload Page
+  Wait and Click    id=notMet
+
+Вказати дату виконання умов контракту
+  [Arguments]  ${username}  ${contract_uaid}  ${date_met}
+  Перейти на сторінку контрактингу  ${username}  ${contract_uaid}
+  Вказати дату для майлстоуну  ${date_met}
+  Wait and Click    id=met
+
+Підтвердити невиконання умов приватизації
+  [Arguments]  ${username}  ${contract_uaid}
+  Перейти на сторінку контрактингу  ${username}  ${contract_uaid}
+  Wait and Click    id=notMet
