@@ -1094,7 +1094,7 @@ Field Value Is Not Empty
 
 Отримати інформацію із договору
   [Arguments]  ${username}  ${contract_uaid}  ${field_name}
-  Перейти до тендера за номером договору  ${username}  ${contract_uaid}
+  Перейти на сторінку контрактингу  ${username}  ${contract_uaid}
   Run Keyword And Return  Отримати інформацію із договору про ${field_name}
 
 Отримати інформацію із договору про status
@@ -1122,8 +1122,10 @@ Field Value Is Not Empty
 Завантажити наказ про завершення приватизації
   [Arguments]  ${username}  ${contract_uaid}  ${document}
   Перейти на сторінку контрактингу  ${username}  ${contract_uaid}
-  Select From List By Index  id=docType_reporting2  2
-  Choose File     id=tend_doc_add_reporting2  ${document}
+  Sleep  5
+  Select From List By Index  id=docType_approval1  2
+  Choose File     id=tend_doc_add_approval1  ${document}
+  Sleep  30
 
 Вказати дату прийняття наказу
   [Arguments]  ${username}  ${contract_uaid}  ${date_met}
