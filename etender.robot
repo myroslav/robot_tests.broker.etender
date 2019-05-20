@@ -1478,6 +1478,26 @@ Check Is Element Loaded
   Sleep  10
   Run Keyword And Return  Get Text  xpath=//p[contains(.,'${item_id}')]
 
+Отримати інформацію про milestones[${n}].code
+  ${value}=  Get Text  xpath=//*[@id="qa_milestone_${n}"]//div[@id="qa_milestoneCode"]
+  Run Keyword And Return  convert_milestone_from_text_to_code  ${value}
+
+Отримати інформацію про milestones[${n}].title
+  ${value}=     Get Text        xpath=//*[@id="qa_milestone_${n}"]//div[@id="qa_milestoneTitle"]
+    Run Keyword And Return  convert_milestone_from_text_to_title  ${value}
+
+Отримати інформацію про milestones[${n}].percentage
+  ${value}=     Get Text        xpath=//*[@id="qa_milestone_${n}"]//div[@id="qa_milestonePercentage"]
+  Run Keyword And Return  Convert To Number  ${value}
+
+Отримати інформацію про milestones[${n}].duration.days
+  ${value}=     Get Text        xpath=//*[@id="qa_milestone_${n}"]//div[@id="qa_milestoneDurationDays"]
+  Run Keyword And Return  Convert To Number  ${value}
+
+Отримати інформацію про milestones[${n}].duration.type
+  ${value}=     Get Text        xpath=//*[@id="qa_milestone_${n}"]//div[@id="qa_milestoneDurationType"]
+  Run Keyword And Return  convert_milestone_from_text_to_day_type  ${value}
+
 Конвертувати інформацію із предмету про description
   [Arguments]  ${raw_value}
   [return]  ${raw_value}

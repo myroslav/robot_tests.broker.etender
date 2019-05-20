@@ -227,3 +227,30 @@ def convert_unit_name_to_unit_code(string):
         u"ящик": u"BX",
     }.get(string, string)
 
+
+def convert_milestone_from_text_to_code(string):
+    return {
+        u"Аванс": u"prepayment",
+        u"Пiсляоплата": u"postpayment"
+    }.get(string, string)
+
+
+def convert_milestone_from_text_to_title(string):
+    return {
+        u"Виконання робіт": "executionOfWorks",
+        u"Поставка товару": "deliveryOfGoods",
+        u"Надання послуг": "submittingServices",
+        u"Підписання договору": "signingTheContract",
+        u"Дата подання заявки": "submissionDateOfApplications",
+        u"Дата виставлення рахунку": "dateOfInvoicing",
+        u"Дата закінчення звітного періоду": "endDateOfTheReportingPeriod",
+        u"Інша подія": "anotherEvent",
+    }.get(string, string)
+
+
+def convert_milestone_from_text_to_day_type(string):
+    return {
+        u"Робочі": "working",
+        u"Банківські": "banking",
+        u"Календарні": "calendar"
+    }.get(string, string)
