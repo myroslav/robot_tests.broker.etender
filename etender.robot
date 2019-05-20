@@ -1498,6 +1498,10 @@ Check Is Element Loaded
   ${value}=     Get Text        xpath=//*[@id="qa_milestone_${n}"]//div[@id="qa_milestoneDurationType"]
   Run Keyword And Return  convert_milestone_from_text_to_day_type  ${value}
 
+Отримати інформацію про mainProcurementCategory
+  ${value}=     Get Text        xpath=//div[@id="qa_mainProcurementCategory"]
+    Run Keyword And Return  convert_main_procurement_category  ${value}
+
 Конвертувати інформацію із предмету про description
   [Arguments]  ${raw_value}
   [return]  ${raw_value}

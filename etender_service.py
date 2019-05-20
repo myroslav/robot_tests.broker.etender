@@ -254,3 +254,11 @@ def convert_milestone_from_text_to_day_type(string):
         u"Банківські": "banking",
         u"Календарні": "calendar"
     }.get(string, string)
+
+
+def convert_main_procurement_category(string):
+    return {
+        u"Товари": "goods",
+        u"Послуги": "services",
+        u"Роботи": "works"
+    }.get(string, string)
