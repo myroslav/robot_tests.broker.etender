@@ -71,7 +71,7 @@ ${locator.awards[0].suppliers[0].identifier.scheme}            xpath=//span[@id=
 ${locator.awards[0].suppliers[0].identifier.legalName}         xpath=//span[@id="awardContactPoint"]/u
 ${locator.awards[0].suppliers[0].identifier.id}                xpath=//span[@id="awardContactPoint"]/following-sibling::div//p[contains(.,"Код ")]
 ${locator_document_title}                                      xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]
-${locator_document_href}                                       xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]@href
+${locator_document_href}                                       xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]//ancestor::td[contains(@class,"doc-name")]//preceding-sibling::td//a@href
 ${locator_document_description}                                xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]/following-sibling::p
 ${locator_lot_title}                                           xpath=//span[contains(., "XX_lot_id_XX") and @ng-bind="::lot.title"]
 ${locator_lot_description}                                     xpath=//div[@id="treeLot0"]//*[@id="lotDescription_0"]
