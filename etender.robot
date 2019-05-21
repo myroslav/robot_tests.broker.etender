@@ -157,6 +157,7 @@ Wait and Input
 
 Login
   [Arguments]  ${username}
+  Дочекатись зникнення blockUI
   Wait and Click   id=login     15
   Wait and Input   id=inputUsername     ${USERS.users['${username}'].login}     15
   Wait and Input   id=inputPassword     ${USERS.users['${username}'].password}  15
@@ -861,7 +862,7 @@ Select From List By Partial Label
 Розкрити інформацію про скаргу
   [Arguments]  ${complaintID}
   ${is_expanded}=  Get Element Attribute  xpath=//div[@id='${complaintID}']/div@aria-selected
-  Run Keyword If  '${is_expanded}'=='false'  Click Element  xpath=//div[@id='${complaintID}']//a
+  Run Keyword If  '${is_expanded}'=='false'  Click Element  xpath=//div[@id='${complaintID}']/div
 
 Отримати інформацію із скарги про title
   [Arguments]  ${complaintID}
