@@ -142,17 +142,9 @@ def convert_etender_string_to_common_string(string):
     return get_helper_dictionary().get(string, string)
 
 
-def hack_phone_add_dashes(input):
-    #  hardcoded for 7-digit phone, UA - like 4260712, and convert to -> 426-07-12
-    dig_3  = input[:3]
-    dig_2a = input[3:5]
-    dig_2b = input[5:]
-    output = dig_3 + '-' + dig_2a + '-' + dig_2b
-    return output
-
-
 def get_helper_dictionary():
     return {
+        u"КЛАСИФІКАТОР ДК 021:2015 (CPV)": u"ДК021",
         u"кг.": u"кілограм",
         u"грн.": u"UAH",
         u"(з ПДВ)": True,
