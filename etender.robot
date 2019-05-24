@@ -691,7 +691,7 @@ add feature
 
 Завантажити документ в ставку
   [Arguments]  ${username}  ${file}  ${tender_uaid}  ${doc_type}=1
-  Перейти на сторінку тендера за потреби    ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
   Відкрити розділ Деталі Закупівлі
   Натиснути редагувати пропозицію
   Run Keyword And Ignore Error  Обрати конфіденційність документа
@@ -753,7 +753,7 @@ add feature
 
 Подати цінову пропозицію
   [Arguments]  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}
-  Перейти на сторінку тендера за потреби    ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
   sleep  5
   Відкрити розділ Деталі Закупівлі
   ${amount}=    Run Keyword If  ${lots_ids} is None  Set Variable  ${bid_data.data.value.amount}
@@ -767,7 +767,7 @@ add feature
 
 Отримати інформацію із пропозиції
   [Arguments]  ${username}  ${tender_uaid}  ${field}
-  Перейти на сторінку тендера за потреби    ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
 
   Відкрити розділ Деталі Закупівлі
   Run Keyword And Return If  'value' in '${field}'  Отримати інформацію про value пропозиції
@@ -784,7 +784,7 @@ add feature
 
 Змінити цінову пропозицію
   [Arguments]  ${username}  ${tender_uaid}  ${field}  ${value}
-  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
   Sleep    5
   Run Keyword If  '${field}'=='status'  Підтвердити пропозицію
   Run Keyword If  'value' in '${field}'  Редагувати суму пропозиції  ${value}
@@ -804,7 +804,7 @@ add feature
 
 Скасувати цінову пропозицію
   [Arguments]  ${username}  ${TENDER_UAID}
-  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
   Wait and Click    xpath=//button[contains(@class, 'btn-sm btn-danger')]
   sleep  5
 
@@ -830,7 +830,7 @@ add feature
 
 Створити вимогу про виправлення умов
   [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${target}  ${file}  ${award_index}=0
-  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
   ${complaintID}=  Створити чернетку вимоги  ${username}  ${tender_uaid}  ${claim}  ${target}  ${award_index}
   Завантажити док  ${username}  ${file}  id=addClaimDoc
   Відкрити розділ вимог і скарг
@@ -868,7 +868,7 @@ add feature
 
 Скасувати вимогу
   [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}
-  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
   Відкрити розділ вимог і скарг
   Click Element  xpath=//div[@id='${complaintID}']//*[@name='CancelComplaint']
   Sleep  1  # wait for full input
@@ -1079,7 +1079,7 @@ Check Is Element Loaded
 
 Отримати інформацію із тендера
   [Arguments]  ${username}  ${tender_uaid}  ${field}
-  Run keyword if  '${field}' == 'awards[0].complaintPeriod.endDate'  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Run keyword if  '${field}' == 'awards[0].complaintPeriod.endDate'  Перейти на сторінку тендера за потреби
   Run Keyword And Return  Отримати інформацію про ${field}
 
 Отримати інформацію про funders[0].name
@@ -1484,6 +1484,7 @@ Check Is Element Loaded
   [Arguments]    ${username}    ${tender_uaid}    ${item_id}    ${fieldname}
   Перейти на сторінку тендера за потреби
   Wait Scroll Click     id=openAllLots
+  Дочекатись зникнення blockUI
   ${item_row}=  Set Variable    xpath=//tr[contains(.,'${item_id}')]
   Run Keyword And Return    Отримати інформацію із предмету про ${fieldname}  ${item_row}
 
@@ -1872,7 +1873,7 @@ temporary keyword for title update
   [Arguments]  ${username}  ${document}  ${tender_uaid}  ${award_num}
   Sleep  3
   # TODO: rework duplicated code - see "Створити постачальника, додати документацію і підтвердити його"
-  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
   Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Click Element  xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
@@ -1885,7 +1886,7 @@ temporary keyword for title update
 Підтвердити постачальника
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}
   # TODO: rework duplicated code - see "Створити постачальника, додати документацію і підтвердити його"
-  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
   Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Wait and Click    xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
@@ -1910,7 +1911,7 @@ Wait for doc upload in qualification
 
 Завантажити документ у кваліфікацію
   [Arguments]  ${username}  ${document}  ${tender_uaid}  ${qualification_num}
-  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
   Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Capture Page Screenshot
@@ -1928,7 +1929,7 @@ Wait for doc upload in qualification
   # TODO: fix this workaround and get real "last" qualification
   ${qualification_num}=  Run Keyword If  '${qualification_num_p}' == '-1'  Set Variable  1
   ...              ELSE  Set Variable  ${qualification_num_p}
-  Перейти на сторінку тендера за потреби   ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
   Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Відкрити подробиці кваліфікації за індексом  ${qualification_num}
