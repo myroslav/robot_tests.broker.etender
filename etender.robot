@@ -662,7 +662,7 @@ add feature
   # TODO: У майбутньому треба буде запровадити більш коректне рішення
   # Виникла необхідність обійти пошук по ідентифікатору через особливість тестового оточення майданчика
   Go To  ${USERS.users['${username}'].homepage.split('#')[0]}tender?tenderid=${TENDER_UAID}
-  #Дочекатись зникнення blockUI
+  Дочекатись зникнення blockUI
   Wait Until Page Contains    ${tender_uaid}   10
   Зберегти посилання
 
