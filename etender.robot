@@ -168,7 +168,6 @@ Login
   [Arguments]  ${username}  ${tender_data}
   ${tender_data}=       Get From Dictionary     ${tender_data}              data
   ${items}=             Get From Dictionary     ${tender_data}              items
-  ${milestones}=        Get From Dictionary     ${tender_data}              milestones
   ${mainProcurementCategory}=                   Get From Dictionary         ${tender_data}             mainProcurementCategory
   ${title}=             Get From Dictionary     ${tender_data}              title
   ${title_en}=          Get From Dictionary     ${tender_data}              title_en
@@ -441,8 +440,7 @@ add feature
 
 Дочекатися завершення обробки тендера
   Reload Page
-  Wait Until Element Is Visible      ${locator.tenderId}  30
-  ${tender_id}=                      Get Text  ${locator.tenderId}
+  ${tender_id}=                      Wait and Get Text  ${locator.tenderId}
   Should Match Regexp                ${tender_id}  UA-\\d{4}-\\d{2}-\\d{2}-\\d+.*
 
 Дочекатися завершення обробки плану
@@ -923,8 +921,7 @@ Select From List By Partial Label
 
 Отримати інформацію із скарги про resolutionType
   [Arguments]  ${complaintID}
-  Wait Until Keyword Succeeds  10 x  5  Check Is Element Loaded  xpath=//div[@id='${complaintID}']//*[@name='resolutionType']
-  ${resolutionType}=      Get Text  xpath=//div[@id='${complaintID}']//*[@name='resolutionType']
+  ${resolutionType}=      Wait and Get Text  xpath=//div[@id='${complaintID}']//*[@name='resolutionType']
   Run Keyword And Return  convert_etender_string_to_common_string  ${resolutionType.lower()}
 
 Отримати інформацію із скарги про resolution
@@ -933,8 +930,7 @@ Select From List By Partial Label
 
 Отримати інформацію із скарги про satisfied
   [Arguments]  ${complaintID}
-  Wait Until Keyword Succeeds  10 x  5  Check Is Element Loaded  xpath=//div[@id='${complaintID}']//*[@name='satisfied']
-  ${satisfied}=  Get Text  xpath=//div[@id='${complaintID}']//*[@name='satisfied']
+  ${satisfied}=  Wait and Get Text  xpath=//div[@id='${complaintID}']//*[@name='satisfied']
   ${satisfied}=  Set Variable  ${satisfied.replace(u'Так', u'True')}
   ${satisfied}=  Set Variable  ${satisfied.replace(u'Ні', u'False')}
   Run Keyword And Return  Convert To Boolean  ${satisfied}
@@ -943,13 +939,12 @@ Select From List By Partial Label
   [Arguments]  ${complaintID}
   Reload Page
   Відкрити розділ вимог і скарг
-  ${status}=  Get Text  xpath=//div[@id='${complaintID}']//*[@name='status']
+  ${status}=  Wait and Get Text  xpath=//div[@id='${complaintID}']//*[@name='status']
   Run Keyword And Return  convert_etender_string_to_common_string  ${status.lower()}
 
 Отримати інформацію із скарги про cancellationReason
   [Arguments]  ${complaintID}
-  Wait Until Keyword Succeeds  10 x  5  Check Is Element Loaded  xpath=//div[@id='${complaintID}']//*[@name='cancellationReason']
-  Run Keyword And Return  Get Text  xpath=//div[@id='${complaintID}']//*[@name='cancellationReason']
+  Run Keyword And Return  Wait and Get Text  xpath=//div[@id='${complaintID}']//*[@name='cancellationReason']
 
 Підтвердити вирішення вимоги про виправлення умов закупівлі
   [Arguments]  @{arguments}
