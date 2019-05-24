@@ -202,7 +202,7 @@ Login
   ...             ELSE  Get Length  ${lots}
   Run Keyword If  ${lots_count}>0  Run Keywords  Wait Scroll Click  id=isMultilots  AND  Додати лоти і їх предмети  ${lots_count}  ${lots}  ${items}
   ...           ELSE  Run Keywords  Додати мінімальний крок при наявності  ${tender_data}  AND  Input text  id=lotValue_0  ${budgetToStr}  AND  Додати предмети  ${items}  0
-  Додати умови оплати  ${milestones}
+  Додати умови оплати при наявності  ${tender_data}
   Додати причину з описом при наявності  ${tender_data}
   Додати донора при наявності  ${tender_data}
   Додати дати при наявності    ${tender_data}  ${methodType}
@@ -242,6 +242,11 @@ Login
   Перейти до редагування тендера    ${username}  ${tender_uaid}
   Вибрати донора    ${funder}
   Зберегти зміни в тендері
+
+Додати умови оплати при наявності
+  [Arguments]  ${data}
+  ${status}=  Run Keyword And Return Status     Dictionary Should Contain Key   ${data}  milestones
+  Run Keyword If    '${status}'=='True'     Додати умови оплати  ${data.milestones}
 
 Додати умови оплати
   [Arguments]  ${milestones}
