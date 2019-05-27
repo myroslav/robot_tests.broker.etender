@@ -1828,7 +1828,7 @@ Wait for upload before signing
   Sleep   25
   Дочекатись зникнення blockUI
   Відкрити розділ вимог і скарг
-  Wait and Click  xpath=//a[@role="button" and @aria-expanded="false" and contains(.,"${tmp_hacked_title}")]
+  Wait and Click  xpath=//div[@role="tab" and contains(.,"${tmp_hacked_title.split(':')[0]}")]
   Wait Scroll Click  xpath=(//button[@ng-click="showAnswerComplaintModal(currentComplaint)"])[1]
   Sleep  5
   ${resolution}=      Get From Dictionary  ${answer_data.data}  resolution
@@ -1848,7 +1848,7 @@ Wait for upload before signing
   Reload Page
   Дочекатись зникнення blockUI
   Відкрити розділ вимог і скарг
-  Wait and Click  xpath=//a[@role="button" and @aria-expanded="false" and contains(.,"${tmp_hacked_title}")]
+  Wait and Click  xpath=//div[@role="tab" and contains(.,"${tmp_hacked_title.split(':')[0]}")]
   Wait Scroll Click  xpath=(//button[@ng-click="showAnswerComplaintModal(currentComplaint)"])[1]
   ${resolution}=      Get From Dictionary  ${answer_data.data}  resolution
   ${resolutionType}=  Get From Dictionary  ${answer_data.data}  resolutionType
