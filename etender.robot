@@ -65,14 +65,6 @@ ${locator.awards[0].suppliers[0].identifier.id}                xpath=//span[@id=
 ${locator_document_title}                                      xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]
 ${locator_document_href}                                       xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]//ancestor::td[contains(@class,"doc-name")]//preceding-sibling::td//a@href
 ${locator_document_description}                                xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]/following-sibling::p
-${locator_lot_title}                                           xpath=//span[contains(., "XX_lot_id_XX") and @ng-bind="::lot.title"]
-${locator_lot_description}                                     xpath=//div[@id="treeLot0"]//*[@id="lotDescription_0"]
-${locator_lot_value.currency}                                  id=lotCurrency_0
-${locator_lot_value.amount}                                    id=lotValue_0
-${locator_lot_value.valueAddedTaxIncluded}                     xpath=//tender-detailes-about//*[@id="lotVatInc_0"]
-${locator_lot_minimalStep.amount}                              xpath=//div[@id="treeLot0"]//*[@id="lotMinimalStep_0"]
-${locator_lot_minimalStep.currency}                            xpath=//div[@id="treeLot0"]//*[@id="lotMinimalStep_0"]
-${locator_lot_minimalStep.valueAddedTaxIncluded}               xpath=//tender-detailes-about//*[@id="lotVatInc_0"]
 ${locator.value.currency}                                      id=tenderCurrency
 ${locator.value.valueAddedTaxIncluded}                         id=includeVat
 ${locator.bids}                                                id=ParticipiantInfo_0
@@ -152,6 +144,9 @@ Wait and Get Attribute
   Log  ${username}
   Log  ${username_2}
   [Return]  ${tender_data}
+
+Відкрити всі лоти
+  Wait Scroll Click     id=openAllLots
 
 Login
   [Arguments]  ${username}
@@ -502,7 +497,7 @@ add feature
   [Arguments]  ${username}  ${file}  ${tender_uaid}
   [Documentation]
   ...   Загрузка дока в тендер
-  Wait and Select By Label      xpath=//div[@id="tree-01-02"]//select[@id="docType"]  Інші
+  Wait and Select By Label      xpath=//select[@id="docType"][1]  Інші
   Завантажити док  ${username}  ${file}  id=tend_doc_add
 
 Додати предмети
@@ -1478,7 +1473,7 @@ Check Is Element Loaded
 Отримати інформацію із предмету
   [Arguments]    ${username}    ${tender_uaid}    ${item_id}    ${fieldname}
   Перейти на сторінку тендера за потреби
-  Wait Scroll Click     id=openAllLots
+  Відкрити всі лоти
   Дочекатись зникнення blockUI
   ${item_row}=  Set Variable    xpath=//tr[contains(.,'${item_id}')]
   Run Keyword And Return    Отримати інформацію із предмету про ${fieldname}  ${item_row}
@@ -1583,59 +1578,52 @@ Check Is Element Loaded
   [return]  ${document_file}
 
 Отримати інформацію із лоту
-  [Arguments]  ${username}  ${tender_uaid}  ${object_id}  ${field_name}
+  [Arguments]    ${username}    ${tender_uaid}    ${object_id}    ${fieldname}
   Перейти на сторінку тендера за потреби
-  ${prepared_locator}=  Set Variable  ${locator_lot_${field_name}}
-  ${prepared_locator}=  Set Variable  ${prepared_locator.replace('XX_lot_id_XX','${object_id}')}
-  log  ${prepared_locator}
-  Wait Until Page Contains Element  ${prepared_locator}  10
-  ${raw_value}=   Get Text  ${prepared_locator}
-  Run Keyword And Return  Конвертувати інформацію із лоту про ${field_name}  ${raw_value}
+  Відкрити всі лоти
+  Дочекатись зникнення blockUI
+  ${lot_block}=  Set Variable    xpath=//div[contains(@lottitle,"${object_id}")]
+  Run Keyword And Return    Отримати інформацію із лоту про ${fieldname}  ${lot_block}
 
-Конвертувати інформацію із лоту про title
-  [Arguments]  ${return_value}
-  [return]  ${return_value}
+Отримати інформацію із лоту про title
+  [Arguments]  ${lot_block}
+  Run Keyword And Return  Wait and Get Attribute  ${lot_block}//*[contains(@id,'lotTitle')]  title
 
-Конвертувати інформацію із лоту про description
-  [Arguments]  ${return_value}
-  [return]  ${return_value}
+Отримати інформацію із лоту про description
+  [Arguments]  ${lot_block}
+  Run Keyword And Return  Wait and Get Text  ${lot_block}//*[contains(@id,'lotDescription')]
 
-Конвертувати інформацію із лоту про value.currency
-  [Arguments]  ${return_value}
-  [return]  ${return_value}
+Отримати інформацію із лоту про value.amount
+  [Arguments]  ${lot_block}
+  ${raw_value}=  Wait and Get Attribute  ${lot_block}//*[contains(@id,'lotValue')]  value
+  Run Keyword And Return    Convert To Number  ${raw_value}
 
-Конвертувати інформацію із лоту про value.valueAddedTaxIncluded
-  [Arguments]  ${return_value}
-  ${return_value}=  Run Keyword If  'ПДВ' in '${return_value}'  Set Variable  True
-    ...  ELSE  Set Variable  False
-  Log  ${return_value}
-  ${return_value}=   Convert To Boolean   ${return_value}
-  [return]  ${return_value}
+Отримати інформацію із лоту про value.currency
+  [Arguments]  ${lot_block}
+  Run Keyword And Return  Wait and Get Text  ${lot_block}//*[contains(@id,'lotCurrency')]
 
-Конвертувати інформацію із лоту про value.amount
-  [Arguments]  ${raw_value}
-  ${return_value}=  parse_currency_value_with_spaces  ${raw_value} XX
-  ${return_value}=  Convert To Number  ${return_value}
-  [return]  ${return_value}
+Отримати інформацію із лоту про value.valueAddedTaxIncluded
+  [Arguments]  ${lot_block}
+  ${raw_value}=  Wait and Get Text  ${lot_block}//*[contains(@id,'lotVatInc')]
+  ${raw_value}=  Set Variable If  'ПДВ' in '${raw_value}'     True    False
+  Run Keyword And Return    Convert To Boolean   ${raw_value}
 
-Конвертувати інформацію із лоту про minimalStep.amount
-  [Arguments]  ${raw_value}
-  ${return_value}=  parse_currency_value_with_spaces  ${raw_value}
-  ${return_value}=  Convert To Number  ${return_value}
-  [return]  ${return_value}
+Отримати інформацію із лоту про minimalStep.amount
+  [Arguments]  ${lot_block}
+  ${raw_value}=  Wait and Get Text  ${lot_block}//*[contains(@id,'lotMinimalStep')]
+  ${raw_value}=  parse_currency_value_with_spaces  ${raw_value}
+  Run Keyword And Return  Convert To Number  ${raw_value}
 
-Конвертувати інформацію із лоту про minimalStep.valueAddedTaxIncluded
-  [Arguments]  ${return_value}
-  ${return_value}=  Run Keyword If  'ПДВ' in '${return_value}'  Set Variable  True
-    ...  ELSE  Set Variable  False
-  Log  ${return_value}
-  ${return_value}=   Convert To Boolean   ${return_value}
-  [return]  ${return_value}
+Отримати інформацію із лоту про minimalStep.valueAddedTaxIncluded
+  [Arguments]  ${lot_block}
+  ${raw_value}=  Wait and Get Text  ${lot_block}//*[contains(@id,'lotVatInc')]
+  ${raw_value}=  Set Variable If  'ПДВ' in '${raw_value}'     True    False
+  Run Keyword And Return    Convert To Boolean   ${raw_value}
 
-Конвертувати інформацію із лоту про minimalStep.currency
-  [Arguments]  ${raw_value}
-  ${return_value}=  get_minimalStep_currency  ${raw_value}
-  [return]  ${return_value}
+Отримати інформацію із лоту про minimalStep.currency
+  [Arguments]  ${lot_block}
+  ${raw_value}=  Wait and Get Text  ${lot_block}//*[contains(@id,'lotMinimalStep')]
+  Run Keyword And Return  get_minimalStep_currency  ${raw_value}
 
 Отримати інформацію із нецінового показника
   [Arguments]  ${username}  ${tender_uaid}  ${object_id}  ${field_name}

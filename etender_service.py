@@ -130,7 +130,7 @@ def convert_common_string_to_etender_string(string):
 
 def parse_currency_value_with_spaces(raw):
     # to convert raw values like '2 216 162,83 UAH' to string which is ready for conversion to float
-    return ''.join(raw.split(' ')[:-1]).replace(',','.')
+    return ''.join(raw.split(' ')[:-1]).replace(',', '.')
 
 def get_minimalStep_currency(raw_value):
     # to get currency 'UAH' from raw values like '2 216 162,83 UAH'
