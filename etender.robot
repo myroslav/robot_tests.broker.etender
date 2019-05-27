@@ -1872,8 +1872,9 @@ temporary keyword for title update
   Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Click Element  xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
-  Select From List By Label  id=docType  Повідомлення про рішення
-  Завантажити док  ${username}  ${document}  xpath=//button[@ng-model="lists.documentsToAdd"]  xpath=//button[@ng-click="downloadDocsGetAward(lists.documentsToAdd)"]
+  Дочекатись зникнення blockUI
+  Select From List By Label  xpath=//div[@id="modalGetAwards"]//select[@id="docType"]  Повідомлення про рішення
+  Завантажити док  ${username}  ${document}  xpath=//div[@id="modalGetAwards"]//button[@id="qa_uploadAwardDocument"]  xpath=//div[@id="modalGetAwards"]//button[@id="downloadAwardDocs"]
   Відкрити розділ Деталі Закупівлі
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
   Reload Page
