@@ -146,7 +146,10 @@ Wait and Get Attribute
   [Return]  ${tender_data}
 
 Відкрити всі лоти
+  ${clicked}=  Wait and Get Attribute  xpath=//*[@id="openAllLots"]     class
+  Return From Keyword If  'clicked' in '${clicked}'
   Wait Scroll Click     id=openAllLots
+  Дочекатись зникнення blockUI
 
 Login
   [Arguments]  ${username}
@@ -804,6 +807,7 @@ add feature
 Оновити сторінку з тендером
   [Arguments]  ${username}  ${TENDER_UAID}
   Reload Page
+  Дочекатись зникнення blockUI
 
 Оновити сторінку з планом
   [Arguments]  @{ARGUMENTS}
@@ -1057,7 +1061,7 @@ Check Is Element Loaded
 Отримати документ до лоту
   [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${doc_id}
   Відкрити розділ Деталі Закупівлі
-  Click Element     id=openAllLots
+  Відкрити всі лоти
   Run Keyword And Return  etender.Отримати документ  ${username}  ${tender_uaid}  ${doc_id}
 
 Отримати інформацію про status
@@ -1474,7 +1478,6 @@ Check Is Element Loaded
   [Arguments]    ${username}    ${tender_uaid}    ${item_id}    ${fieldname}
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
-  Дочекатись зникнення blockUI
   ${item_row}=  Set Variable    xpath=//tr[contains(.,'${item_id}')]
   Run Keyword And Return    Отримати інформацію із предмету про ${fieldname}  ${item_row}
 
@@ -1581,7 +1584,6 @@ Check Is Element Loaded
   [Arguments]    ${username}    ${tender_uaid}    ${object_id}    ${fieldname}
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
-  Дочекатись зникнення blockUI
   ${lot_block}=  Set Variable    xpath=//div[contains(@lottitle,"${object_id}")]
   Run Keyword And Return    Отримати інформацію із лоту про ${fieldname}  ${lot_block}
 
