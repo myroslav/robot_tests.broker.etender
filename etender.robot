@@ -95,8 +95,9 @@ ${tenderpage}
   Set Window Size  @{USERS.users['${username}'].size}
   Set Window Position  @{USERS.users['${username}'].position}
   Run Keyword If  '${username}' != 'Etender_Viewer'  Login  ${username}
-  Set Global Variable   ${tenderpage}   ${EMPTY}
   Дочекатись зникнення blockUI
+  Return from keyword if  '${tenderpage}'!='${EMPTY}'
+  Set Global Variable   ${tenderpage}   ${EMPTY}
 
 Wait Scroll Click
   [Arguments]  ${locator}  ${timeout}=5
@@ -1715,7 +1716,7 @@ Check Is Element Loaded
   Capture Page Screenshot
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
 
-  Wait and Click    xpath=//button[@ng-click="getAwardsNextStep()"]        # button - Наступний крок
+  Wait Scroll Click  xpath=//button[@ng-click="getAwardsNextStep()"]        # button - Наступний крок
   Wait and Click    xpath=//button[@ng-click="showSignModalAward(award)"]  # button - Підписати рішення
   Підписати ЕЦП
   Sleep  30
@@ -1876,7 +1877,7 @@ temporary keyword for title update
   Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Wait and Click    xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
-  Wait and Click    xpath=//button[@ng-click="getAwardsNextStep()"]        # button - Наступний крок
+  Wait Scroll Click    xpath=//button[@ng-click="getAwardsNextStep()"]        # button - Наступний крок
   Wait and Click    xpath=//button[@click-and-block="setDecision(1)"]      # button - Підтвердити
 
 Відкрити подробиці кваліфікації за індексом
