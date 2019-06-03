@@ -181,7 +181,9 @@ def get_helper_dictionary():
         u'скасована скаржником': u'cancelled',
         u'відхилено': u'invalid',
         u'залишена без відповіді': u'ignored',
-        u'очікується кваліфікація': u'pending'
+        u'очікується кваліфікація': u'pending',
+        u'відкликається скаржником': u'stopping',
+        u'очікує розгляду органом оскарження': u'pending'
     }
 
 def get_feature_index(i):
