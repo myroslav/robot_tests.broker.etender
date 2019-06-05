@@ -1451,6 +1451,17 @@ Check Is Element Loaded
   ${date}=  Get Text  id=auctionEndDate
   Run Keyword And Return  convert_etender_date_to_iso_format_and_add_timezone  ${date}
 
+Отримати інформацію із лоту про auctionPeriod.startDate
+  [Arguments]  ${lot_block}
+  ${date}=  Get Text  ${lot_block}//div[contains(@class, 'auctionData ng-scope')]//b
+  Run Keyword And Return  convert_etender_date_to_iso_format_and_add_timezone  ${date}
+
+Отримати інформацію із лоту про auctionPeriod.endDate
+  [Arguments]  ${lot_block}
+  ${date}=  Get Text  id=auctionEndDate
+  Run Keyword And Return  convert_etender_date_to_iso_format_and_add_timezone  ${date}
+
+
 Отримати інформацію про milestones[${n}].code
   ${value}=  Get Text  xpath=//*[@id="qa_milestone_${n}"]//div[@id="qa_milestoneCode"]
   Run Keyword And Return  convert_milestone_from_text_to_code  ${value}
