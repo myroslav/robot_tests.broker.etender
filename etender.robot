@@ -1197,6 +1197,7 @@ Check Is Element Loaded
 Отримати інформацію про contracts[0].status
   Reload Page
   Відкрити розділ Деталі Закупівлі
+  Відкрити всі лоти
   ${return_value}=  Отримати текст із поля і показати на сторінці  contracts[0].status
   ${return_value}=  Set Variable  ${return_value.strip()}
   ${return_value}=  convert_etender_string_to_common_string  ${return_value}
@@ -1475,8 +1476,8 @@ Check Is Element Loaded
   ${date}=  Get Text  id=auctionEndDate
   Run Keyword And Return  convert_etender_date_to_iso_format_and_add_timezone  ${date}
 
-
 Отримати інформацію про milestones[${n}].code
+  Відкрити всі лоти
   ${value}=  Get Text  xpath=//*[@id="qa_milestone_${n}"]//div[@id="qa_milestoneCode"]
   Run Keyword And Return  convert_milestone_from_text_to_code  ${value}
 
