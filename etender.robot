@@ -47,9 +47,9 @@ ${locator.items[0].quantity}                                   id=item_quantity_
 ${locator.items[0].unit.name}                                  id=item_unit_00
 ${locator.awards[0].complaintPeriod.endDate}                   xpath=//div[@ng-if="award.complaintPeriod.endDate"]/div[2]/span
 ${locator.awards[0].status}                                    xpath=//div[@class = 'row']/div[contains(.,'Статус:')]/following-sibling::div
-${locator.awards[0].value.valueAddedTaxIncluded}               xpath=//div[@class = 'row']/div[contains(.,'Пропозиція:')]/following-sibling::div/span/i
-${locator.awards[0].value.currency}                            xpath=//div[@class = 'row']/div[contains(.,'Пропозиція:')]/following-sibling::div/span
-${locator.awards[0].value.amount}                              xpath=//div[@class = 'row']/div[contains(.,'Пропозиція:')]/following-sibling::div/span
+${locator.awards[0].value.valueAddedTaxIncluded}               xpath=//div[@class = 'row']/div[contains(.,'Остаточна пропозиція:')]/following-sibling::div/span/i
+${locator.awards[0].value.currency}                            xpath=//div[@class = 'row']/div[contains(.,'Остаточна пропозиція:')]/following-sibling::div/span
+${locator.awards[0].value.amount}                              xpath=//div[@class = 'row']/div[contains(.,'Остаточна пропозиція:')]/following-sibling::div/span
 ${locator.awards[0].suppliers[0].address.countryName}          id=awardCountry_0
 ${locator.awards[0].suppliers[0].address.locality}             id=awardCity_0
 ${locator.awards[0].suppliers[0].address.postalCode}           id=awardIndex_0
@@ -826,13 +826,27 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${award_index}  ${file}
   Run Keyword And Return  Створити вимогу про виправлення умов  ${username}  ${tender_uaid}  ${claim}  award  ${file}  ${award_index}
 
+Створити скаргу про виправлення визначення переможця
+  [Arguments]  ${username}  ${tender_uaid}  ${complaint}  ${award_index}  ${file}
+  Run Keyword And Return  Створити скаргу про виправлення умов  ${username}  ${tender_uaid}  ${complaint}  award  ${file}  ${award_index}
+
 Створити вимогу про виправлення умов
   [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${target}  ${file}  ${award_index}=0
   Перейти на сторінку тендера за потреби
   ${complaintID}=  Створити чернетку вимоги  ${username}  ${tender_uaid}  ${claim}  ${target}  ${award_index}
   Завантажити док  ${username}  ${file}  id=addClaimDoc
   Відкрити розділ вимог і скарг
-  Click Element     xpath=//button[contains(.,'Опублікувати вимогу')]
+  Wait Scroll Click     id=qa_SetClaimActiveStatus
+  Sleep  15
+  [Return]  ${complaintID}
+
+Створити скаргу про виправлення умов
+  [Arguments]  ${username}  ${tender_uaid}  ${complaint}  ${target}  ${file}  ${award_index}=0
+  Перейти на сторінку тендера за потреби
+  ${complaintID}=  Створити чернетку вимоги  ${username}  ${tender_uaid}  ${complaint}  ${target}  ${award_index}
+  Завантажити док  ${username}  ${file}  id=addClaimDoc
+  Відкрити розділ вимог і скарг
+  Wait Scroll Click     id=qa_escalateClaimToComplaint
   Sleep  15
   [Return]  ${complaintID}
 

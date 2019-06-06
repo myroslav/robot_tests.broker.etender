@@ -29,7 +29,8 @@ def get_procedure_type(methodType):
         'belowThreshold': 'Допорогові закупівлі',
         'negotiation': 'Переговорна процедура',
         'aboveThresholdEU': 'Відкриті торги з публікацією англійською мовою',
-        'aboveThresholdUA.defense': 'Переговорна процедура для потреб оборони'
+        'aboveThresholdUA.defense': 'Переговорна процедура для потреб оборони',
+        'reporting': 'Звіт про укладений договір'
     }[methodType].decode('utf-8')
 
 def get_method_type(procedure_name):
@@ -39,7 +40,8 @@ def get_method_type(procedure_name):
         u'відкриті торги з публікацією англійською мовою': 'aboveThresholdEU',
         u'переговорна процедура': 'negotiation',
         u'відкриті торги': 'aboveThresholdUA',
-        u'конкурентний діалог 1-ий етап': 'competitiveDialogueUA'
+        u'конкурентний діалог 1-ий етап': 'competitiveDialogueUA',
+        u'звіт про укладений договір': 'reporting'
     }[procedure_name]
 
 def parse_etender_date(date):
@@ -174,6 +176,7 @@ def get_helper_dictionary():
         u"Договір поки що не опубліковано": u"pending",
         u"Договір опубліковано": u"active",
         u"Переможець торгів": u"active",
+        u"учасник виграв закупівлю": u"active",
         u'вимога': u'claim',
         u'відповідь надана': u'answered',
         u'задоволено': u'resolved',
