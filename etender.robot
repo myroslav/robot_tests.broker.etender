@@ -888,6 +888,15 @@ add feature
   Click Element     id=btnCancelComplaint
   Sleep  5
 
+Скасувати скаргу
+  [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}
+  Перейти на сторінку тендера за потреби
+  Відкрити розділ вимог і скарг
+  Click Element  xpath=//div[@id='${complaintID}']//*[@id='qa_SetStoppingComplaint']
+  Sleep  1  # wait for full input
+  Wait and Input    xpath=//form[@name='setStoppingComplaint']//textarea[@placeholder='Причини відхилення']      ${cancellation_data.data.cancellationReason}
+  Click Element     xpath=//form[@name='setStoppingComplaint']//*[@id='btnSetStoppingComplaint']
+
 Скасувати вимогу про виправлення умов закупівлі
   [Arguments]  @{arguments}
   Скасувати вимогу  @{arguments}
@@ -899,6 +908,7 @@ add feature
 Скасувати вимогу про виправлення визначення переможця
   [Arguments]  @{arguments}
   #last is award_index which is not needed
+  Run Keyword And Return If  '${arguments[-2].data.status}'=='stopping'  Скасувати скаргу  @{arguments[:-1]}
   Скасувати вимогу  @{arguments[:-1]}
 
 Select From List By Partial Label
@@ -1006,6 +1016,12 @@ scrollIntoView by script
 JavaScript scrollBy
   [Arguments]  ${x_offset}  ${y_offset}
   Execute JavaScript  window.scrollBy(${x_offset}, ${y_offset})
+
+JavascriptClick
+  [Arguments]     ${element_xpath}
+  # escape " characters of xpath
+  #${element_xpath}=       Replace String      ${element_xpath}        \"  \\\"
+  Execute JavaScript  document.evaluate(${element_xpath}, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0).click();
 
 Input String
   [Arguments]  ${locator}  ${value}
@@ -1201,6 +1217,24 @@ Check Is Element Loaded
   ${return_value}=  Отримати текст із поля і показати на сторінці  contracts[0].status
   ${return_value}=  Set Variable  ${return_value.strip()}
   ${return_value}=  convert_etender_string_to_common_string  ${return_value}
+  [return]  ${return_value}
+
+Отримати інформацію про contracts[0].dateSigned
+  ${return_value}=  Get Text  id=qa_dateSigned
+  ${return_value}=  parse_etender_date  ${return_value}  True
+#  Wait Scroll Click  xpath=//input[contains(@id,"contractDocuments")]  #развернуть документы контракта
+  [return]  ${return_value}
+
+Отримати інформацію про contracts[0].period.startDate
+  ${return_value}=  Get Text  id=qa_contractPeriodStartDate
+  Run Keyword And Return  cut_letters_and_parse_etender_date  ${return_value}
+
+Отримати інформацію про contracts[0].period.endDate
+  ${return_value}=  Get Text  id=qa_contractPeriodEndDate
+  Run Keyword And Return  cut_letters_and_parse_etender_date  ${return_value}
+
+Отримати інформацію про contracts[0].value.amount
+  ${return_value}=  Get Text  id=qa_contractAmount
   [return]  ${return_value}
 
 Відмітити на сторінці поле з тендера
@@ -1581,12 +1615,20 @@ Check Is Element Loaded
   Run Keyword And Return   Get Text  ${question_locator}//*[@name="question_${field}"]
 
 Отримати інформацію із документа
+# TODO: refactor
   [Arguments]  ${username}  ${tender_uaid}  ${doc_id}  ${field}
   ${prepared_locator}=  Set Variable  ${locator_document_${field}.replace('XX_doc_id_XX','${doc_id}')}
   log  ${prepared_locator}
+  Run Keyword And Ignore Error  Розгорнути документи договору
   Wait Until Page Contains Element  ${prepared_locator}  10
-  ${raw_value}=   Get Text  ${prepared_locator}
+#  ${raw_value}=   Get Text  ${prepared_locator}
+  scrollIntoView by script  ${prepared_locator}
+  ${raw_value}=  Get Element Attribute    ${prepared_locator}@innerText
+  Capture Page Screenshot
   Run Keyword And Return  Конвертувати інформацію із документа про ${field}  ${raw_value}
+
+Розгорнути документи договору
+  JavascriptClick  '//input[contains(@id, "contractDocuments")]'  # костыль для открытия доков когтракта
 
 Конвертувати інформацію із документа про title
   [Arguments]  ${raw_value}

@@ -6,6 +6,7 @@ import dateutil.parser
 from pytz import timezone
 import os
 
+
 TZ = timezone(os.environ['TZ'] if 'TZ' in os.environ else 'Europe/Kiev')
 
 def get_all_etender_dates(initial_tender_data):
@@ -30,7 +31,9 @@ def get_procedure_type(methodType):
         'negotiation': 'Переговорна процедура',
         'aboveThresholdEU': 'Відкриті торги з публікацією англійською мовою',
         'aboveThresholdUA.defense': 'Переговорна процедура для потреб оборони',
-        'reporting': 'Звіт про укладений договір'
+        'reporting': 'Звіт про укладений договір',
+        'competitiveDialogueEU': 'Конкурентний діалог з публікацією англійською мовою 1-ий етап'
+
     }[methodType].decode('utf-8')
 
 def get_method_type(procedure_name):
@@ -41,12 +44,26 @@ def get_method_type(procedure_name):
         u'переговорна процедура': 'negotiation',
         u'відкриті торги': 'aboveThresholdUA',
         u'конкурентний діалог 1-ий етап': 'competitiveDialogueUA',
-        u'звіт про укладений договір': 'reporting'
+        u'звіт про укладений договір': 'reporting',
+        u'конкурентний діалог з публікацією англійською мовою 1-ий етап': 'competitiveDialogueEU'
     }[procedure_name]
 
-def parse_etender_date(date):
+
+def parse_etender_date(date, as_string=False):
     # converts date from ui to datetime
-    return datetime.strptime(date, '%d-%m-%Y, %H:%M')
+    d = datetime.strptime(date, '%d-%m-%Y, %H:%M')
+    if as_string:
+        return str(d)
+    return d
+
+
+def cut_letters_and_parse_etender_date(date, as_string=True):
+    # converts date from ui
+    d = datetime.strptime(date.split(' ')[1], '%d-%m-%Y')
+    if as_string:
+        return str(d)
+    return d
+
 
 def prepare_locator_to_scroll(locator):
     if locator[:3] == 'id=':
