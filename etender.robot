@@ -160,6 +160,7 @@ Login
   Wait and Input   id=inputPassword     ${USERS.users['${username}'].password}  15
   Дочекатись зникнення blockUI
   Wait and Click   id=btn_submit
+  Дочекатись зникнення blockUI
   Go To  ${USERS.users['${username}'].homepage}
   Дочекатись зникнення blockUI
 
@@ -667,6 +668,12 @@ add feature
   ${page}=    Get Location
   Return From Keyword If  '${page}'=='${tenderpage}'
   Go To  ${tenderpage}
+  Дочекатись зникнення blockUI
+
+Перейти на сторінку контракту за потреби
+  ${page}=    Get Location
+  Return From Keyword If  '${page}'=='${contractpage}'
+  Go To  ${contractpage}
   Дочекатись зникнення blockUI
 
 Перейти на вкладку іншого типу процедур за потреби
@@ -1477,7 +1484,7 @@ Check Is Element Loaded
   Run Keyword And Return  Get Text  xpath=//awards-info//td[contains(@class,"doc-name")]//a
 
 Отримати посилання на аукціон для глядача
-  [Arguments]  ${username}  ${tender_uaid}
+  [Arguments]  ${username}  ${tender_uaid}  @{arguments}
   Reload Page
   Відкрити розділ Деталі Закупівлі
   Page Should Contain Element  xpath=//a[contains(.,"Подивитись процедуру проведення аукціону")]
@@ -1784,17 +1791,17 @@ Check Is Element Loaded
   Capture Page Screenshot
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
 
-  Wait Scroll Click  xpath=//button[@ng-click="getAwardsNextStep()"]        # button - Наступний крок
+  Wait Scroll Click     id=qa_NextStep        # button - Наступний крок
   Wait and Click    xpath=//button[@ng-click="showSignModalAward(award)"]  # button - Підписати рішення
   Підписати ЕЦП
   Sleep  30
 # shall be signed here -------------------------------------------------------------
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
-  Click Element  xpath=//button[@ng-click="getAwardsNextStep()"]        # button - Наступний крок
+  Click Element         id=qa_NextStep        # button - Наступний крок
   Capture Page Screenshot
   Sleep  5
   Capture Page Screenshot
-  Click Element  xpath=//button[@click-and-block="setDecision(1)"]      # button - Підтвердити
+  Click Element  id=qa_accept_award      # button - Підтвердити
   Sleep  5
   Capture Page Screenshot
   Sleep   2
@@ -1875,6 +1882,10 @@ Wait for upload before signing
   Reload Page
   Sleep  5
 
+Редагувати угоду
+  [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${field}  ${amount_net}
+  Перейти на сторінку контракту за потреби  ${tender_uaid}  ${contract_index}
+
 Відповісти на вимогу про виправлення умов закупівлі
   [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}
   # TODO: remove workaround and open complaint using given complaintID
@@ -1945,8 +1956,9 @@ temporary keyword for title update
   Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Wait and Click    xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
-  Wait Scroll Click    xpath=//button[@ng-click="getAwardsNextStep()"]        # button - Наступний крок
-  Wait and Click    xpath=//button[@click-and-block="setDecision(1)"]      # button - Підтвердити
+  Sleep  5
+  Wait Scroll Click     id=qa_NextStep       # button - Наступний крок
+  Wait and Click        id=qa_accept_award      # button - Підтвердити
 
 Відкрити подробиці кваліфікації за індексом
   [Arguments]  ${qualification_num}
