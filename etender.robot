@@ -351,14 +351,20 @@ Login
 add feature
   [Arguments]  ${feature}  ${feature_index}
   ${target}=        Set Variable    ${feature['featureOf'].replace('tenderer', 'tender')}  #strange name from prozorro
+  ${add_feature_of}=  Set Variable   ${target}
+  ${target}=        Set Variable If  '${target}'==b'lot'  lot_0
+  ...               '${target}'==b'tender'  tender
+  ...               '${target}'==b'item'  item
+
   ${options}=       Get From Dictionary  ${feature}  enum
   ${number_of_options}=  Get Length  ${options}
 
-  Wait Scroll Click     xpath=//add-features[contains(@feature-sector,"${target}")]//span[@ng-click="addFeature()"]
+  Wait Scroll Click     xpath=//add-features[contains(@feature-sector,"${add_feature_of}")]//span[@ng-click="addFeature()"]
   Wait and Input        xpath=//input[@name="feature-${target}${feature_index}"]  ${feature['title']}
   Wait and Input        xpath=//input[@name="feature-${target}${feature_index}"]/parent::td/following-sibling::td/input[@type="text"]  ${feature['description']}
+
   :FOR  ${i}  IN RANGE  ${number_of_options}-2  # 2 already exist
-  \     Wait Scroll Click   xpath=(//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="addFeatureOption(feature)"])[${feature_index}+1]
+  \     Wait Scroll Click   xpath=(//add-features[contains(@feature-sector,"${add_feature_of}")]//button[@ng-click="addFeatureOption(feature)"])[${feature_index}+1]
 
   :FOR  ${i}  IN RANGE  ${number_of_options}
   \     ${opt_title}=   Get From Dictionary     ${feature.enum[${i}]}  title
