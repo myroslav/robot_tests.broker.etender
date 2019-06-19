@@ -301,7 +301,10 @@ Login
   [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${item}
   Log   ${USERS.users['${username}'].lot_data}
   Перейти до редагування тендера    ${username}  ${tender_uaid}
-  Додати предмет
+  ${lots_count}=  Get Length  ${USERS.users['${username}'].initial_data.data['lots']}
+  Wait Scroll Click  id=addLotItem_1
+  Додати предмет  ${item}  1  ${lots_count}
+  Зберегти зміни в тендері
 
 
 Додати нецінові показники при наявності
@@ -742,8 +745,8 @@ add feature
 
 Завантажити документ в лот
   [Arguments]  ${username}  ${file}  ${tender_uaid}  ${lot_id}
-  Wait and Select By Label  xpath=//div[@id="treetree-01-02-0"]//select[@id="docType"]  Інші
-  Завантажити док  ${username}  ${file}  id=lot_doc_add
+  Wait and Select By Label  xpath=//div[@id="treeDocs0"]//select[@id="docType"]  Інші
+  Завантажити док  ${username}  ${file}  xpath=//button[contains(@id, "lot_doc")]
 
 Заповнити нецінові критерії
   [Arguments]  ${features_ids}  ${parameters}
