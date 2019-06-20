@@ -575,6 +575,12 @@ add feature
   Wait and Input    id=street_${lot_index}${index}   ${streetAddress}
   Wait and Input    id=postIndex_${lot_index}${index}    ${postalCode}
 
+Видалити предмет закупівлі
+  [Arguments]  ${username}  ${tender_uaid}  ${index}  ${lot_index}
+  Перейти до редагування тендера    ${username}  ${tender_uaid}
+  Wait and Click  id=itemRemove_11
+  Зберегти зміни в тендері
+
 Додати неціновий показник на предмет
   [Arguments]  ${username}  ${tender_uaid}  ${feature_data}  ${object_id}
   Перейти до редагування тендера    ${username}  ${tender_uaid}
@@ -594,7 +600,8 @@ add feature
   Перейти до редагування тендера    ${username}  ${tender_uaid}
   ${features}=          Set Variable    ${USERS.users['${username}'].feature_data.feature}
   #${features_count}=    Get Length      ${features}
-  Видалити вказаний неціновий показник  ${features['featureOf']}  ${feature_id}
+  Log  ${features}
+  Видалити вказаний неціновий показник  ${features['featureOf'].replace('tenderer', 'tender')}  ${feature_id}
 #  :FOR  ${i}  IN RANGE  ${features_count}
 #  \     Log  ${features[${i}]}
 #  \     Run Keyword If  '${feature_id}' in '${features[${i}].title}'  Видалити вказаний неціновий показник  ${features[${i}]['featureOf']}  ${feature_id}
@@ -610,7 +617,7 @@ add feature
   \     ${contains}=  Evaluate   "${feature_id}" in """${feature_title}"""
   \     ${target_feature_index}=  Run Keyword If  '${contains}' == 'True'  Set Variable  ${i}
   Return From Keyword If  '${target_feature_index}' == 'None'
-  Wait Scroll Click     xpath//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="removeFeature($index)"][${target_feature_index}+1]
+  Wait Scroll Click     xpath=(//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="removeFeature($index)"])[${target_feature_index}+1]
 
 
 # TODO merge ↕
@@ -627,11 +634,11 @@ add feature
 
 Видалити вказаний неціновий показник з предмету
   [Arguments]  ${feature_index}
-  Wait Scroll Click     xpath//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="removeFeature($index)"][${feature_index}+1]
+  Wait Scroll Click     xpath==(//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="removeFeature($index)"])[${feature_index}+1]
 
 Видалити вказаний неціновий показник з лоту
   [Arguments]  ${feature_index}
-  Wait Scroll Click     xpath=//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="removeFeature($index)"][${feature_index}+1]
+  Wait Scroll Click     xpath=(//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="removeFeature($index)"])[${feature_index}+1]
 
 Клацнути і дочекатися
   [Arguments]  ${tender_link}
@@ -1726,6 +1733,7 @@ Check Is Element Loaded
 
 Отримати інформацію із нецінового показника про description
   [Arguments]  ${object_id}
+#  scrollIntoView by script  xpath=//span[contains(.,'${object_id}')]/../../..//span[contains(@ng-bind, "description")]
   Run Keyword And Return  Get Text  xpath=//span[contains(.,'${object_id}')]/../../..//span[contains(@ng-bind, "description")]
 
 Отримати інформацію із нецінового показника про featureOf
