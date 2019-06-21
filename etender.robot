@@ -778,7 +778,7 @@ add feature
   Відкрити розділ Деталі Закупівлі
   ${amount}=    Run Keyword If  ${lots_ids} is None  Set Variable  ${bid_data.data.value.amount}
   ...           ELSE  Set Variable  ${bid_data.data.lotValues[0].value.amount}
-  Input String      id=amount0      ${amount}
+  Run Keyword And Ignore Error  Input String      id=amount0      ${amount}
   Run Keyword And Ignore Error      Пітдвердити чекбокси пропозиції
   Run Keyword Unless  ${features_ids} is None  Заповнити нецінові критерії  ${features_ids}  ${bid_data.data.parameters}
   Click Element     id=createBid_0
@@ -1725,6 +1725,7 @@ Check Is Element Loaded
   Дочекатись зникнення blockUI
   Run Keyword And Ignore Error  Wait Scroll Click   xpath=//tr[.//span[contains(.,'${object_id}')]]//span[@data-toggle="collapse"]
   Capture Page Screenshot
+  Відкрити всі лоти
   Run Keyword And Return  Отримати інформацію із нецінового показника про ${field_name}  ${object_id}
 
 Отримати інформацію із нецінового показника про title
@@ -1733,7 +1734,6 @@ Check Is Element Loaded
 
 Отримати інформацію із нецінового показника про description
   [Arguments]  ${object_id}
-#  scrollIntoView by script  xpath=//span[contains(.,'${object_id}')]/../../..//span[contains(@ng-bind, "description")]
   Run Keyword And Return  Get Text  xpath=//span[contains(.,'${object_id}')]/../../..//span[contains(@ng-bind, "description")]
 
 Отримати інформацію із нецінового показника про featureOf
