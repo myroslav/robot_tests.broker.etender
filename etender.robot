@@ -85,6 +85,7 @@ ${locator_item_unit.code}                                      xpath=//p[contain
 ${locator_item_deliveryDate.endDate}                           xpath=//p[contains(.,"XX_item_id_XX")]/../../parent::tr//*[starts-with(@id,"delivery_end_")]
 ${huge_timeout_for_visibility}                                 300
 ${tenderpage}
+${contractpage}
 
 
 *** Keywords ***
@@ -98,6 +99,8 @@ ${tenderpage}
   Дочекатись зникнення blockUI
   Return from keyword if  '${tenderpage}'!='${EMPTY}'
   Set Global Variable   ${tenderpage}   ${EMPTY}
+  Return from keyword if  '${contractpage}'!='${EMPTY}'
+  Set Global Variable   ${contractpage}   ${EMPTY}
 
 Wait Scroll Click
   [Arguments]  ${locator}  ${timeout}=5
@@ -160,7 +163,7 @@ Login
   Wait and Input   id=inputPassword     ${USERS.users['${username}'].password}  15
   Дочекатись зникнення blockUI
   Wait and Click   id=btn_submit
-  Дочекатись зникнення blockUI
+  Sleep  5
   Go To  ${USERS.users['${username}'].homepage}
   Дочекатись зникнення blockUI
 
@@ -686,7 +689,17 @@ add feature
   Go To  ${tenderpage}
   Дочекатись зникнення blockUI
 
+Перейти на сторінку контракту
+  Перейти на сторінку тендера за потреби
+  Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
+  Run Keyword And Ignore Error  Wait Scroll Click     id=qa_FillContractInfo
+  Дочекатись зникнення blockUI
+  ${page}=    Get Location
+  Set Global Variable  ${contractpage}  ${page}
+
+
 Перейти на сторінку контракту за потреби
+  Run Keyword And Return If  '${contractpage}'=='${EMPTY}'  Перейти на сторінку контракту
   ${page}=    Get Location
   Return From Keyword If  '${page}'=='${contractpage}'
   Go To  ${contractpage}
@@ -1508,7 +1521,7 @@ Check Is Element Loaded
   Run Keyword And Return  Get Element Attribute  xpath=//a[contains(.,"Подивитись процедуру проведення аукціону")]@href
 
 Отримати посилання на аукціон для учасника
-  [Arguments]  ${username}  ${tender_uaid}
+  [Arguments]  ${username}  ${tender_uaid}  @{arguments}
   Reload Page
   Відкрити розділ Деталі Закупівлі
   Page Should Contain Element  xpath=//a[@id='participationUrl_0']
@@ -1774,7 +1787,7 @@ Check Is Element Loaded
   ${contact_url}=        Get From Dictionary  ${object.data.suppliers[0].contactPoint}  url
   ${contact_phone}=      Get From Dictionary  ${object.data.suppliers[0].contactPoint}  telephone
   ${contact_fax}=        Get From Dictionary  ${object.data.suppliers[0].contactPoint}  faxNumber
-
+  ${scale}=        Get From Dictionary        ${object.data.suppliers[0]}  scale
   ${amount}=  float_to_string_2f  ${amount}
   Input text  id=amount  ${amount}
   # TODO: read curency from dict
@@ -1782,6 +1795,7 @@ Check Is Element Loaded
   Input text  id=orgName    ${supplier_name}
   Input text  id=orgCode    ${supplier_code}
   Input text  id=subcInfo   ${supplier_subcInfo}
+  Select From List By Value     id=orgScale  ${scale}
   # TODO: use qualified from dict
   Click Element              xpath=//div[@ng-if="!detailes.isLimitedReporting"]//input[1]  # Відповідність кваліфікаційним критеріям: Відповідає
   Select From List By Label  xpath=//select[@ng-model="data.country"]  ${countryName}
@@ -1800,21 +1814,21 @@ Check Is Element Loaded
 
   Sleep  30
   Reload Page
-  Відкрити розділ Деталі Закупівлі
   Click Element  xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
   Wait and Select By Label      xpath=//div[@ng-controller="modalGetAwardsCtrl"]//select  Повідомлення про рішення
   Завантажити док  ${username}  ${document}  xpath=//button[@ng-model="lists.documentsToAdd"]  id=downloadAwardDocs
-  Відкрити розділ Деталі Закупівлі
   Capture Page Screenshot
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
 
+  Run Keyword And Ignore Error  Click Element  xpath=//a[@data-target="#modalGetAwards"]
   Wait Scroll Click     id=qa_NextStep        # button - Наступний крок
   Wait and Click    xpath=//button[@ng-click="showSignModalAward(award)"]  # button - Підписати рішення
   Підписати ЕЦП
   Sleep  30
 # shall be signed here -------------------------------------------------------------
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
-  Click Element         id=qa_NextStep        # button - Наступний крок
+  Run Keyword And Ignore Error  Click Element  xpath=//a[@data-target="#modalGetAwards"]
+  Wait Scroll Click         id=qa_NextStep        # button - Наступний крок
   Capture Page Screenshot
   Sleep  5
   Capture Page Screenshot
@@ -1839,14 +1853,7 @@ Wait for upload before signing
 
 Підтвердити підписання контракту
   [Arguments]  ${username}  ${tender_uaid}  ${contract_index}
-  Log  Temporary sleep to compensate timings, let's wait for 1 minute to be sure  WARN
-  Sleep  60
-  Reload Page
-  Відкрити розділ Деталі Закупівлі
-  ${tmp_location_tender}=  Get Location
-
-# ==================  1 - enter values into fields, save
-  Click Element     xpath=//a[.="Внести інформацію про договір"]
+  Перейти на сторінку контракту за потреби
   Wait and Input    id=contractNumber  ${contract_index}
   ${time_now_tmp}=     get_time_now
   ${date_now_tmp}=     get_date_now
@@ -1854,24 +1861,13 @@ Wait for upload before signing
   Input text  name=dateSigned  ${date_now_tmp}
   Input text  name=timeSigned  ${time_now_tmp}
   Input text  name=endDate     ${date_future_tmp}
-  Wait Scroll Click     xpath=//button[@data-target="#saveData"]  # button - Опублікувати документи та завершити пізніше
-  Wait and Input        xpath=//div[@id="saveData"]//button[@ng-click="save(documentsToAdd)"]  10
+  Зберегти інформацію про контракт
 
-# ==================  2 - wait for upload
-  Sleep  60  # wait for upload
-  Go To  ${tmp_location_tender}
-  Sleep  5
-  Capture Page Screenshot
-  Відкрити розділ Деталі Закупівлі
-  Wait Scroll Click     xpath=//a[.="Редагувати інформацію про договір "]
-
-# ==================  3 - upload doc
-
+  Sleep  60
   Wait and Select By Label      id=docType  Підписаний договір
   ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
   Завантажити док  ${username}  ${file_path}  xpath=//button[@ng-model="documentsToAdd"]
-  Відкрити розділ Деталі Закупівлі
-  Wait Scroll Click     xpath=//a[.="Редагувати інформацію про договір "]
+
   ${methodType}=  Get From Dictionary  ${USERS.users['${username}']}  method_type
   Run Keyword If  '${methodType}' in ('aboveThresholdEU', 'aboveThresholdUA', 'negotiation')  Підтвердити контракт додаванням ЕЦП
   Wait Scroll Click  xpath=//button[@click-and-block="sign()"]  # button - Завершити закупівлю
@@ -1900,8 +1896,34 @@ Wait for upload before signing
   Sleep  5
 
 Редагувати угоду
-  [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${field}  ${amount_net}
-  Перейти на сторінку контракту за потреби  ${tender_uaid}  ${contract_index}
+  [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${field}  ${value}
+  Перейти на сторінку контракту за потреби
+  Run Keyword And Return  Редагувати поле договору ${field}  ${value}
+
+
+Редагувати поле договору value.amount
+  [Arguments]  ${value}
+  Input String  id=qa_valueAmount   ${value}
+  Зберегти інформацію про контракт
+
+
+Редагувати поле договору value.amountNet
+  [Arguments]  ${value}
+  Input String  id=qa_valueAmountNet    ${value}
+  # TODO ↓
+  Wait and Input    id=contractNumber  contractnumber
+  ${time_now_tmp}=     get_time_now
+  ${date_now_tmp}=     get_date_now
+  ${date_future_tmp}=  get_date_10d_future
+  Input text  name=dateSigned  ${date_now_tmp}
+  Input text  name=timeSigned  ${time_now_tmp}
+  Input text  name=endDate     ${date_future_tmp}
+  Зберегти інформацію про контракт
+
+Зберегти інформацію про контракт
+  Wait Scroll Click     id=qa_saveContractInfo
+  Wait and Click    id=qa_saveData
+  Sleep  2
 
 Відповісти на вимогу про виправлення умов закупівлі
   [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}
