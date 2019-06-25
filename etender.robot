@@ -1868,8 +1868,8 @@ Wait for upload before signing
   ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
   Завантажити док  ${username}  ${file_path}  xpath=//button[@ng-model="documentsToAdd"]
 
-  ${methodType}=  Get From Dictionary  ${USERS.users['${username}']}  method_type
-  Run Keyword If  '${methodType}' in ('aboveThresholdEU', 'aboveThresholdUA', 'negotiation')  Підтвердити контракт додаванням ЕЦП
+  ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${USERS.users['${username}']}  method_type
+  Run Keyword And Ignore Error  Run Keyword If  '${methodType}' in ('aboveThresholdEU', 'aboveThresholdUA', 'negotiation')  Підтвердити контракт додаванням ЕЦП
   Wait Scroll Click  xpath=//button[@click-and-block="sign()"]  # button - Завершити закупівлю
   Capture Page Screenshot
   Wait Until Page Contains  Підтверджено!  60
