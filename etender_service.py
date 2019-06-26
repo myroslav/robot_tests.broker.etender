@@ -174,6 +174,7 @@ def get_helper_dictionary():
         #tender statuses
         u'період уточнень': u'active.enquiries',
         u'очікування пропозицій': u'active.tendering',
+        u'перший етап завершено': u'active.tendering',
         u'прекваліфікація': u'active.pre-qualification',
         u'блокування перед аукціоном': u'active.pre-qualification.stand-still',
         u'період аукціону': u'active.auction',
