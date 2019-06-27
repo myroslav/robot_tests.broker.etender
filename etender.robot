@@ -1814,33 +1814,25 @@ Check Is Element Loaded
 
   Sleep  30
   Reload Page
-  Click Element  xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
+  Перейти до оцінки кандидата
   Wait and Select By Label      xpath=//div[@ng-controller="modalGetAwardsCtrl"]//select  Повідомлення про рішення
   Завантажити док  ${username}  ${document}  xpath=//button[@ng-model="lists.documentsToAdd"]  id=downloadAwardDocs
   Capture Page Screenshot
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
 
-  Run Keyword And Ignore Error  Click Element  xpath=//a[@data-target="#modalGetAwards"]
-  Wait Scroll Click     id=qa_NextStep        # button - Наступний крок
-  Wait and Click    xpath=//button[@ng-click="showSignModalAward(award)"]  # button - Підписати рішення
-  Підписати ЕЦП
-  Sleep  30
-# shall be signed here -------------------------------------------------------------
-  Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
-  Run Keyword And Ignore Error  Click Element  xpath=//a[@data-target="#modalGetAwards"]
+  Run Keyword And Ignore Error  Перейти до оцінки кандидата
+  Підписати авард
+
+  Run Keyword And Ignore Error  Перейти до оцінки кандидата
   Wait Scroll Click         id=qa_NextStep        # button - Наступний крок
-  Capture Page Screenshot
   Sleep  5
-  Capture Page Screenshot
-  Click Element  id=qa_accept_award      # button - Підтвердити
+  Підтвердити переможця
   Sleep  5
-  Capture Page Screenshot
-  Sleep   2
 
 Wait for upload
   Reload Page
-  Wait Scroll Click     xpath=//a[@data-target="#modalGetAwards"]  15            # button - Оцінка документів Кандидата
-  Sleep  5
+  Перейти до оцінки кандидата
+  Sleep  2
   Page Should Not Contain  Не всі документи експортовані
 
 Wait for upload before signing
@@ -1876,13 +1868,15 @@ Wait for upload before signing
 
 Підписати ЕЦП
   [Arguments]
-  Wait and Select By Label  id=CAsServersSelect  Тестовий ЦСК АТ "ІІТ"
+  Wait and Select By Label  id=CAsServersSelect  Тестовий ЦСК АТ "ІІТ"  15
   ${key_dir}=  Normalize Path  ${CURDIR}/../../
   Choose File  id=PKeyFileInput  ${key_dir}/Key-6.dat
   ${PKeyPassword}=  Get File  password.txt
   Wait and Input    id=PKeyPassword  ${PKeyPassword}
-  Click Element     id=PKeyReadButton
+  Дочекатись Зникнення blockUI
+  Wait and Click    id=PKeyReadButton
   Wait and Click    id=SignDataButton  10
+  Дочекатись Зникнення blockUI
   Wait and Click    xpath=//div[@id="modalSign"]//button[contains(@class,"close")]
 
 Підтвердити контракт додаванням ЕЦП
@@ -1979,12 +1973,10 @@ temporary keyword for title update
   # TODO: rework duplicated code - see "Створити постачальника, додати документацію і підтвердити його"
   Перейти на сторінку тендера за потреби
   Дочекатись зникнення blockUI
-  Відкрити розділ Деталі Закупівлі
-  Click Element  xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
+  Перейти до оцінки кандидата
   Дочекатись зникнення blockUI
   Select From List By Label  xpath=//div[@id="modalGetAwards"]//select[@id="docType"]  Повідомлення про рішення
   Завантажити док  ${username}  ${document}  xpath=//div[@id="modalGetAwards"]//button[@id="qa_uploadAwardDocument"]  xpath=//div[@id="modalGetAwards"]//button[@id="downloadAwardDocs"]
-  Відкрити розділ Деталі Закупівлі
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
   Reload Page
 
@@ -1992,12 +1984,39 @@ temporary keyword for title update
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}
   # TODO: rework duplicated code - see "Створити постачальника, додати документацію і підтвердити його"
   Перейти на сторінку тендера за потреби
-  Дочекатись зникнення blockUI
-  Відкрити розділ Деталі Закупівлі
-  Wait and Click    xpath=//a[@data-target="#modalGetAwards"]  # button - Оцінка документів Кандидата
+  Перейти до оцінки кандидата
   Sleep  5
   Wait Scroll Click     id=qa_NextStep       # button - Наступний крок
-  Wait and Click        id=qa_accept_award      # button - Підтвердити
+  ${passed}=  Run Keyword And Return Status     Підтвердити переможця
+  Return From Keyword If  ${passed}  # Выходим если допорог и успешно подтвердили. если нет такой кнопки - идём дальше
+  Підписати авард
+  Wait Scroll Click     id=qa_NextStep
+  Click Element         id=qa_selfEligible
+  Click Element         id=qa_selfQualified
+  Підтвердити переможця
+
+Підписати авард
+  Wait and Click    id=qa_OpenSignModal
+  Підписати ЕЦП
+  Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
+
+Підтвердити переможця
+  Wait and Click    id=qa_accept_award
+
+Відхилити переможця
+  Wait and Click    id=qa_disqualify_award
+
+Перейти до оцінки кандидата
+  Wait Scroll Click    xpath=//a[@data-target="#modalGetAwards"]
+
+Скасування рішення кваліфікаційної комісії
+  [Arguments]  ${username}  ${tender_uaid}  ${award_num}
+  Перейти на сторінку тендера за потреби
+  Wait and Click    xpath=//button[@data-target="#modalCancelAward"]
+  Wait and Input    xpath=//textarea[@ng-model="cancelAwardModel.description"]  text
+  Wait and Click    xpath=//button[@ng-click="cancelAward()"]
+  Sleep  15
+  Reload Page
 
 Відкрити подробиці кваліфікації за індексом
   [Arguments]  ${qualification_num}
