@@ -32,7 +32,8 @@ def get_procedure_type(methodType):
         'aboveThresholdEU': 'Відкриті торги з публікацією англійською мовою',
         'aboveThresholdUA.defense': 'Переговорна процедура для потреб оборони',
         'reporting': 'Звіт про укладений договір',
-        'competitiveDialogueEU': 'Конкурентний діалог з публікацією англійською мовою 1-ий етап'
+        'competitiveDialogueEU': 'Конкурентний діалог з публікацією англійською мовою 1-ий етап',
+        'competitiveDialogueUA': 'Конкурентний діалог 1-ий етап'
 
     }[methodType].decode('utf-8')
 
@@ -176,6 +177,7 @@ def get_helper_dictionary():
         u'очікування пропозицій': u'active.tendering',
         u'перший етап завершено': u'active.tendering',
         u'прекваліфікація': u'active.pre-qualification',
+        u'оцінка пропозицій': u'active.pre-qualification',
         u'блокування перед аукціоном': u'active.pre-qualification.stand-still',
         u'період аукціону': u'active.auction',
         u'кваліфікація переможця': u'active.qualification',

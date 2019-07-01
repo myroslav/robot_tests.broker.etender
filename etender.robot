@@ -86,6 +86,7 @@ ${locator_item_deliveryDate.endDate}                           xpath=//p[contain
 ${huge_timeout_for_visibility}                                 300
 ${tenderpage}
 ${contractpage}
+${global_procedure_type}
 
 
 *** Keywords ***
@@ -190,10 +191,9 @@ Login
   Wait and Select By Label  id=chooseProcedureType  ${procedure_type}
   Wait and Click        id=goToCreate
   Дочекатись зникнення blockUI
-
   Input text    id=title    ${title}
   Input text    id=description            ${description}
-  Run Keyword If    '${methodType}' == 'aboveThresholdEU'   Input text    id=titleEN    ${title_en}
+  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU')   Input text    id=titleEN    ${title_en}
   Wait Scroll Click     id=valueAddedTaxIncluded
   Select From List By Value  id=mainProcurementCategory     ${mainProcurementCategory}
 
@@ -650,10 +650,18 @@ add feature
   Wait Until Page Contains Element   ${tender_link}  5
 
 Зберегти посилання
+  Log  ${tenderpage}
   Return From Keyword If  '${tenderpage}'!='${EMPTY}'
   ${page}=    Get Location
   Log   ${page}     WARN
   Set Global Variable     ${tenderpage}  ${page}
+
+Зберегти посилання другого етапу
+  Log  ${tenderpage}
+  ${page}=    Get Location
+  Log   ${page}     WARN
+  Set Global Variable     ${tenderpage}  ${page}
+  Log  ${tenderpage}
 
 Пошук тендера по ідентифікатору
   [Arguments]  ${username}  ${tender_uaid}  @{ARGUMENTS}
@@ -678,9 +686,11 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}
   # TODO: У майбутньому треба буде запровадити більш коректне рішення
   # Виникла необхідність обійти пошук по ідентифікатору через особливість тестового оточення майданчика
+  Log  ${TENDER_UAID}
   Go To  ${USERS.users['${username}'].homepage.split('#')[0]}tender?tenderid=${TENDER_UAID}
   Дочекатись зникнення blockUI
   Wait Until Page Contains    ${tender_uaid}   10
+  Run Keyword And Return If  '.' in '${tender_uaid}'  Зберегти посилання другого етапу
   Зберегти посилання
 
 Перейти на сторінку тендера за потреби
@@ -793,7 +803,16 @@ add feature
   ...           ELSE  Set Variable  ${bid_data.data.lotValues[0].value.amount}
   Run Keyword And Ignore Error  Input String      id=amount0      ${amount}
   Run Keyword And Ignore Error      Пітдвердити чекбокси пропозиції
+
+  ${x}=  Run Keyword  Отримати інформацію про procurementMethodType
+  Set Global Variable  ${global_procedure_type}  ${x}
+  Run Keyword And Return If  '${global_procedure_type}' in ('competitiveDialogueUA', 'competitiveDialogueEU')  Пропустити заповнення нецінових показників
   Run Keyword Unless  ${features_ids} is None  Заповнити нецінові критерії  ${features_ids}  ${bid_data.data.parameters}
+  Click Element     id=createBid_0
+  Дочекатись зникнення blockUI
+  sleep  3
+
+Пропустити заповнення нецінових показників
   Click Element     id=createBid_0
   Дочекатись зникнення blockUI
   sleep  3
@@ -1814,9 +1833,10 @@ Check Is Element Loaded
 
   Sleep  30
   Reload Page
-  Перейти до оцінки кандидата
+  Відкрити розділ Деталі Закупівлі
   Wait and Select By Label      xpath=//div[@ng-controller="modalGetAwardsCtrl"]//select  Повідомлення про рішення
   Завантажити док  ${username}  ${document}  xpath=//button[@ng-model="lists.documentsToAdd"]  id=downloadAwardDocs
+  Відкрити розділ Деталі Закупівлі
   Capture Page Screenshot
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
 
@@ -1846,6 +1866,14 @@ Wait for upload before signing
 Підтвердити підписання контракту
   [Arguments]  ${username}  ${tender_uaid}  ${contract_index}
   Перейти на сторінку контракту за потреби
+  Log  Temporary sleep to compensate timings, let's wait for 1 minute to be sure  WARN
+  Sleep  60
+  Reload Page
+  Відкрити розділ Деталі Закупівлі
+  ${tmp_location_tender}=  Get Location
+
+# ==================  1 - enter values into fields, save
+  Click Element     xpath=//a[.="Внести інформацію про договір"]
   Wait and Input    id=contractNumber  ${contract_index}
   ${time_now_tmp}=     get_time_now
   ${date_now_tmp}=     get_date_now
@@ -1854,21 +1882,34 @@ Wait for upload before signing
   Input text  name=timeSigned  ${time_now_tmp}
   Input text  name=endDate     ${date_future_tmp}
   Зберегти інформацію про контракт
+  Wait Scroll Click     xpath=//button[@data-target="#saveData"]  # button - Опублікувати документи та завершити пізніше
+  Wait and Input        xpath=//div[@id="saveData"]//button[@ng-click="save(documentsToAdd)"]  10
 
-  Sleep  60
+# ==================  2 - wait for upload
+  Sleep  60  # wait for upload
+  Go To  ${tmp_location_tender}
+  Sleep  5
+  Capture Page Screenshot
+  Відкрити розділ Деталі Закупівлі
+  Wait Scroll Click     xpath=//a[.="Редагувати інформацію про договір "]
+
+# ==================  3 - upload doc
+
   Wait and Select By Label      id=docType  Підписаний договір
   ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
   Завантажити док  ${username}  ${file_path}  xpath=//button[@ng-model="documentsToAdd"]
-
-  ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${USERS.users['${username}']}  method_type
-  Run Keyword And Ignore Error  Run Keyword If  '${methodType}' in ('aboveThresholdEU', 'aboveThresholdUA', 'negotiation')  Підтвердити контракт додаванням ЕЦП
+  Відкрити розділ Деталі Закупівлі
+  Wait Scroll Click     xpath=//a[.="Редагувати інформацію про договір "]
+  ${methodType}=  Get From Dictionary  ${USERS.users['${username}']}  method_type
+  Run Keyword If  '${methodType}' in ('aboveThresholdEU', 'aboveThresholdUA', 'negotiation')  Підтвердити контракт додаванням ЕЦП
   Wait Scroll Click  xpath=//button[@click-and-block="sign()"]  # button - Завершити закупівлю
   Capture Page Screenshot
   Wait Until Page Contains  Підтверджено!  60
 
 Підписати ЕЦП
   [Arguments]
-  Wait and Select By Label  id=CAsServersSelect  Тестовий ЦСК АТ "ІІТ"  15
+  Дочекатись зникнення blockUI
+  Wait and Select By Label  id=CAsServersSelect  Тестовий ЦСК АТ "ІІТ"
   ${key_dir}=  Normalize Path  ${CURDIR}/../../
   Choose File  id=PKeyFileInput  ${key_dir}/Key-6.dat
   ${PKeyPassword}=  Get File  password.txt
@@ -2021,10 +2062,10 @@ temporary keyword for title update
 Відкрити подробиці кваліфікації за індексом
   [Arguments]  ${qualification_num}
   Capture Page Screenshot
-  Wait Until Element Is Visible  xpath=//div[@id="accordion-0-${qualification_num}"]//button[contains(.,"Підтвердити кваліфікацію") and @data-toggle="collapse"]   # inner confirmation button
+  Wait Until Element Is Visible  xpath=//div[@id="accordion-0-${qualification_num}"]//button[contains(.,"Допустити до аукціону") and @data-toggle="collapse"]   # inner confirmation button
   ${is_expanded}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//div[@id="aply-0-${qualification_num}"]//button[@click-and-block="vm.q.active(qualification)"]
   Return From Keyword If  '${is_expanded}' != 'False'
-  Wait Scroll Click     xpath=//div[@id="accordion-0-${qualification_num}"]//button[contains(.,"Підтвердити кваліфікацію") and @data-toggle="collapse"]
+  Wait Scroll Click     xpath=//div[@id="accordion-0-${qualification_num}"]//button[contains(.,"Допустити до аукціону") and @data-toggle="collapse"]
   Sleep  1
   Capture Page Screenshot
 
