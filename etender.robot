@@ -176,13 +176,14 @@ Login
   ${title}=             Get From Dictionary     ${tender_data}              title
   ${title_en}=          Get From Dictionary     ${tender_data}              title_en
   ${description}=       Get From Dictionary     ${tender_data}              description
-  ${budget}=            Get From Dictionary     ${tender_data.value}        amount
-  ${budgetToStr}=       float_to_string_2f      ${budget}      # at least 2 fractional point precision, avoid rounding
 
   ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
   log to console  check presence of procurementMethodType in dictionary: ${status}
   ${methodType}=  Set Variable IF  '${status}' != 'PASS'       belowThreshold  ${methodType}
   Set To Dictionary  ${USERS.users['${username}']}  method_type=${methodType}
+  Run Keyword If  '${methodType}' == 'esco'  Run Keyword And Return  Створити тендер ESCO  ${username}  ${tender_data}  ${methodType}
+  ${budget}=            Get From Dictionary     ${tender_data.value}        amount
+  ${budgetToStr}=       float_to_string_2f      ${budget}      # at least 2 fractional point precision, avoid rounding
   Log  ${items[0]}
   Click Element         id=qa_myTenders  # Мої закупівлі
   Дочекатись зникнення blockUI
@@ -194,6 +195,7 @@ Login
   Input text    id=title    ${title}
   Input text    id=description            ${description}
   Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU')   Input text    id=titleEN    ${title_en}
+
   Wait Scroll Click     id=valueAddedTaxIncluded
   Select From List By Value  id=mainProcurementCategory     ${mainProcurementCategory}
 
@@ -217,6 +219,69 @@ Login
   Run Keyword And Return  Get Text  ${locator.tenderId}
   Зберегти посилання
   # TODO FIX ELASTIC ISSUES ON UAT and delete ↑
+
+
+
+
+
+Створити тендер ESCO
+  [Arguments]  ${username}  ${tender_data}  ${methodType}
+  ${items}=             Get From Dictionary     ${tender_data}              items
+  ${mainProcurementCategory}=                   Get From Dictionary         ${tender_data}             mainProcurementCategory
+  ${title}=             Get From Dictionary     ${tender_data}              title
+  ${title_en}=          Get From Dictionary     ${tender_data}              title_en
+  ${description}=       Get From Dictionary     ${tender_data}              description
+  ${NBU}=               Get From Dictionary     ${tender_data}   NBUdiscountRate
+  ${NBU}=              Evaluate  ${NBU}*100
+  ${minimalStepPercentage}=  Get From Dictionary     ${tender_data}  minimalStepPercentage
+  ${yearlyStepPercentage}=  Get From Dictionary     ${tender_data}  yearlyPaymentsPercentageRange
+  ${fundingKind}=  Get From Dictionary  ${tender_data}  fundingKind
+  ${minimalStepPercentageStr}=  float_to_string_2f      ${minimalStepPercentage}
+  ${NBUStr}=  float_to_string_2f  ${NBU}
+  ${yearlyStepPercentageStr}=  float_to_string_2f  ${yearlyStepPercentage}
+  ${fundingKindStr}=  convert_common_string_to_etender_string  ${fundingKind}
+
+  ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
+  Set To Dictionary  ${USERS.users['${username}']}  method_type=${methodType}
+  Log  ${items[0]}
+  Click Element         id=qa_myTenders  # Мої закупівлі
+  Дочекатись зникнення blockUI
+  Wait and Click        xpath=//a[@data-target='#procedureType']
+  ${procedure_type}=    get_procedure_type  ${methodType}
+  Wait and Select By Label  id=chooseProcedureType  ${procedure_type}
+  Wait and Click        id=goToCreate
+  Дочекатись зникнення blockUI
+
+  Input text    id=title    ${title}
+  Input text    id=description            ${description}
+  Input text    id=titleEN    ${title_en}
+  Input text    id=nbuDiscRate  ${NBUStr}
+  Wait and Select By Label  id=fundingKind  ${fundingKindStr}
+
+
+  Select From List By Value  id=mainProcurementCategory     ${mainProcurementCategory}
+
+  ${status}  ${lots}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  lots
+  Log  ${lots[0]}
+  log to console  presence of lots: ${status}
+  ${lots_count}=  Run Keyword IF  '${status}' != 'PASS'  Set Variable  0
+  ...             ELSE  Get Length  ${lots}
+  Run Keyword If  ${lots_count}>0  Run Keywords  Wait Scroll Click  id=isMultilots  AND  Додати лоти і їх предмети  ${lots_count}  ${lots}  ${items}
+  ...           ELSE  Run Keywords  Input text  xpath=//input[contains(@name, 'yearlyPaymentsPercentageRange0')]  ${yearlyStepPercentageStr}  AND  Input text  xpath=//input[contains(@name, 'minimalStepPerc0')]  ${minimalStepPercentageStr}  AND  Додати предмети  ${items}  0
+  Додати умови оплати при наявності  ${tender_data}
+  Додати причину з описом при наявності  ${tender_data}
+  Додати донора при наявності  ${tender_data}
+  Додати дати при наявності    ${tender_data}  ${methodType}
+  Додати нецінові показники при наявності       ${tender_data}
+  Sleep   10
+  Wait Scroll Click     id=createTender
+  Sleep   60
+  Reload Page
+  Wait Until Keyword Succeeds        10 min  30 sec  Дочекатися завершення обробки тендера
+  Run Keyword And Return  Get Text  ${locator.tenderId}
+  Зберегти посилання
+
+
 
 Додати донора при наявності
   [Arguments]  ${data}
@@ -286,10 +351,21 @@ Login
 Заповнити інформацію про лот
   [Arguments]  ${lot}  ${index}
   Wait and Input    id=lotTitle_${index}        ${lot['title']}
+  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' == 'esco'  Run Keyword and Return  Заповнити інформацію про лот ESCO  ${lot}  ${index}
   Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' in ('aboveThresholdEU', 'aboveThresholdUA.defense')  Input Text   id=lotTitleEn_${index}        ${lot['title_en']}
   Input Text        id=lotDescription_${index}  ${lot['description']}
   Input String      id=lotValue_${index}        ${lot['value']['amount']}
   Input String      id=minimalStep_${index}     ${lot['minimalStep']['amount']}
+
+Заповнити інформацію про лот ESCO
+  [Arguments]  ${lot}  ${index}
+  ${lot['yearlyPaymentsPercentageRange']}=  Evaluate  ${lot['yearlyPaymentsPercentageRange']}*100
+  ${lot['minimalStepPercentage']}=  Evaluate   ${lot['minimalStepPercentage']}*100
+  Wait and Input    id=lotTitle_${index}        ${lot['title']}
+  Input Text   id=lotTitleEn_${index}        ${lot['title_en']}
+  Input Text        id=lotDescription_${index}  ${lot['description']}
+  Input String      xpath=//input[contains(@name, 'yearlyPaymentsPercentageRange${index}')]       ${lot['yearlyPaymentsPercentageRange']}
+  Input String      xpath=//input[contains(@name, 'minimalStepPerc${index}')]     ${lot['minimalStepPercentage']}
 
 Створити лот із предметом закупівлі
   [Arguments]  ${username}  ${tender_uaid}  ${lot}  ${item}
@@ -337,6 +413,7 @@ Login
 
 Додати дати при наявності
   [Arguments]  ${tender_data}  ${methodType}
+  Run Keyword If  '${methodType}' == 'esco'  Run Keyword and Return  Додати дати при наявності ESCO  ${tender_data}
   ${status}  ${data}=  Run Keyword And Ignore Error  get_all_etender_dates  ${tender_data}
   Return From Keyword If  '${status}' != 'PASS'
   Input text  id=TenderPeriod           ${data.tenderEnd.date}
@@ -346,6 +423,15 @@ Login
   Input text  id=startDate_time         ${data.tenderStart.time}
   Input text  id=enquiryPeriod          ${data.enquiryEnd.date}
   Input text  id=enquiryPeriod_time     ${data.enquiryEnd.time}
+
+
+Додати дати при наявності ESCO
+  [Arguments]  ${tender_data}
+  ${status}  ${data}=  Run Keyword And Ignore Error  get_all_etender_dates  ${tender_data}
+  Return From Keyword If  '${status}' != 'PASS'
+  Input text  id=tenderPeriod_endDate_day                   ${data.tenderEnd.date}
+  Input text  id=tenderPeriod_endDate_time                  ${data.tenderEnd.time}
+
 
 Додати неціновий показник на тендер
   [Arguments]  ${username}  ${tender_uaid}  ${feature}
@@ -522,6 +608,10 @@ add feature
   ${items_count}=  Get Length  ${items}
   :FOR  ${j}  IN RANGE  ${items_count}-1
   \     Wait Scroll Click  id=addLotItem_${lot_index}
+
+
+
+
   :FOR  ${j}  IN RANGE  ${items_count}
   \     ${status}  ${relatedLot}    Run Keyword And Ignore Error  Get From Dictionary  ${items[${j}]}  relatedLot
   \     Run Keyword If  '${status}'=='FAIL'  Додати предмет  ${items[${j}]}  ${j}  ${lot_index}         # This behaviour is needed to add only items of new lot
@@ -531,6 +621,7 @@ add feature
 
 Додати предмет
   [Arguments]  ${item}  ${index}  ${lot_index}
+  #Run Keyword If  'esco' == 'esco'  run keyword and return  Додати предмет ESCO  ${item}  ${index}  ${lot_index}
   ${items_description}=  Get From Dictionary    ${item}                     description
   ${items_descriptionEN}=  Get From Dictionary  ${item}                     description_en
   ${quantity}=           set Variable           ${item.quantity}
@@ -548,7 +639,6 @@ add feature
   ${locality}=           convert_common_string_to_etender_string  ${locality}
   ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
   ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
-
   Wait and Input    id=itemsDescription${lot_index}${index}      ${items_description}
   Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${items_descriptionEN}
 
@@ -577,6 +667,40 @@ add feature
   Run Keyword If  '${region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_${lot_index}${index}"]  ${locality}
   Wait and Input    id=street_${lot_index}${index}   ${streetAddress}
   Wait and Input    id=postIndex_${lot_index}${index}    ${postalCode}
+
+
+Додати предмет ESCO
+  [Arguments]  ${item}  ${index}  ${lot_index}
+  ${items_description}=  Get From Dictionary    ${item}                     description
+  ${items_descriptionEN}=  Get From Dictionary  ${item}                     description_en
+  ${quantity}=           Set Variable           ${item.quantity}
+  ${cpv}=                Get From Dictionary    ${item.classification}      id
+  log  ${item}
+  ${latitude}=           Get From Dictionary    ${item.deliveryLocation}    latitude
+  ${longitude}=          Get From Dictionary    ${item.deliveryLocation}    longitude
+  ${region}=             Get From Dictionary    ${item.deliveryAddress}     region
+  ${locality}=           Get From Dictionary    ${item.deliveryAddress}     locality
+  ${locality}=           convert_common_string_to_etender_string  ${locality}
+  ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
+  ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
+  Wait and Input    id=itemsDescription${lot_index}${index}      ${items_description}
+  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${items_descriptionEN}
+  Wait Scroll Click     id=openClassificationModal${lot_index}${index}
+  Sleep  2
+  Wait and Input        id=classificationCode  ${cpv}
+  Дочекатись зникнення blockUI
+  Wait and Click    xpath=//td[contains(., '${cpv}')]
+  Wait and Click    id=classification_choose
+  Дочекатись зникнення blockUI
+
+  ${status}  ${value}=  Run Keyword And Ignore Error  Get From Dictionary  ${item}  additionalClassifications
+  log to console    Attempt to get 1st additonal classification scheme: ${status}
+  Run Keyword If    '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}  ${lot_index}
+  Wait and Select By Label  id=region_${lot_index}${index}  ${region}
+  Run Keyword If  '${region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_${lot_index}${index}"]  ${locality}
+  Wait and Input    id=street_${lot_index}${index}   ${streetAddress}
+  Wait and Input    id=postIndex_${lot_index}${index}    ${postalCode}
+
 
 Видалити предмет закупівлі
   [Arguments]  ${username}  ${tender_uaid}  ${index}  ${lot_index}
@@ -799,9 +923,11 @@ add feature
   Перейти на сторінку тендера за потреби
   sleep  5
   Відкрити розділ Деталі Закупівлі
+  ${methodType}=  Get From Dictionary  ${USERS.users['${tender_owner}'].initial_data.data}  procurementMethodType
+  Run Keyword If  '${methodType}' == 'esco'  Run Keyword And Return  Подати цінову пропозицію ESCO  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}
   ${amount}=    Run Keyword If  ${lots_ids} is None  Set Variable  ${bid_data.data.value.amount}
   ...           ELSE  Set Variable  ${bid_data.data.lotValues[0].value.amount}
-  Run Keyword And Ignore Error  Input String      id=amount0      ${amount}
+  Run Keyword And Ignore Error      Input String      id=amount0      ${amount}
   Run Keyword And Ignore Error      Пітдвердити чекбокси пропозиції
 
   ${x}=  Run Keyword  Отримати інформацію про procurementMethodType
@@ -813,6 +939,27 @@ add feature
   sleep  3
 
 Пропустити заповнення нецінових показників
+  Click Element     id=createBid_0
+  Дочекатись зникнення blockUI
+  sleep  3
+
+
+Подати цінову пропозицію ESCO
+  [Arguments]  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}
+  ${bid_data}=  Get From Dictionary  ${bid_data}  data
+  ${years}=     Get From Dictionary  ${bid_data.value.contractDuration}  years
+  ${days}=      Get From Dictionary  ${bid_data.value.contractDuration}  days
+  ${annualCostsReduction}=  Get From Dictionary  ${bid_data.value}  annualCostsReduction
+  ${yearlyPaymentsPercentage}=  Get From Dictionary  ${bid_data.value}  yearlyPaymentsPercentage
+  ${index} =    Set Variable    0
+  :FOR   ${index}    IN RANGE    21
+  \      Input String  id=annualCostsReduction0[${index}]  ${annualCostsReduction[${index}]}
+  ${yearlyPaymentsPercentage}=  Evaluate  ${yearlyPaymentsPercentage}*100
+  Input String  id=yearlyPaymentsPercentage0  ${yearlyPaymentsPercentage}
+  Input String  id=contractPeriod_years0  ${years}
+  Input String  id=contractPeriod_days0  ${days}
+  Пітдвердити чекбокси пропозиції
+  Run Keyword Unless  ${features_ids} is None  Заповнити нецінові критерії  ${features_ids}  ${bid_data.data.parameters}
   Click Element     id=createBid_0
   Дочекатись зникнення blockUI
   sleep  3
@@ -1239,6 +1386,42 @@ Check Is Element Loaded
   ${return_value}=   Convert To Number   ${return_value}
   [return]  ${return_value}
 
+Отримати інформацію про minimalStepPercentage
+  ${return_value}=   Wait and Get Attribute  //span[contains(@id, 'minimalStepPercentage')]  value
+  Run Keyword And Return  Convert To Number  ${return_value}
+
+Отримати інформацію про NBUdiscountRate
+  ${return_value}=  Wait and Get Attribute  id=DiscnbuRate  value
+  Run Keyword And Return  Convert To Number  ${return_value}
+
+Отримати інформацію про fundingKind
+  ${return_value}=   Wait and Get Text  //span[contains(@id, 'fundingKind')]
+  Run Keyword And Return   convert_etender_string_to_common_string  ${return_value}
+
+Отримати інформацію про yearlyPaymentsPercentageRange
+  ${return_value}=   Wait and Get Attribute  //span[contains(@id, 'yearlyPaymentsPercentageRange')]  value
+  Run Keyword And Return  Convert To Number  ${return_value}
+
+
+Отримати інформацію із лоту про minimalStepPercentage
+  [Arguments]  ${lot_block}
+  ${return_value}=  Wait and Get Attribute  ${lot_block}//span[contains(@id, 'minimalStepPercentage')]  value
+  Run Keyword And Return  Convert To Number  ${return_value}
+
+
+Отримати інформацію із лоту про fundingKind
+  [Arguments]  ${lot_block}
+  ${return_value}=  Wait and Get Text  ${lot_block}//span[contains(@id, 'fundingKind')]
+  Run Keyword And Return   convert_etender_string_to_common_string  ${return_value}
+
+
+Отримати інформацію із лоту про yearlyPaymentsPercentageRange
+  [Arguments]  ${lot_block}
+  ${return_value}=  Wait and Get Attribute  ${lot_block}//span[contains(@id, 'yearlyPaymentsPercentageRange')]  value
+  Run Keyword And Return  Convert To Number  ${return_value}
+
+
+
 Отримати інформацію про value.amount
   ${return_value}=   Отримати текст із поля і показати на сторінці  value.amount
   ${return_value}=   Set Variable  ${return_value.replace(u'\xa0','')}  # nbsp converting attempt
@@ -1381,6 +1564,7 @@ Check Is Element Loaded
   ${return_value}=   Set Variable  ${return_value.replace(u'по ','')}
   ${return_value}=   convert_etender_date_to_iso_format   ${return_value}
   [return]  ${return_value}
+
 
 Отримати інформацію про items[0].additionalClassifications[0].id
   ${return_value}=   Отримати текст із поля і показати на сторінці  items[0].additionalClassifications[0].id
@@ -1606,6 +1790,8 @@ Check Is Element Loaded
   ${return_value}=  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_start')]
   ${return_value}=   Set Variable  ${return_value.replace(u'з ','')}
   Run Keyword And Return    convert_etender_date_to_iso_format   ${return_value}, 00:00
+
+
 
 Отримати інформацію із предмету про deliveryDate.endDate
   [Arguments]  ${item_row}
@@ -1833,7 +2019,7 @@ Check Is Element Loaded
 
   Sleep  30
   Reload Page
-  Відкрити розділ Деталі Закупівлі
+  Перейти до оцінки кандидата
   Wait and Select By Label      xpath=//div[@ng-controller="modalGetAwardsCtrl"]//select  Повідомлення про рішення
   Завантажити док  ${username}  ${document}  xpath=//button[@ng-model="lists.documentsToAdd"]  id=downloadAwardDocs
   Відкрити розділ Деталі Закупівлі
@@ -2118,3 +2304,7 @@ Wait for doc upload in qualification
   Capture Page Screenshot
   Reload Page
   Wait Scroll Click     xpath=//button[@click-and-block="standStill()"]
+
+
+
+

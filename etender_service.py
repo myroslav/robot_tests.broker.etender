@@ -5,6 +5,7 @@ from datetime import datetime, date, time, timedelta
 import dateutil.parser
 from pytz import timezone
 import os
+from decimal import Decimal
 
 
 TZ = timezone(os.environ['TZ'] if 'TZ' in os.environ else 'Europe/Kiev')
@@ -33,7 +34,8 @@ def get_procedure_type(methodType):
         'aboveThresholdUA.defense': 'Переговорна процедура для потреб оборони',
         'reporting': 'Звіт про укладений договір',
         'competitiveDialogueEU': 'Конкурентний діалог з публікацією англійською мовою 1-ий етап',
-        'competitiveDialogueUA': 'Конкурентний діалог 1-ий етап'
+        'competitiveDialogueUA': 'Конкурентний діалог 1-ий етап',
+        'esco': 'Відкриті торги для закупівлі енергосервісу'
 
     }[methodType].decode('utf-8')
 
@@ -46,6 +48,7 @@ def get_method_type(procedure_name):
         u'відкриті торги': 'aboveThresholdUA',
         u'конкурентний діалог 1-ий етап': 'competitiveDialogueUA',
         u'звіт про укладений договір': 'reporting',
+        u'відкриті торги для закупівлі енергосервісу': 'esco',
         u'конкурентний діалог з публікацією англійською мовою 1-ий етап': 'competitiveDialogueEU'
     }[procedure_name]
 
@@ -148,6 +151,7 @@ def convert_common_string_to_etender_string(string):
     return string
 
 
+
 def parse_currency_value_with_spaces(raw):
     # to convert raw values like '2 216 162,83 UAH' to string which is ready for conversion to float
     return ''.join(raw.split(' ')[:-1]).replace(',', '.')
@@ -157,6 +161,25 @@ def get_minimalStep_currency(raw_value):
     result_dic = raw_value.split(' ')
     result = result_dic[-1]
     return result
+
+def parse_currency_value_with_spaces_percentage(raw):
+    # to convert raw values like '1,3244%' to string which is ready for conversion to float
+    result = raw.replace('%', '')
+    result = Decimal(result)
+    result = (result / 100)
+    result = float(result)
+    return result
+
+
+def parse_currency_value_with_spaces_percentage_NBU(raw):
+    # to convert raw values like 'Hi – 1,3244%' to string which is ready for conversion to float
+    result = raw.split(' ', 4)[4]
+    result = result.replace('%', '')
+    result = Decimal(result)
+    result = (result / 100)
+    result = float(result)
+    return result
+
 
 def convert_etender_string_to_common_string(string):
     return get_helper_dictionary().get(string, string)
@@ -206,7 +229,8 @@ def get_helper_dictionary():
         u'залишена без відповіді': u'ignored',
         u'очікується кваліфікація': u'pending',
         u'відкликається скаржником': u'stopping',
-        u'очікує розгляду органом оскарження': u'pending'
+        u'очікує розгляду органом оскарження': u'pending',
+        u'Співфінансування з бюджетних коштів': u'budget'
     }
 
 def get_feature_index(i):
