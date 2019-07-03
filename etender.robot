@@ -176,6 +176,8 @@ Login
   ${title}=             Get From Dictionary     ${tender_data}              title
   ${title_en}=          Get From Dictionary     ${tender_data}              title_en
   ${description}=       Get From Dictionary     ${tender_data}              description
+  ${budget}=            Get From Dictionary     ${tender_data.value}        amount
+  ${budgetToStr}=       float_to_string_2f      ${budget}      # at least 2 fractional point precision, avoid rounding
 
   ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
   log to console  check presence of procurementMethodType in dictionary: ${status}
@@ -2247,6 +2249,7 @@ temporary keyword for title update
 
 Відкрити подробиці кваліфікації за індексом
   [Arguments]  ${qualification_num}
+  Дочекатись зникнення blockUI
   Capture Page Screenshot
   Wait Until Element Is Visible  xpath=//div[@id="accordion-0-${qualification_num}"]//button[contains(.,"Допустити до аукціону") and @data-toggle="collapse"]   # inner confirmation button
   ${is_expanded}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//div[@id="aply-0-${qualification_num}"]//button[@click-and-block="vm.q.active(qualification)"]
@@ -2278,20 +2281,26 @@ Wait for doc upload in qualification
 
 Підтвердити кваліфікацію
   [Arguments]  ${username}  ${tender_uaid}  ${qualification_num_p}
-  # TODO: fix this workaround and get real "last" qualification
-  ${qualification_num}=  Run Keyword If  '${qualification_num_p}' == '-1'  Set Variable  1
-  ...              ELSE  Set Variable  ${qualification_num_p}
+  ${qualification_num}=  Set Variable  ${qualification_num_p}
+  ${qualification_num}=     get_modulus_from_number   ${qualification_num}
+# Upload document to qualification object
   Перейти на сторінку тендера за потреби
   Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Відкрити подробиці кваліфікації за індексом  ${qualification_num}
+  ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
+  Завантажити док  ${username}  ${file_path}  xpath=//div[@id="qa_qualification_block_0${qualification_num}"]//button[@id="qa_uploadApprovalDoc"]
+
+# Sign qualification object
+  Відкрити подробиці кваліфікації за індексом  ${qualification_num}
   Wait and Click    xpath=//div[@id="aply-0-${qualification_num}"]//button[@ng-click="showSignModalQualification(qualification)"]
   Підписати ЕЦП
-# shall be signed here -------------------------------------------------------------
   Capture Page Screenshot
   Sleep  30
   Capture Page Screenshot
   Reload Page
+
+# Set qualification checkboxes and approve it
   Відкрити подробиці кваліфікації за індексом  ${qualification_num}
   Wait Scroll Click  xpath=//div[@id="aply-0-${qualification_num}"]//input[@ng-model="qualification.eligible"]
   Click Element     xpath=//div[@id="aply-0-${qualification_num}"]//input[@ng-model="qualification.qualified"]
@@ -2299,12 +2308,28 @@ Wait for doc upload in qualification
   Wait Scroll Click  xpath=//div[@id="aply-0-${qualification_num}"]//button[@click-and-block="vm.q.active(qualification)"]
   Wait Until Page Contains  Пропозицію кваліфіковано!  60
 
+
 Затвердити остаточне рішення кваліфікації
   [Arguments]  ${username}  ${tender_uaid}
   Capture Page Screenshot
   Reload Page
-  Wait Scroll Click     xpath=//button[@click-and-block="standStill()"]
+  Wait Scroll Click     id=qa_startStandStillPeriod
+  Sleep  60
 
 
+Перевести тендер на статус очікування обробки мостом
+  [Arguments]  ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
+  Sleep  180
+  Reload Page
+  Wait Scroll Click  xpath=//button[text()="Оголосити 2-ий етап"]
+  Reload Page
 
 
+Отримати тендер другого етапу та зберегти його
+  [Arguments]  ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
+  Reload Page
+  Wait Scroll Click  xpath=//button[text()="Активувати оголошення"]
+  Capture Page Screenshot
+  Reload Page

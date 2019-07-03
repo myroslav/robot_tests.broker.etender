@@ -208,6 +208,8 @@ def get_helper_dictionary():
         u'завершена закупівля': u'complete',
         u'закупівля не відбулась': u'unsuccessful',
         u'відмінена закупівля': u'cancelled',
+        u'проведення переговорів': u'active.stage2.pending',
+        u'перший проміжний етап': u'active.stage2.pending',
         #bid statuses
         u'Пропозиція не дійсна': u'invalid',
         u"ст.35 ч. 2 п. 1": u"artContestIP",
@@ -303,3 +305,13 @@ def convert_main_procurement_category(string):
         u"Послуги": "services",
         u"Роботи": "works"
     }.get(string, string)
+
+
+def get_modulus_from_number(number):
+    if isinstance(number, int):
+        pass
+    elif isinstance(number, str):
+        number = int(number)
+    elif isinstance(number, unicode):
+        number = int(number)
+    return abs(number)
