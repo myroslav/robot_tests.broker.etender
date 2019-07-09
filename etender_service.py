@@ -35,8 +35,8 @@ def get_procedure_type(methodType):
         'reporting': 'Звіт про укладений договір',
         'competitiveDialogueEU': 'Конкурентний діалог з публікацією англійською мовою 1-ий етап',
         'competitiveDialogueUA': 'Конкурентний діалог 1-ий етап',
-        'esco': 'Відкриті торги для закупівлі енергосервісу'
-
+        'esco': 'Відкриті торги для закупівлі енергосервісу',
+        'closeFrameworkAgreementUA': 'Відкриті торги для укладання рамкової угоди'
     }[methodType].decode('utf-8')
 
 def get_method_type(procedure_name):
@@ -49,7 +49,8 @@ def get_method_type(procedure_name):
         u'конкурентний діалог 1-ий етап': 'competitiveDialogueUA',
         u'звіт про укладений договір': 'reporting',
         u'відкриті торги для закупівлі енергосервісу': 'esco',
-        u'конкурентний діалог з публікацією англійською мовою 1-ий етап': 'competitiveDialogueEU'
+        u'конкурентний діалог з публікацією англійською мовою 1-ий етап': 'competitiveDialogueEU',
+        u'відкриті торги для укладання рамкової угоди': 'closeFrameworkAgreementUA'
     }[procedure_name]
 
 
@@ -143,13 +144,17 @@ def get_date_10d_future():
     return date_string
 
 
+def get_time_offset(add_minutes=17):
+    _now = datetime.now() + timedelta(minutes=add_minutes)
+    return _now.time().strftime('%H:%M')
+
+
 def convert_common_string_to_etender_string(string):
     dict = get_helper_dictionary()
     for key, val in dict.iteritems():
         if val == string:
             return key
     return string
-
 
 
 def parse_currency_value_with_spaces(raw):
@@ -198,18 +203,18 @@ def get_helper_dictionary():
         #tender statuses
         u'період уточнень': u'active.enquiries',
         u'очікування пропозицій': u'active.tendering',
-        u'перший етап завершено': u'active.tendering',
         u'прекваліфікація': u'active.pre-qualification',
         u'оцінка пропозицій': u'active.pre-qualification',
         u'блокування перед аукціоном': u'active.pre-qualification.stand-still',
+        u'проведення переговорів': u'active.pre-qualification.stand-still',
+        u'перший проміжний етап': u'active.stage2.pending',
         u'період аукціону': u'active.auction',
         u'кваліфікація переможця': u'active.qualification',
         u'пропозиції розглянуто': u'active.awarded',
         u'завершена закупівля': u'complete',
+        u'перший етап завершено': u'complete',
         u'закупівля не відбулась': u'unsuccessful',
         u'відмінена закупівля': u'cancelled',
-        u'проведення переговорів': u'active.stage2.pending',
-        u'перший проміжний етап': u'active.stage2.pending',
         #bid statuses
         u'Пропозиція не дійсна': u'invalid',
         u"ст.35 ч. 2 п. 1": u"artContestIP",

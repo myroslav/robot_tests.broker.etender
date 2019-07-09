@@ -197,8 +197,7 @@ Login
   Input text    id=title    ${title}
   Input text    id=description            ${description}
   Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU')   Input text    id=titleEN    ${title_en}
-
-  Wait Scroll Click     id=valueAddedTaxIncluded
+  Run Keyword Unless  '${methodType}' in ('closeFrameworkAgreementUA')   Wait Scroll Click     id=valueAddedTaxIncluded
   Select From List By Value  id=mainProcurementCategory     ${mainProcurementCategory}
 
   ${status}  ${lots}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  lots
@@ -208,6 +207,8 @@ Login
   ...             ELSE  Get Length  ${lots}
   Run Keyword If  ${lots_count}>0  Run Keywords  Wait Scroll Click  id=isMultilots  AND  Додати лоти і їх предмети  ${lots_count}  ${lots}  ${items}
   ...           ELSE  Run Keywords  Додати мінімальний крок при наявності  ${tender_data}  AND  Input text  id=lotValue_0  ${budgetToStr}  AND  Додати предмети  ${items}  0
+# TODO: убрать костыль ▼, на переговорке создается по 2 лишних айтема для каждого лота
+  Run Keyword If    '${methodType}' in ('negotiation')  Видалити зайві айтеми
   Додати умови оплати при наявності  ${tender_data}
   Додати причину з описом при наявності  ${tender_data}
   Додати донора при наявності  ${tender_data}
@@ -223,7 +224,13 @@ Login
   # TODO FIX ELASTIC ISSUES ON UAT and delete ↑
 
 
-
+Видалити зайві айтеми
+  # 2 последних
+  Wait Scroll Click  id=itemRemove_03
+  Wait Scroll Click  id=itemRemove_02
+  # 2 первых
+  Wait Scroll Click  id=itemRemove_10
+  Wait Scroll Click  id=itemRemove_10
 
 
 Створити тендер ESCO
@@ -357,7 +364,7 @@ Login
   Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' in ('aboveThresholdEU', 'aboveThresholdUA.defense')  Input Text   id=lotTitleEn_${index}        ${lot['title_en']}
   Input Text        id=lotDescription_${index}  ${lot['description']}
   Input String      id=lotValue_${index}        ${lot['value']['amount']}
-  Input String      id=minimalStep_${index}     ${lot['minimalStep']['amount']}
+  Run Keyword Unless  '${USERS.users['Etender_Owner']['method_type']}' in ('negotiation')  Input String      id=minimalStep_${index}     ${lot['minimalStep']['amount']}
 
 Заповнити інформацію про лот ESCO
   [Arguments]  ${lot}  ${index}
@@ -1970,13 +1977,8 @@ Check Is Element Loaded
   Wait Scroll Click     xpath=//li[@id="naviTitle2"]/span  # go to complaints
   Дочекатись зникнення blockUI
 
-Створити постачальника, додати документацію і підтвердити його
+Заповнити інформацію про постачальника
   [Arguments]  ${username}  ${tender_uaid}  ${object}  ${document}
-  Sleep  30
-  Wait Until Keyword Succeeds   10 min  20 x  Wait for upload before signing  # there: button - Перейти до підпису"
-  Підписати ЕЦП
-  Sleep  30
-
   Reload Page
   Відкрити розділ Деталі Закупівлі
   ${amount}=             Get From Dictionary  ${object.data.value}  amount
@@ -1996,6 +1998,7 @@ Check Is Element Loaded
   ${contact_fax}=        Get From Dictionary  ${object.data.suppliers[0].contactPoint}  faxNumber
   ${scale}=        Get From Dictionary        ${object.data.suppliers[0]}  scale
   ${amount}=  float_to_string_2f  ${amount}
+  Відкрити всі лоти
   Input text  id=amount  ${amount}
   # TODO: read curency from dict
   Select From List By Label  id=currency  грн
@@ -2004,7 +2007,7 @@ Check Is Element Loaded
   Input text  id=subcInfo   ${supplier_subcInfo}
   Select From List By Value     id=orgScale  ${scale}
   # TODO: use qualified from dict
-  Click Element              xpath=//div[@ng-if="!detailes.isLimitedReporting"]//input[1]  # Відповідність кваліфікаційним критеріям: Відповідає
+  Run Keyword And Ignore Error  Wait Scroll Click  xpath=//div[@ng-if="!detailes.isLimitedReporting"]//input[1]  # Відповідність кваліфікаційним критеріям: Відповідає
   Select From List By Label  xpath=//select[@ng-model="data.country"]  ${countryName}
   Run Keyword If  '${region}' == 'місто Київ'  Select From List By Label  xpath=//*[contains(@id,"_region")]  місто Київ
   Run Keyword If  '${region}' != 'місто Київ'  Run Keywords
@@ -2017,28 +2020,51 @@ Check Is Element Loaded
   Input text  id=url  ${contact_url}
   Input text  id=phone  ${contact_phone}
   Input text  id=fax  ${contact_fax}
-  Click Element  id=btnCreateAward
-
+  Wait Scroll Click  id=qa_SubmitAwardCreate
   Sleep  30
   Reload Page
+
+Оцінити постачальника в limited процедурі
+  [Arguments]  ${username}  ${document}
+  Відкрити всі лоти
   Перейти до оцінки кандидата
   Wait and Select By Label      xpath=//div[@ng-controller="modalGetAwardsCtrl"]//select  Повідомлення про рішення
   Завантажити док  ${username}  ${document}  xpath=//button[@ng-model="lists.documentsToAdd"]  id=downloadAwardDocs
   Відкрити розділ Деталі Закупівлі
+  Відкрити всі лоти
   Capture Page Screenshot
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
 
+Підтвердити постачальника в limited процедурі
+  [Arguments]  ${username}
   Run Keyword And Ignore Error  Перейти до оцінки кандидата
+  ${methodType}=  Get From Dictionary  ${USERS.users['${username}']}  method_type
+  Wait Scroll Click  id=qa_NextStep
   Підписати авард
-
   Run Keyword And Ignore Error  Перейти до оцінки кандидата
   Wait Scroll Click         id=qa_NextStep        # button - Наступний крок
   Sleep  5
   Підтвердити переможця
   Sleep  5
 
+Створити постачальника, додати документацію і підтвердити його
+  [Arguments]  ${username}  ${tender_uaid}  ${object}  ${document}
+  Sleep  30
+  Wait Until Keyword Succeeds   10 min  20 x  Wait for upload before signing  # there: button - Перейти до підпису"
+  Підписати ЕЦП
+  Sleep  30
+  Run Keyword  Заповнити інформацію про постачальника  ${username}  ${tender_uaid}  ${object}  ${document}
+  Run Keyword  Оцінити постачальника в limited процедурі  ${username}  ${document}
+  Run Keyword  Підтвердити постачальника в limited процедурі  ${username}
+
+  ${methodType}=  Get From Dictionary  ${USERS.users['${username}']}  method_type
+  Run Keyword If  '${methodType}' in ('negotiation')  Заповнити інформацію про постачальника  ${username}  ${tender_uaid}  ${object}  ${document}
+  Run Keyword If  '${methodType}' in ('negotiation')  Оцінити постачальника в limited процедурі  ${username}  ${document}
+  Run Keyword If  '${methodType}' in ('negotiation')  Підтвердити постачальника в limited процедурі  ${username}
+
 Wait for upload
   Reload Page
+  Run Keyword And Ignore Error  Відкрити всі лоти
   Перейти до оцінки кандидата
   Sleep  2
   Page Should Not Contain  Не всі документи експортовані
@@ -2314,22 +2340,48 @@ Wait for doc upload in qualification
   Capture Page Screenshot
   Reload Page
   Wait Scroll Click     id=qa_startStandStillPeriod
-  Sleep  60
+  Sleep  360
+  Reload Page
+
+
+Створити другий етап
+  Reload Page
+  Дочекатись зникнення blockUI
+  Capture Page Screenshot
+  Click Element  xpath=//button[text()="Оголосити 2-ий етап"]
+  Sleep  3
+  Reload Page
+  Capture Page Screenshot
 
 
 Перевести тендер на статус очікування обробки мостом
   [Arguments]  ${username}  ${tender_uaid}
   Перейти на сторінку тендера за потреби
-  Sleep  180
-  Reload Page
-  Wait Scroll Click  xpath=//button[text()="Оголосити 2-ий етап"]
-  Reload Page
+  ${passed}=  Run Keyword And Return Status  Wait Until Keyword Succeeds  60 s  30 s  Створити другий етап
 
 
 Отримати тендер другого етапу та зберегти його
   [Arguments]  ${username}  ${tender_uaid}
   Перейти на сторінку тендера за потреби
   Reload Page
-  Wait Scroll Click  xpath=//button[text()="Активувати оголошення"]
+  Дочекатись зникнення blockUI
   Capture Page Screenshot
   Reload Page
+
+
+Активувати другий етап
+  [Arguments]  ${username}  ${tender_uaid}
+  Перейти на сторінку тендера за потреби
+  Click Element  xpath=//a[contains(normalize-space(text()), "Посилання на 2-й етап")]
+  Дочекатись зникнення blockUI
+  Click Element  id=update_tender_selective
+  Дочекатись зникнення blockUI
+  ${new_time_value}=  Run Keyword  get_time_offset
+  Input String  xpath=//input[@ng-model="updateTenderModel.tenderPeriod.endDate" and @placeholder="час"]  ${new_time_value}
+  Click Element  xpath=//button[@click-and-block="submit()"]
+  Дочекатись зникнення blockUI
+  Run Keyword And Ignore Error  Wait Scroll Click  xpath=//div[@id="SignModal" and //div[contains(@class,"modal-dialog")]//div[contains(.,"будь ласка, перевірте статус")]]//button[.="Закрити"]  #close info dialog, if present
+  Дочекатись зникнення blockUI
+  Click Element  xpath=//a[@ng-click="vm.activeTendering()"]
+  Дочекатись зникнення blockUI
+  Sleep  30
