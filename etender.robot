@@ -156,6 +156,7 @@ Wait and Get Attribute
   Wait Scroll Click     id=openAllLots
   Дочекатись зникнення blockUI
 
+
 Login
   [Arguments]  ${username}
   Дочекатись зникнення blockUI
@@ -219,8 +220,8 @@ Login
   Sleep   60
   Reload Page
   Wait Until Keyword Succeeds        10 min  30 sec  Дочекатися завершення обробки тендера
-  Run Keyword And Return  Get Text  ${locator.tenderId}
   Зберегти посилання
+  Run Keyword And Return  Get Text  ${locator.tenderId}
   # TODO FIX ELASTIC ISSUES ON UAT and delete ↑
 
 
@@ -1315,6 +1316,7 @@ Check Is Element Loaded
 
 Отримати інформацію із тендера
   [Arguments]  ${username}  ${tender_uaid}  ${field}
+  Run Keyword And Ignore Error  Відкрити всі лоти
   Run keyword if  '${field}' == 'awards[0].complaintPeriod.endDate'  Перейти на сторінку тендера за потреби
   Run Keyword And Return  Отримати інформацію про ${field}
 
@@ -1608,9 +1610,9 @@ Check Is Element Loaded
   Wait Until Element Is Visible         ${locator}    30
   Run Keyword And Return   Get Text     ${locator}
 
-Отримати інформацію про awards[0].complaintPeriod.endDate
+Отримати інформацію про awards[${n}].complaintPeriod.endDate
   Відкрити розділ Деталі Закупівлі
-  ${return_value}=  Отримати текст із поля і показати на сторінці     awards[0].complaintPeriod.endDate
+  ${return_value}=  Get Text  xpath=(//div[@ng-if="award.complaintPeriod.endDate"]/div[2]/span)[${n+1}]
   ${return_value}=  Set Variable  ${return_value.replace(u'по ','')}
   Run Keyword And Return     convert_etender_date_to_iso_format_and_add_timezone   ${return_value}
 
@@ -2026,6 +2028,8 @@ Check Is Element Loaded
 
 Оцінити постачальника в limited процедурі
   [Arguments]  ${username}  ${document}
+  Reload Page
+  Відкрити розділ Деталі Закупівлі
   Відкрити всі лоти
   Перейти до оцінки кандидата
   Wait and Select By Label      xpath=//div[@ng-controller="modalGetAwardsCtrl"]//select  Повідомлення про рішення
@@ -2061,6 +2065,7 @@ Check Is Element Loaded
   Run Keyword If  '${methodType}' in ('negotiation')  Заповнити інформацію про постачальника  ${username}  ${tender_uaid}  ${object}  ${document}
   Run Keyword If  '${methodType}' in ('negotiation')  Оцінити постачальника в limited процедурі  ${username}  ${document}
   Run Keyword If  '${methodType}' in ('negotiation')  Підтвердити постачальника в limited процедурі  ${username}
+  Sleep  15
 
 Wait for upload
   Reload Page
