@@ -1612,7 +1612,9 @@ Check Is Element Loaded
 
 Отримати інформацію про awards[${n}].complaintPeriod.endDate
   Відкрити розділ Деталі Закупівлі
-  ${return_value}=  Get Text  xpath=(//div[@ng-if="award.complaintPeriod.endDate"]/div[2]/span)[${n+1}]
+  ${i}=  Evaluate  ${n}+1
+  ${i}=  Convert To String  ${i}
+  ${return_value}=  Get Text  xpath=(//div[@ng-if="award.complaintPeriod.endDate"]/div[2]/span)[${i}]
   ${return_value}=  Set Variable  ${return_value.replace(u'по ','')}
   Run Keyword And Return     convert_etender_date_to_iso_format_and_add_timezone   ${return_value}
 
