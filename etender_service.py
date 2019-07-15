@@ -103,6 +103,8 @@ def convert_time_to_etender_format(isodate):
 def float_to_string_2f(value):
     return '{:.2f}'.format(value)
 
+def float_to_string_3f(value):
+    return '{:.3f}'.format(value)
 
 def string_to_float(string):
     return float(string)
@@ -237,7 +239,8 @@ def get_helper_dictionary():
         u'очікується кваліфікація': u'pending',
         u'відкликається скаржником': u'stopping',
         u'очікує розгляду органом оскарження': u'pending',
-        u'Співфінансування з бюджетних коштів': u'budget'
+        u'Співфінансування з бюджетних коштів': u'budget',
+        u'на розгляді': u'pending'
     }
 
 def get_feature_index(i):
