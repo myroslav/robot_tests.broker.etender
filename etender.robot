@@ -492,11 +492,13 @@ add feature
   ${cpv_id}=            Get From Dictionary     ${plan.classification}          id
   Дочекатись зникнення blockUI
   Wait and Click        id=qa_myPlans
-  Wait and Click        xpath==//a[@href="#/createPlan"]
+  Wait and Click        xpath=//a[@href="#/createPlan"]
   Wait and Input        id=description          ${description}
   Input text            id=value                ${amount}
+  Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
+  Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
   Select From List By Index     xpath=//select[@name="startDateMonth"]          6
-  Click element         xpath=//input[@class="btn-cpv"]
+  Wait and Click        xpath=//input[@ng-click="openClassificationModal(null)"]
   Wait and Input        xpath=//div[@id="planClassification"]//input                           ${cpv_id}
   Sleep  3
   Click element         xpath=//td[contains(.,'${cpv_id}')]
@@ -2064,8 +2066,8 @@ Check Is Element Loaded
   Wait Scroll Click  id=qa_NextStep
   Підписати авард
   Run Keyword And Ignore Error  Перейти до оцінки кандидата
-  Wait Scroll Click         id=qa_NextStep        # button - Наступний крок
   Sleep  5
+  Wait Scroll Click         id=qa_NextStep        # button - Наступний крок
   Підтвердити переможця
   Sleep  5
 
