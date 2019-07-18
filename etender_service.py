@@ -75,8 +75,10 @@ def prepare_locator_to_scroll(locator):
         return '//*[@id="{}"]'.format(locator[3:])
     return locator[6:].replace("'", '"')  # 6 for xpath=
 
+
 def to_iso(date):
     return date.isoformat()
+
 
 def convert_etender_date_to_iso_format(date):
     return TZ.localize(parse_etender_date(date)).isoformat()
