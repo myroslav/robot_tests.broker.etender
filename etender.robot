@@ -1540,6 +1540,7 @@ Check Is Element Loaded
 Отримати інформацію про Contracts[${n}].status
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
+  ${n}=  Run Keyword If  '${n}'=='0'  Evaluate  ${n}+1  ELSE  Set Variable  0
   ${i}=  Convert To String  ${n}
   ${return_value}=  Get Text  xpath=(//div[@id="qa_contractStatus"])[${i}]
   Run Keyword And Return  convert_etender_string_to_common_string  ${return_value}
@@ -2471,6 +2472,9 @@ Wait for doc upload in qualification
 Активувати другий етап
   [Arguments]  ${username}  ${tender_uaid}
   Перейти на сторінку тендера за потреби
+  Log  ${tender_uaid}
+  Reload Page
+  Дочекатись зникнення blockUI
   Click Element  xpath=//a[contains(normalize-space(text()), "Посилання на 2-й етап")]
   Дочекатись зникнення blockUI
   Click Element  id=update_tender_selective
