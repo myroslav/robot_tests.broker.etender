@@ -33,9 +33,7 @@ ${locator.cause}                                               id=cause
 ${locator.qualificationPeriod.endDate}                         id=qualificationPeriod_endDate
 ${locator.qualifications[0].status}                            xpath=(//div[@ng-controller="qualificationsCtrl"]//div[@class = "row"]/div[contains(.,"Статус:")]/following-sibling::div)[1]
 ${locator.qualifications[1].status}                            xpath=(//div[@ng-controller="qualificationsCtrl"]//div[@class = "row"]/div[contains(.,"Статус:")]/following-sibling::div)[2]
-${locator.contracts[0].status}                                 xpath=//div[@class = 'row']/div[contains(.,'Статус договору:')]/following-sibling::div
 ${locator.items[0].description}                                id=item_description_00
-${locator.items[0].deliveryLocation.latitude}                  id=delivery_latitude0
 ${locator.items[0].deliveryLocation.longitude}                 id=delivery_longitude0
 ${locator.items[0].classification.id}                          id=classification_code_00
 ${locator.items[0].classification.description}                 id=classification_name_00
@@ -45,7 +43,6 @@ ${locator.items[0].additionalClassifications[0].description}   id=additionalClas
 ${locator.items[0].unit.code}                                  id=item_unit_00
 ${locator.items[0].quantity}                                   id=item_quantity_00
 ${locator.items[0].unit.name}                                  id=item_unit_00
-${locator.awards[0].complaintPeriod.endDate}                   xpath=//div[@ng-if="award.complaintPeriod.endDate"]/div[2]/span
 ${locator.awards[0].status}                                    xpath=//div[@class = 'row']/div[contains(.,'Статус:')]/following-sibling::div
 ${locator.awards[0].value.valueAddedTaxIncluded}               xpath=//div[@class = 'row']/div[contains(.,'Остаточна пропозиція:')]/following-sibling::div/span/i
 ${locator.awards[0].value.currency}                            xpath=//div[@class = 'row']/div[contains(.,'Остаточна пропозиція:')]/following-sibling::div/span
@@ -1335,7 +1332,6 @@ Check Is Element Loaded
 Отримати інформацію із тендера
   [Arguments]  ${username}  ${tender_uaid}  ${field}
   Run Keyword And Ignore Error  Відкрити всі лоти
-  Run keyword if  '${field}' == 'awards[0].complaintPeriod.endDate'  Перейти на сторінку тендера за потреби
   Run Keyword And Return  Отримати інформацію про ${field}
 
 Отримати інформацію про funders[0].name
@@ -1671,6 +1667,9 @@ Check Is Element Loaded
   Run Keyword And Return   Get Text     ${locator}
 
 Отримати інформацію про awards[${n}].complaintPeriod.endDate
+  Перейти на сторінку тендера за потреби
+  Дочекатись зникнення blockUI
+  Run Keyword And Ignore Error  Відкрити всі лоти
   Відкрити розділ Деталі Закупівлі
   ${i}=  Evaluate  ${n}+1
   ${i}=  Convert To String  ${i}
@@ -1744,6 +1743,7 @@ Check Is Element Loaded
   [return]  ${return_value}
 
 Отримати інформацію про awards[0].suppliers[0].contactPoint.name
+  Run Keyword And Ignore Error  Відкрити всі лоти
   Mouse Over  xpath=//li[@id="naviTitle0"]/span   # just to move cursor away
   Sleep  1
   Mouse Over  xpath=//span[@id="awardContactPoint"]
@@ -1864,8 +1864,6 @@ Check Is Element Loaded
   ${return_value}=   Set Variable  ${return_value.replace(u'з ','')}
   Run Keyword And Return    convert_etender_date_to_iso_format   ${return_value}, 00:00
 
-
-
 Отримати інформацію із предмету про deliveryDate.endDate
   [Arguments]  ${item_row}
   ${return_value}=  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_end')]
@@ -1873,11 +1871,13 @@ Check Is Element Loaded
 
 Отримати інформацію із предмету про deliveryAddress.countryName
   [Arguments]  ${item_row}
-  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_country')]
+  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_country')]
+  [Return]  ${text[2:]}
 
 Отримати інформацію із предмету про deliveryAddress.region
   [Arguments]  ${item_row}
-  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_region')]
+  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_region')]
+  [Return]  ${text[2:]}
 
 Отримати інформацію із предмету про deliveryAddress.postalCode
   [Arguments]  ${item_row}
@@ -1885,11 +1885,23 @@ Check Is Element Loaded
 
 Отримати інформацію із предмету про deliveryAddress.locality
   [Arguments]  ${item_row}
-  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_city')]
+  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_city')]
+  [Return]  ${text[2:]}
 
 Отримати інформацію із предмету про deliveryAddress.streetAddress
   [Arguments]  ${item_row}
-  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_addressStr')]
+  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_addressStr')]
+  [Return]  ${text[2:]}
+
+Отримати інформацію із предмету про deliveryLocation.latitude
+  [Arguments]  ${item_row}
+  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_latitude')]
+  [Return]  ${text[:-1]}
+
+Отримати інформацію із предмету про deliveryLocation.longitude
+  [Arguments]  ${item_row}
+  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_longitude')]
+  [Return]  ${text[:-1]}
 
 Отримати інформацію із предмету про classification.scheme
   [Arguments]  ${item_row}
@@ -2131,6 +2143,7 @@ Check Is Element Loaded
 
 Wait for upload
   Reload Page
+  Дочекатись зникнення blockUI
   Run Keyword And Ignore Error  Відкрити всі лоти
   Перейти до оцінки кандидата
   Sleep  2
@@ -2154,6 +2167,7 @@ Wait for upload before signing
   ${tmp_location_tender}=  Get Location
 
 # ==================  1 - enter values into fields, save
+  Run Keyword And Ignore Error  Відкрити всі лоти
   Click Element     xpath=//a[.="Внести інформацію про договір"]
   Wait and Input    id=contractNumber  ${contract_index}
   ${time_now_tmp}=     get_time_now
