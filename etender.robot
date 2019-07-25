@@ -34,6 +34,7 @@ ${locator.qualificationPeriod.endDate}                         id=qualificationP
 ${locator.qualifications[0].status}                            xpath=(//div[@ng-controller="qualificationsCtrl"]//div[@class = "row"]/div[contains(.,"Статус:")]/following-sibling::div)[1]
 ${locator.qualifications[1].status}                            xpath=(//div[@ng-controller="qualificationsCtrl"]//div[@class = "row"]/div[contains(.,"Статус:")]/following-sibling::div)[2]
 ${locator.items[0].description}                                id=item_description_00
+${locator.items[0].deliveryLocation.latitude}                  id=delivery_latitude0
 ${locator.items[0].deliveryLocation.longitude}                 id=delivery_longitude0
 ${locator.items[0].classification.id}                          id=classification_code_00
 ${locator.items[0].classification.description}                 id=classification_name_00
@@ -1869,15 +1870,15 @@ Check Is Element Loaded
   ${return_value}=  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_end')]
   Run Keyword And Return    convert_etender_date_to_iso_format   ${return_value.replace(u'по ','')}, 00:00
 
+# TODO: фикс ET-14350 - починит 7 кейсов ниже
+
 Отримати інформацію із предмету про deliveryAddress.countryName
   [Arguments]  ${item_row}
-  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_country')]
-  [Return]  ${text[2:]}
+  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_country')]
 
 Отримати інформацію із предмету про deliveryAddress.region
   [Arguments]  ${item_row}
-  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_region')]
-  [Return]  ${text[2:]}
+  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_region')]
 
 Отримати інформацію із предмету про deliveryAddress.postalCode
   [Arguments]  ${item_row}
@@ -1885,23 +1886,19 @@ Check Is Element Loaded
 
 Отримати інформацію із предмету про deliveryAddress.locality
   [Arguments]  ${item_row}
-  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_city')]
-  [Return]  ${text[2:]}
+  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_city')]
 
 Отримати інформацію із предмету про deliveryAddress.streetAddress
   [Arguments]  ${item_row}
-  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_addressStr')]
-  [Return]  ${text[2:]}
+  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_addressStr')]
 
 Отримати інформацію із предмету про deliveryLocation.latitude
   [Arguments]  ${item_row}
-  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_latitude')]
-  [Return]  ${text[:-1]}
+  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_latitude')]
 
 Отримати інформацію із предмету про deliveryLocation.longitude
   [Arguments]  ${item_row}
-  ${text}=  Run Keyword  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_longitude')]
-  [Return]  ${text[:-1]}
+  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_longitude')]
 
 Отримати інформацію із предмету про classification.scheme
   [Arguments]  ${item_row}
