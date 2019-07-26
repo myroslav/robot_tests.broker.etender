@@ -331,7 +331,7 @@ Login
 Додати умову оплати
   [Arguments]  ${milestone}  ${index}
   Log  ${milestone}
-  Wait Scroll Click     id=addMilestone
+  Run Keyword Unless  '${index}'=='0'  Wait Scroll Click     id=addMilestone
   ${status}=    Run Keyword And Return Status   Dictionary Should Not Contain Key   ${milestone}  relatedLot
   ${target}=    Set Variable If     '${status}'=='True'     tender  lot_0
 
