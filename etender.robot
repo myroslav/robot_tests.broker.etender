@@ -113,7 +113,7 @@ Wait and Click
   Click Element  ${locator}
 
 Wait and Select By Label
-  [Arguments]  ${locator}  ${data}  ${timeout}=5
+  [Arguments]  ${locator}  ${data}  ${timeout}=15
   [Documentation]  Wait for visibility and then select by label
   Wait Until Element Is Visible     ${locator}  ${timeout}
   Select From List By Label         ${locator}  ${data}
@@ -169,12 +169,14 @@ Login
 
 Створити тендер
   [Arguments]  ${username}  ${tender_data}
+  #Set To Dictionary  ${USERS.users['${username}']}  tender_data=${tender_data}
   ${tender_data}=       Get From Dictionary     ${tender_data}              data
   ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
   log to console  check presence of procurementMethodType in dictionary: ${status}
   ${methodType}=  Set Variable IF  '${status}' != 'PASS'       belowThreshold  ${methodType}
   Set To Dictionary  ${USERS.users['${username}']}  method_type=${methodType}
   Run Keyword If  '${methodType}' == 'esco'  Run Keyword And Return  Створити тендер ESCO  ${username}  ${tender_data}  ${methodType}
+  Run Keyword If  '${methodType}' == 'closeFrameworkAgreementUA'  Run Keyword And Return  Створити тендер Framework Agreement  ${username}  ${tender_data}  ${methodType}
   ${items}=             Get From Dictionary     ${tender_data}              items
   ${mainProcurementCategory}=                   Get From Dictionary         ${tender_data}             mainProcurementCategory
   ${title}=             Get From Dictionary     ${tender_data}              title
@@ -289,6 +291,65 @@ Login
   Зберегти посилання
 
 
+Створити тендер Framework Agreement
+  [Arguments]  ${username}  ${tender_data}  ${methodType}
+  ${items}=             Get From Dictionary     ${tender_data}              items
+  ${mainProcurementCategory}=                   Get From Dictionary         ${tender_data}             mainProcurementCategory
+  ${title}=             Get From Dictionary     ${tender_data}              title
+  ${title_en}=          Get From Dictionary     ${tender_data}              title_en
+  ${description}=       Get From Dictionary     ${tender_data}              description
+  ${description_en}=    Get From Dictionary     ${tender_data}              description_en
+  ${budget}=            Get From Dictionary     ${tender_data.value}        amount
+  ${budgetToStr}=       float_to_string_2f      ${budget}      # at least 2 fractional point precision, avoid rounding
+  ${AwardsCount}=       Get From Dictionary     ${tender_data}              maxAwardsCount
+  ${AwardsCountToStr}=       float_to_string_2f      ${AwardsCount}
+  ${agreementDuration}=  Get From Dictionary         ${tender_data}  agreementDuration
+  ${valueTax}=           Get From Dictionary         ${tender_data.value}  valueAddedTaxIncluded
+  Log  ${items[0]}
+  Click Element         id=qa_myTenders  # Мої закупівлі
+  Дочекатись зникнення blockUI
+  Wait and Click        xpath=//a[@data-target='#procedureType']
+  ${procedure_type}=    get_procedure_type  ${methodType}
+  Wait and Select By Label  id=chooseProcedureType  ${procedure_type}
+  Wait and Click        id=goToCreate
+  Дочекатись зникнення blockUI
+
+  Input text    id=title    ${title}
+  Input text    id=description            ${description}
+  Input text    id=titleEN    ${title_en}
+  Input text    id=descriptionEN   ${description_en}
+  Input text    xpath=//input[@ng-model = 'data.maxAwardsCount']  ${AwardsCountToStr}
+  Select From List By Value  id=mainProcurementCategory     ${mainProcurementCategory}
+
+  ${status}  ${lots}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  lots
+  Log  ${lots[0]}
+  log to console  presence of lots: ${status}
+  ${lots_count}=  Run Keyword IF  '${status}' != 'PASS'  Set Variable  0
+  ...             ELSE  Get Length  ${lots}
+  Run Keyword If  ${lots_count}>0  Додати лоти і їх предмети  ${lots_count}  ${lots}  ${items}
+  ...           ELSE  Run Keywords  Input text  xpath=//input[contains(@name, 'yearlyPaymentsPercentageRange0')]  ${yearlyStepPercentageStr}  AND  Input text  xpath=//input[contains(@name, 'minimalStepPerc0')]  ${minimalStepPercentageStr}  AND  Додати предмети  ${items}  0
+  #Run Keyword If  '${valueTax}' == 'True'  Wait Scroll Click     id=valueAddedTaxIncluded
+  Додати умови оплати при наявності  ${tender_data}
+  Додати причину з описом при наявності  ${tender_data}
+  Додати донора при наявності  ${tender_data}
+  Додати дати при наявності    ${tender_data}  ${methodType}
+  Додати нецінові показники при наявності       ${tender_data}
+  ${year}  ${month}  ${day}=  convet_fra_to_variable  ${agreementDuration}
+  #Wait and Click  xpath=//div[@ng-model='data.agreementDuration.years']//input[@placeholder='Рік']
+  #Wait and Click  xpath=//div[@ng-model='data.agreementDuration.years']//span[@ng-bind-html='years' and text()='${year}']         #//div[@ng-show='$select.open']//div[@class='ui-select-choices-content selectize-dropdown-content']
+  #Wait and Click  xpath=//div[@ng-model='data.agreementDuration.months']//input[@placeholder='Місяць']
+  #Wait and Click  xpath=//div[@ng-model='data.agreementDuration.months']//span[@ng-bind-html='months' and text()='${month}']
+  #Wait and Click  xpath=//div[@ng-model='data.agreementDuration.days']//input[@placeholder='День']
+  #Wait and Click  xpath=//div[@ng-model='data.agreementDuration.days']//span[@ng-bind-html='days' and text()='${day}']
+  Sleep   10
+  Wait Scroll Click     id=createTender
+  Sleep   60
+  Reload Page
+  Wait Until Keyword Succeeds        10 min  30 sec  Дочекатися завершення обробки тендера
+  Run Keyword And Return  Get Text  ${locator.tenderId}
+  Зберегти посилання
+
+
 
 Додати донора при наявності
   [Arguments]  ${data}
@@ -333,7 +394,7 @@ Login
   Log  ${milestone}
   Run Keyword Unless  '${index}'=='0'  Wait Scroll Click     id=addMilestone
   ${status}=    Run Keyword And Return Status   Dictionary Should Not Contain Key   ${milestone}  relatedLot
-  ${target}=    Set Variable If     '${status}'=='True'     tender  lot_0
+  ${target}=    Set Variable If     '${status}'=='True'     tender  lot0  #wait a fix for Framework Agreement ( Milestone tied to the lot, not to the tender )
 
   Wait and Input                id=milestonePercentage${index}${target}     ${milestone.percentage}
   Input String                  id=milestoneDays${index}${target}           ${milestone.duration.days}
@@ -359,7 +420,7 @@ Login
   [Arguments]  ${lot}  ${index}
   Wait and Input    id=lotTitle_${index}        ${lot['title']}
   Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' == 'esco'  Run Keyword and Return  Заповнити інформацію про лот ESCO  ${lot}  ${index}
-  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' in ('aboveThresholdEU', 'aboveThresholdUA.defense')  Input Text   id=lotTitleEn_${index}        ${lot['title_en']}
+  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' in ('aboveThresholdEU', 'aboveThresholdUA.defense', 'closeFrameworkAgreementUA')  Input Text   id=lotTitleEn_${index}        ${lot['title_en']}
   Input Text        id=lotDescription_${index}  ${lot['description']}
   Input String      id=lotValue_${index}        ${lot['value']['amount']}
   Run Keyword Unless  '${USERS.users['Etender_Owner']['method_type']}' in ('negotiation')  Input String      id=minimalStep_${index}     ${lot['minimalStep']['amount']}
@@ -388,10 +449,10 @@ Login
 
 Додати предмет закупівлі в лот
   [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${item}
-  Log   ${USERS.users['${username}'].lot_data}
+  #Log   ${USERS.users['${username}'].lot_data}
   Перейти до редагування тендера    ${username}  ${tender_uaid}
   ${lots_count}=  Get Length  ${USERS.users['${username}'].initial_data.data['lots']}
-  Wait Scroll Click  id=addLotItem_1
+  Wait Scroll Click  id=addLotItem_0
   Додати предмет  ${item}  1  ${lots_count}
   Зберегти зміни в тендері
 
@@ -635,6 +696,7 @@ add feature
 Додати предмет
   [Arguments]  ${item}  ${index}  ${lot_index}
   Run Keyword If  '${USERS.users['${tender_owner}'].method_type}' == 'esco'  run keyword and return  Додати предмет ESCO  ${item}  ${index}  ${lot_index}
+  Run Keyword If  '${USERS.users['${tender_owner}'].method_type}' == 'closeFrameworkAgreementUA'  run keyword and return  Додати предмет Framework Agreement  ${item}  ${index}  ${lot_index}
   ${items_description}=  Get From Dictionary    ${item}                     description
   ${items_descriptionEN}=  Get From Dictionary  ${item}                     description_en
   ${quantity}=           set Variable           ${item.quantity}
@@ -652,9 +714,10 @@ add feature
   ${locality}=           convert_common_string_to_etender_string  ${locality}
   ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
   ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
-  Wait and Input    id=itemsDescription${lot_index}${index}      ${items_description}
-  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${items_descriptionEN}
-
+  Run Keyword If  '${USERS.users['${tender_owner}'].method_type}' != 'closeFrameworkAgreementUA'   Wait and Input    id=itemsDescription${lot_index}${index}      ${items_description}
+  ...             ELSE  Wait and Input    id=itemsDescription0${index}      ${items_description}
+  Run Keyword If  '${USERS.users['${tender_owner}'].method_type}' != 'closeFrameworkAgreementUA'  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${items_descriptionEN}
+  ...             ELSE  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN0${index}      ${items_descriptionEN}
   Input String      id=itemsQuantity${lot_index}${index}         ${quantity}
   Wait and Click    xpath=//unit[@id="itemsUnit${lot_index}${index}"]//input[@type="search"]
   #Wait and Click    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
@@ -714,11 +777,62 @@ add feature
   Wait and Input    id=street_${lot_index}${index}   ${streetAddress}
   Wait and Input    id=postIndex_${lot_index}${index}    ${postalCode}
 
+Додати предмет Framework Agreement
+  [Arguments]  ${item}  ${index}  ${lot_index}
+  ${items_description}=  Get From Dictionary    ${item}                     description
+  ${items_descriptionEN}=  Get From Dictionary  ${item}                     description_en
+  ${quantity}=           set Variable           ${item.quantity}
+  ${unit}=               Get From Dictionary    ${item.unit}                name
+  ${cpv}=                Get From Dictionary    ${item.classification}      id
+  log  ${item}
+  ${deliveryDateStart}=  Get From Dictionary    ${item.deliveryDate}        startDate
+  ${deliveryDateEnd}=    Get From Dictionary    ${item.deliveryDate}        endDate
+  ${deliveryDateStart}=  convert_date_to_etender_format  ${deliveryDateStart}
+  ${deliveryDateEnd}=    convert_date_to_etender_format  ${deliveryDateEnd}
+  ${latitude}=           Get From Dictionary    ${item.deliveryLocation}    latitude
+  ${longitude}=          Get From Dictionary    ${item.deliveryLocation}    longitude
+  ${region}=             Get From Dictionary    ${item.deliveryAddress}     region
+  ${locality}=           Get From Dictionary    ${item.deliveryAddress}     locality
+  ${locality}=           convert_common_string_to_etender_string  ${locality}
+  ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
+  ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
+  Wait and Input    id=itemsDescription0${index}      ${items_description}
+  Wait and Input    id=itemsDescriptionEN0${index}      ${items_descriptionEN}
+  Input String      id=itemsQuantity0${index}         ${quantity}
+  Wait and Click    xpath=//unit[@id="itemsUnit0${index}"]//input[@type="search"]
+  #Wait and Click    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
+  ${items_count}=   Get Matching Xpath Count   xpath=//div[contains(@ng-model,"unit.selected")]//input[@type="search"]
+  #${items_count}=   Get Length  ${items_count}
+  Wait and Input    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${items_count}]  ${unit}
+  Wait and Click    xpath=//div[contains(@class,"selectize-dropdown") and contains(@repeat,"unit")]//div[@role="option" and contains(@class,"active")]
+
+  Wait Scroll Click     id=openClassificationModal0${index}
+  Sleep  2
+  Wait and Input        id=classificationCode  ${cpv}
+  Дочекатись зникнення blockUI
+  Wait and Click    xpath=//td[contains(., '${cpv}')]
+  Wait and Click    id=classification_choose
+  Дочекатись зникнення blockUI
+
+  ${status}  ${value}=  Run Keyword And Ignore Error  Get From Dictionary  ${item}  additionalClassifications
+  log to console    Attempt to get 1st additonal classification scheme: ${status}
+  Run Keyword If    '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}  ${lot_index}
+  Wait and Input    id=delStartDate0${index}        ${deliveryDateStart}
+  Wait and Input    id=delEndDate0${index}          ${deliveryDateEnd}
+  Wait and Select By Label  id=region_0${index}  ${region}
+  Run Keyword If  '${region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_0${index}"]  ${locality}
+  Wait and Input    id=street_0${index}   ${streetAddress}
+  Wait and Input    id=postIndex_0${index}    ${postalCode}
+
+
+
+
 
 Видалити предмет закупівлі
   [Arguments]  ${username}  ${tender_uaid}  ${index}  ${lot_index}
   Перейти до редагування тендера    ${username}  ${tender_uaid}
-  Wait and Click  id=itemRemove_11
+  Run Keyword If  '${USERS.users['${tender_owner}'].method_type}' != 'closeFrameworkAgreementUA'  Wait and Click  id=itemRemove_11
+  ...             ELSE  Wait and Click  id=itemRemove_01
   Зберегти зміни в тендері
 
 Додати неціновий показник на предмет
@@ -751,13 +865,7 @@ add feature
 
 Видалити вказаний неціновий показник
   [Arguments]  ${target}  ${feature_id}
-  ${features_count}=  Get Matching Xpath Count  xpath=//input[contains(@name,"feature-${target}") and @ng-model="feature.title"]
-  :FOR  ${i}  IN RANGE  ${features_count}
-  \     ${feature_title}=  Get Value  xpath=//input[@name="feature-${target}_0${i}"]
-  \     ${contains}=  Evaluate   "${feature_id}" in """${feature_title}"""
-  \     ${target_feature_index}=  Run Keyword If  '${contains}' == 'True'  Set Variable  ${i}
-  Return From Keyword If  '${target_feature_index}' == 'None'
-  Wait Scroll Click     xpath=(//add-features[contains(@feature-sector,"${target}")]//button[@ng-click="removeFeature($index)"])[${target_feature_index}+1]
+  Wait Scroll Click     xpath=//add-features//div[contains(@featuretitle,"${feature_id}")]//button[@ng-click="removeFeature($index)"]
 
 
 # TODO merge ↕
@@ -824,6 +932,7 @@ add feature
   # TODO: У майбутньому треба буде запровадити більш коректне рішення
   # Виникла необхідність обійти пошук по ідентифікатору через особливість тестового оточення майданчика
   Log  ${TENDER_UAID}
+  Sleep  5
   Go To  ${USERS.users['${username}'].homepage.split('#')[0]}tender?tenderid=${TENDER_UAID}
   Дочекатись зникнення blockUI
   Wait Until Page Contains    ${tender_uaid}   10
@@ -891,17 +1000,12 @@ add feature
 Змінити документацію в ставці
   [Arguments]  ${username}  ${tender_uaid}  ${privat_doc}  ${doc_id}
   Log  ${privat_doc}
-  Sleep     3
-  Відкрити розділ Деталі Закупівлі
-  Click Element     xpath=//label[@for="showBidDocs00"]
-  Sleep     1
-  Click Element     id=changeDoc_0
-  Sleep     3
-  Select From List By Index  id=bidDocConf_    3    #No implementation yet
-  Sleep     1
-  Input Text        xpath=//textarea[@ng-model="document.confidentialityRationale"]  ${privat_doc.data.confidentialityRationale}
-  Click Element     xpath=//button[@ng-click="updateBidDocument(document, tender, bid)"]
-  Sleep     3
+  #Відкрити розділ Деталі Закупівлі
+  #Click Element     xpath=//label[@for="showBidDocs00"]
+  #Click Element     id=changeDoc_0
+  #Select From List By Index  id=bidDocConf_    1    #No implementation yet
+  #Input Text        xpath=//textarea[@ng-model="document.confidentialityRationale"]  ${privat_doc.data.confidentialityRationale}
+  #Wait and Click     xpath=//button[@ng-click="updateBidDocument(document, tender, bid)"]
   Reload Page
 
 Змінити документ в ставці
@@ -946,6 +1050,7 @@ add feature
   Відкрити розділ Деталі Закупівлі
   ${methodType}=  Get From Dictionary  ${USERS.users['${tender_owner}'].initial_data.data}  procurementMethodType
   Run Keyword If  '${methodType}' == 'esco'  Run Keyword And Return  Подати цінову пропозицію ESCO  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}
+
   ${amount}=    Run Keyword If  ${lots_ids} is None  Set Variable  ${bid_data.data.value.amount}
   ...           ELSE  Set Variable  ${bid_data.data.lotValues[0].value.amount}
   Run Keyword And Ignore Error      Input String      id=amount0      ${amount}
@@ -986,6 +1091,9 @@ add feature
   Дочекатись зникнення blockUI
   sleep  3
 
+
+
+
 Отримати інформацію із пропозиції
   [Arguments]  ${username}  ${tender_uaid}  ${field}
   Перейти на сторінку тендера за потреби
@@ -1017,12 +1125,21 @@ add feature
   Input String      id=amount0       ${value}
   Click Element     id=updateBid_0
 
+Отримати інформацію про maxAwardsCount
+  ${maxAwardsCount}=  Wait and Get Text  //p[contains(text(), 'Кількість учасників, з якими буде укладено рамкову угоду:')]
+  Run Keyword And Return  convert to integer  ${maxAwardsCount.split(' ')[-1]}
+
+Редагувати поле maxAwardsCount
+  [Arguments]  ${maxAwardsCount}
+  Wait and Input      xpath=//input[@ng-model = 'data.maxAwardsCount']       ${maxAwardsCount}
+
+
 Підтвердити пропозицію
-  Click Element     id=confirmBid_0
+  Wait and Click     id=confirmBid_0
 
 Натиснути редагувати пропозицію
   Reload Page
-  Click Element     id=editBid_0
+  Wait and Click     id=editBid_0
 
 Скасувати цінову пропозицію
   [Arguments]  ${username}  ${TENDER_UAID}
@@ -1365,6 +1482,13 @@ Check Is Element Loaded
 Отримати інформацію про funders[0].identifier.scheme
   Run Keyword And Return   Get Text     xpath=//span[@id="funder_scheme"]
 
+Отримати інформацію про agreementDuration
+  ${agreementDuration}=    Get Text     xpath=//p[contains(text(), 'Строк, на який укладається рамкова угода:')]
+  ${year}  ${month}  ${day}=  convet_raw_to_chack  ${agreementDuration}
+  run keyword and return  'P${year}Y${month}M${day}D'
+
+
+
 Отримати текст із поля і показати на сторінці
   [Arguments]   ${fieldname}  # TODO remove
   Wait Until Element Is Visible    ${locator.${fieldname}}    30
@@ -1417,7 +1541,7 @@ Check Is Element Loaded
   Run Keyword And Return  Convert To Number  ${return_value}
 
 Отримати інформацію про NBUdiscountRate
-  ${return_value}=  Wait and Get Attribute  id=DiscnbuRate  value
+  ${return_value}=  Wait and Get Attribute  id=nbuDiscRate  value
   Run Keyword And Return  Convert To Number  ${return_value}
 
 Отримати інформацію про fundingKind
@@ -2207,8 +2331,8 @@ Wait for upload before signing
   ${PKeyPassword}=  Get File  password.txt
   Wait and Input    id=PKeyPassword  ${PKeyPassword}
   Дочекатись Зникнення blockUI
-  Wait and Click    id=PKeyReadButton
-  Wait and Click    id=SignDataButton  10
+  Wait and Click    id=PKeyReadButton  5
+  Wait and Click    id=SignDataButton  20
   Дочекатись Зникнення blockUI
   Wait and Click    xpath=//div[@id="modalSign"]//button[contains(@class,"close")]
 
@@ -2313,45 +2437,57 @@ temporary keyword for title update
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
   Reload Page
 
+Відхилити кваліфікацію
+  [Arguments]  ${username}  ${tender_uaid}  ${bid_index}
+  Reload Page
+  Wait Scroll Click  xpath=//button[@id = '#qa_rejectQualif' and @data-target='#cansel-0-${bid_index}']  15
+  Wait and Click     xpath=//div[@id='cansel-0-${bid_index}']//button[@id="qa_signRejectionPrequalification"]  10
+  Підписати ЕЦП
+  Capture Page Screenshot
+  Sleep  30
+  Capture Page Screenshot
+  Reload Page
+  Wait and Click  id=qa_cause0
+  Wait and Input  id=qa_qualifCancelDescr  text
+  Wait and Click  id=qa_disqualifyPrequalification  10
+  Reload Page
+
+
+Скасувати кваліфікацію
+  [Arguments]  ${username}  ${tender_uaid}  ${bid_index}
+  Wait Scroll Click  xpath=//div[@id='qa_qualification_block_0${bid_index}']//button[@class='btn btn-sm btn-danger ml15 mb-10 mt15 ng-isolate-scope']
+
 Підтвердити постачальника
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}
   # TODO: rework duplicated code - see "Створити постачальника, додати документацію і підтвердити його"
   Перейти на сторінку тендера за потреби
-  Sleep  5
   Перейти до оцінки кандидата
-  Sleep  5
   Wait Scroll Click     id=qa_NextStep       # button - Наступний крок
   ${passed}=  Run Keyword And Return Status     Підтвердити переможця
   Return From Keyword If  ${passed}  # Выходим если допорог и успешно подтвердили. если нет такой кнопки - идём дальше
   Підписати авард
   Wait Scroll Click     id=qa_NextStep
-  Click Element         id=qa_selfEligible
-  Click Element         id=qa_selfQualified
+  Wait and Click         id=qa_selfEligible
+  Wait and Click         id=qa_selfQualified
   Підтвердити переможця
+
 
 Дискваліфікувати постачальника
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}
   Перейти на сторінку тендера за потреби
-  Sleep  3
   Перейти до оцінки кандидата
-  Sleep  5
   Select From List By Label  xpath=//div[@id="modalGetAwards"]//select[@id="docType"]  Повідомлення про рішення
   ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
   Завантажити док  ${username}  ${file_path}  xpath=//div[@id="modalGetAwards"]//button[@id="qa_uploadAwardDocument"]  xpath=//div[@id="modalGetAwards"]//button[@id="downloadAwardDocs"]
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
   Reload Page
-  Sleep  7
   Перейти до оцінки кандидата
-  Sleep  5
   Wait Scroll Click     id=qa_NextStep
   Підписати авард
   Reload Page
-  Sleep   5
   Перейти до оцінки кандидата
-  Sleep  5
   Wait Scroll Click     id=qa_NextStep
   Відхилити переможця
-  Sleep  2
   Wait and Click  xpath=//input[@ng-model="checked"]
   Wait and Input  id=qa_causeDesc  Hello
   Wait and Click  id=qa_CancelAward
@@ -2440,7 +2576,7 @@ Wait for doc upload in qualification
 # Set qualification checkboxes and approve it
   Відкрити подробиці кваліфікації за індексом  ${qualification_num}
   Wait Scroll Click  xpath=//div[@id="aply-0-${qualification_num}"]//input[@ng-model="qualification.eligible"]
-  Click Element     xpath=//div[@id="aply-0-${qualification_num}"]//input[@ng-model="qualification.qualified"]
+  Wait and Click     xpath=//div[@id="aply-0-${qualification_num}"]//input[@ng-model="qualification.qualified"]
   Capture Page Screenshot
   Wait Scroll Click  xpath=//div[@id="aply-0-${qualification_num}"]//button[@click-and-block="vm.q.active(qualification)"]
   Wait Until Page Contains  Пропозицію кваліфіковано!  60

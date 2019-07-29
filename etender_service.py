@@ -6,6 +6,7 @@ import dateutil.parser
 from pytz import timezone
 import os
 from decimal import Decimal
+import re
 
 
 TZ = timezone(os.environ['TZ'] if 'TZ' in os.environ else 'Europe/Kiev')
@@ -82,8 +83,23 @@ def to_iso(date):
     return date.isoformat()
 
 
+
+
 def convert_etender_date_to_iso_format(date):
     return TZ.localize(parse_etender_date(date)).isoformat()
+
+def convet_fra_to_variable(raw):
+    b = re.findall(r'P(\d+)Y(\d+)M(\d+)D.*', raw)
+    c, d, e = b[0]
+    return c, d, e
+
+def convet_raw_to_chack(raw):
+    raw = raw.replace(' ', '')
+    b = re.findall(r'(\d+)р(\d+)м(\d+)д', raw)
+    c, d, e = b[0]
+    return c, d, e
+
+
 
 
 def convert_date_to_etender_format(isodate):
@@ -192,6 +208,7 @@ def parse_currency_value_with_spaces_percentage_NBU(raw):
     return result
 
 
+
 def convert_etender_string_to_common_string(string):
     return get_helper_dictionary().get(string, string)
 
@@ -244,7 +261,8 @@ def get_helper_dictionary():
         u'відкликається скаржником': u'stopping',
         u'очікує розгляду органом оскарження': u'pending',
         u'Співфінансування з бюджетних коштів': u'budget',
-        u'на розгляді': u'pending'
+        u'на розгляді': u'pending',
+        u'Пропозиція не активована': u'invalid'
     }
 
 def get_feature_index(i):
