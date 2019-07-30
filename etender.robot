@@ -1048,7 +1048,8 @@ add feature
   Перейти на сторінку тендера за потреби
   sleep  5
   Відкрити розділ Деталі Закупівлі
-  ${methodType}=  Get From Dictionary  ${USERS.users['${tender_owner}'].initial_data.data}  procurementMethodType
+  ${methodType}=  Get Text  id=procedureType
+  ${methodType}=  get_method_type   ${methodType.lower()}
   Run Keyword If  '${methodType}' == 'esco'  Run Keyword And Return  Подати цінову пропозицію ESCO  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}
 
   ${amount}=    Run Keyword If  ${lots_ids} is None  Set Variable  ${bid_data.data.value.amount}
@@ -1176,7 +1177,7 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${target}  ${file}  ${award_index}=0
   Перейти на сторінку тендера за потреби
   ${complaintID}=  Створити чернетку вимоги  ${username}  ${tender_uaid}  ${claim}  ${target}  ${award_index}
-  Завантажити док  ${username}  ${file}  id=addClaimDoc
+  Завантажити док  ${username}  ${file}  xpath=//div[contains(@id,"${complaintID}")]//button[@id="addClaimDoc"]
   Відкрити розділ вимог і скарг
   Wait Scroll Click     id=qa_SetClaimActiveStatus
   Sleep  15
@@ -1186,7 +1187,7 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}  ${complaint}  ${target}  ${file}  ${award_index}=0
   Перейти на сторінку тендера за потреби
   ${complaintID}=  Створити чернетку вимоги  ${username}  ${tender_uaid}  ${complaint}  ${target}  ${award_index}
-  Завантажити док  ${username}  ${file}  id=addClaimDoc
+  Завантажити док  ${username}  ${file}  xpath=//div[contains(@id,"${complaintID}")]//button[@id="addClaimDoc"]
   Відкрити розділ вимог і скарг
   Wait Scroll Click     id=qa_escalateClaimToComplaint
   Sleep  15
