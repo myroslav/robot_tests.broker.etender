@@ -394,8 +394,7 @@ Login
   Log  ${milestone}
   Run Keyword Unless  '${index}'=='0'  Wait Scroll Click     id=addMilestone
   ${status}=    Run Keyword And Return Status   Dictionary Should Not Contain Key   ${milestone}  relatedLot
-  ${target}=    Set Variable If     '${status}'=='True'     tender  lot0  #wait a fix for Framework Agreement ( Milestone tied to the lot, not to the tender )
-
+  ${target}=    Set Variable If     '${status}'=='True'     tender  lot_0  #wait a fix for Framework Agreement ( Milestone tied to the lot, not to the tender )
   Wait and Input                id=milestonePercentage${index}${target}     ${milestone.percentage}
   Input String                  id=milestoneDays${index}${target}           ${milestone.duration.days}
   Select From List By Value     id=milestoneTitle${index}${target}          ${milestone.title}
