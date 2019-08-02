@@ -1909,6 +1909,7 @@ Check Is Element Loaded
 
 Отримати інформацію про awards[0].documents[0].title
   Відкрити розділ Деталі Закупівлі
+  Sleep  10
   Wait and Click    xpath=//label[@for="showAwards00"]
   Sleep  1
   Run Keyword And Return  Get Text  xpath=//awards-info//td[contains(@class,"doc-name")]//a
@@ -2507,6 +2508,7 @@ temporary keyword for title update
 
 Перейти до оцінки кандидата
   Wait Scroll Click    xpath=//a[@data-target="#modalGetAwards"]
+  Дочекатись зникнення blockUI
 
 Скасування рішення кваліфікаційної комісії
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}
