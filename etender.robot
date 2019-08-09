@@ -102,7 +102,7 @@ ${global_procedure_type}
   Set Global Variable   ${contractpage}   ${EMPTY}
 
 Wait Scroll Click
-  [Arguments]  ${locator}  ${timeout}=5
+  [Arguments]  ${locator}  ${timeout}=7
   Wait and Click  ${locator}  ${timeout}  True
 
 Wait and Click
@@ -455,6 +455,34 @@ Login
   Додати предмет  ${item}  1  ${lots_count}
   Зберегти зміни в тендері
 
+Додати предмет закупівлі в план
+  [Arguments]  ${username}  ${tender_uaid}  ${item}
+  ${items_description}=  Get From Dictionary    ${item}                     description
+  ${cpv_id}=             Get From Dictionary    ${item.classification}          id
+  ${unit}=               Get From Dictionary    ${item.unit}                    name
+  ${quantity}=           Get From Dictionary    ${item}                     quantity
+  ${quantityStr}=  float to string 3f  ${quantity}
+  Перейти на сторінку плану за потреби
+  #Wait and Click  xpath=//a[contains(@href, '#/planDetails/')]
+  Wait Scroll Click  xpath=//a[contains(@ng-href, '#/updatePlan/')]
+  ${items_index}=  Get Matching Xpath Count  //textarea[contains(@id, 'itemsDescription')]
+  Wait and Click  xpath=//button[@ng-click= 'addItem()']
+  Wait and Input  xpath=//textarea[@id ='itemsDescription${items_index}']  ${items_description}
+  Wait and Input  xpath=//input[@id = 'itemsQuantity${items_index}']  ${quantityStr}
+  Wait and Input  xpath=//unit[@id='unit_${items_index}']//input[@type="search"]  ${unit}
+  Press Key               xpath=//unit[@id='unit_${items_index}']//input[@type="search"]                 \\13
+  Wait and Click          xpath=//div[contains(@ng-model,'unit.selected')]//span[@class="ui-select-highlight"]
+  Wait and Click          xpath=//span[@ng-if = 'createPlanModel.apiId']  10
+  Reload Page
+
+Видалити предмет закупівлі плану
+  [Arguments]  ${username}  ${tender_uaid}  ${item_id}
+  Перейти на сторінку плану за потреби
+  Wait Scroll Click  xpath=//a[contains(@ng-href, '#/updatePlan/')]  10
+  Wait Scroll Click  xpath=//h4[contains(text(), '№ 2')]//button[@ng-click = 'removeItem($index)']
+  Wait and Click          xpath=//span[@ng-if = 'createPlanModel.apiId']  10
+  Reload Page
+
 
 Додати нецінові показники при наявності
   [Arguments]  ${tender_data}
@@ -574,7 +602,9 @@ add feature
   Wait Scroll Click     xpath=//button[contains(., 'Створити план')]
   Дочекатись зникнення blockUI
   Wait Until Keyword Succeeds   2x  10 sec  Дочекатися завершення обробки плану
-  Run Keyword And Return    Get Text  id=planId_0
+  ${plan_id}=  Get Text  xpath=//div[@class = 'col-xs-6 ng-binding' and contains(text(), 'UA-P')]
+  Зберегти посилання
+  [Return]  ${plan_id.split()[0]}    #id=planId_0
 
 Опрацювати дотаткові класифікації
   [Arguments]  ${additionalClassifications}  ${index}  ${lot_index}
@@ -616,8 +646,9 @@ add feature
 Дочекатися завершення обробки плану
   Reload Page
   Дочекатись зникнення blockUI
-  Wait Until Element Is Visible      id=planId_0  30
-  ${plan_id}=                        Get Text  id=planId_0
+  Wait Until Element Is Visible      xpath=//div[@class = 'col-xs-6 ng-binding' and contains(text(), 'UA-P')]  30  #id=planId_0
+  ${plan_id}=                        Get Text  xpath=//div[@class = 'col-xs-6 ng-binding' and contains(text(), 'UA-P')]  #id=planId_0
+  ${plan_id}=                        Set Variable  ${plan_id.split()[0]}
   Log  ${plan_id}
   Should Match Regexp                ${plan_id}  UA-P-\\d{4}-.*
 
@@ -944,6 +975,12 @@ add feature
   Go To  ${tenderpage}
   Дочекатись зникнення blockUI
 
+Перейти на сторінку плану за потреби
+  ${page}=    Get Location
+  Return From Keyword If  '${page}'=='${tenderpage}'
+  Go To  ${tenderpage}
+  Дочекатись зникнення blockUI
+
 Перейти на сторінку контракту
   Перейти на сторінку тендера за потреби
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
@@ -971,9 +1008,11 @@ add feature
   [Arguments]  ${username}  ${TENDER_UAID}
   Log  ${username}
   Go To  ${USERS.users['${username}'].homepage}
-  Wait Scroll Click     id=naviTitle2
+  Sleep  30
+  Wait and Click    xpath=//li[@id = 'naviTitle2']//span[@class = 'w100 ng-binding']  20
   Дочекатись зникнення blockUI
   Wait and Input    xpath=//input[@type='text' and @placeholder='Пошук за номером плану']   ${TENDER_UAID}
+  Wait and Click    xpath=//span[@class = 'icon search']
   Дочекатись зникнення blockUI
   Wait Until Page Contains  ${TENDER_UAID}  10
 
@@ -2448,14 +2487,17 @@ temporary keyword for title update
   Sleep  30
   Capture Page Screenshot
   Reload Page
-  Wait and Click  id=qa_cause0
-  Wait and Input  id=qa_qualifCancelDescr  text
+  Wait and Click  id=qa_cause0  7
+  Wait and Input  id=qa_qualifCancelDescr  texttexttext
   Wait and Click  id=qa_disqualifyPrequalification  10
   Reload Page
 
 
 Скасувати кваліфікацію
   [Arguments]  ${username}  ${tender_uaid}  ${bid_index}
+  Sleep  30
+  Reload Page
+  Sleep  15
   Wait Scroll Click  xpath=//div[@id='qa_qualification_block_0${bid_index}']//button[@class='btn btn-sm btn-danger ml15 mb-10 mt15 ng-isolate-scope']
 
 Підтвердити постачальника
@@ -2468,8 +2510,8 @@ temporary keyword for title update
   Return From Keyword If  ${passed}  # Выходим если допорог и успешно подтвердили. если нет такой кнопки - идём дальше
   Підписати авард
   Wait Scroll Click     id=qa_NextStep
-  Wait and Click         id=qa_selfEligible
-  Wait and Click         id=qa_selfQualified
+  Wait and Click         id=qa_selfEligible  10
+  Wait and Click         id=qa_selfQualified  10
   Підтвердити переможця
 
 
