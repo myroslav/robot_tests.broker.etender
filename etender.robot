@@ -85,6 +85,7 @@ ${huge_timeout_for_visibility}                                 300
 ${tenderpage}
 ${contractpage}
 ${global_procedure_type}
+${global_plan_id}
 
 
 *** Keywords ***
@@ -469,9 +470,11 @@ Login
   Wait and Click  xpath=//button[@ng-click= 'addItem()']
   Wait and Input  xpath=//textarea[@id ='itemsDescription${items_index}']  ${items_description}
   Wait and Input  xpath=//input[@id = 'itemsQuantity${items_index}']  ${quantityStr}
-  Wait and Input  xpath=//unit[@id='unit_${items_index}']//input[@type="search"]  ${unit}
-  Press Key               xpath=//unit[@id='unit_${items_index}']//input[@type="search"]                 \\13
-  Wait and Click          xpath=//div[contains(@ng-model,'unit.selected')]//span[@class="ui-select-highlight"]
+
+  Wait and Click  xpath=//*[@id="unit_${items_index}"]//*[@class="selectize-input"]
+  Wait and Input  xpath=//div[@class="selectize-input focus"]/input  ${unit}
+  Press Key  xpath=//div[@class="selectize-input focus"]/input  \\13
+
   Wait and Click          xpath=//span[@ng-if = 'createPlanModel.apiId']  10
   Reload Page
 
@@ -604,6 +607,7 @@ add feature
   Wait Until Keyword Succeeds   2x  10 sec  Дочекатися завершення обробки плану
   ${plan_id}=  Get Text  xpath=//div[@class = 'col-xs-6 ng-binding' and contains(text(), 'UA-P')]
   Зберегти посилання
+  ${global_plan_id}  Set Global Variable  ${plan_id}
   [Return]  ${plan_id.split()[0]}    #id=planId_0
 
 Опрацювати дотаткові класифікації
@@ -1016,6 +1020,7 @@ add feature
   Дочекатись зникнення blockUI
   Wait Until Page Contains  ${TENDER_UAID}  10
 
+
 Завантажити документ в ставку
   [Arguments]  ${username}  ${file}  ${tender_uaid}  ${doc_type}=1  ${doc_name}=
   Перейти на сторінку тендера за потреби
@@ -1410,12 +1415,6 @@ Input String
   ${value}=     Convert To String       ${value}
   Input text    ${locator}              ${value}
 
-Check Is Element Loaded
-  [Arguments]  ${locator}
-  ${text_value}=   Get Text  ${locator}
-  Log  ${text_value}
-  Should Not Be Empty  ${text_value}
-  Should Not Be Equal  ${text_value}  -
 
 Внести зміни в тендер
   [Arguments]  ${username}  ${tender_uaid}  ${field}  ${new_value}
@@ -1430,11 +1429,10 @@ Check Is Element Loaded
 Редагувати поле tenderPeriod.endDate
   [Arguments]  ${new_value_isodate}
   ${date}=  convert_date_to_etender_format  ${new_value_isodate}
-  ${methodType}=  Get From Dictionary  ${USERS.users['${tender_owner}'].initial_data.data}  procurementMethodType
-  run keyword if  '${methodType}'!='esco'  Input text  id=TenderPeriod  ${date}
+  run keyword if  '${global_procedure_type}'!='esco'  Input text  id=TenderPeriod  ${date}
   ...              ELSE                    Input text  id=tenderPeriod_endDate_day  ${date}
   ${time}=  convert_time_to_etender_format  ${new_value_isodate}
-  run keyword if  '${methodType}'!='esco'  Input text  id=TenderPeriod_time  ${time}
+  run keyword if  '${global_procedure_type}'!='esco'  Input text  id=TenderPeriod_time  ${time}
   ...              ELSE                    Input text  id=tenderPeriod_endDate_time  ${time}
 
 Редагувати поле description
@@ -1456,7 +1454,10 @@ Check Is Element Loaded
   [Arguments]  ${username}  ${tender_uaid}
   Перейти на сторінку тендера за потреби
   Дочекатись зникнення blockUI
-  Wait Scroll Click     xpath=//a[contains(@class,'btn btn-primary') and .='Редагувати закупівлю']
+  ${methodType}=  Get Text  id=procedureType
+  ${methodType}=  get_method_type   ${methodType.lower()}
+  Set Global Variable  ${global_procedure_type}  ${methodType}
+  Wait Scroll Click     id=update_tender_btn
   Дочекатись зникнення blockUI
 
 Редагувати поле лота value.amount
@@ -1525,7 +1526,6 @@ Check Is Element Loaded
   ${agreementDuration}=    Get Text     xpath=//p[contains(text(), 'Строк, на який укладається рамкова угода:')]
   ${year}  ${month}  ${day}=  convet_raw_to_chack  ${agreementDuration}
   run keyword and return  'P${year}Y${month}M${day}D'
-
 
 
 Отримати текст із поля і показати на сторінці
