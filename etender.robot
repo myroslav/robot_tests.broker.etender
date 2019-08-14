@@ -473,6 +473,7 @@ Login
 
   Wait and Click  xpath=//*[@id="unit_${items_index}"]//*[@class="selectize-input"]
   Wait and Input  xpath=//div[@class="selectize-input focus"]/input  ${unit}
+  Sleep  3
   Press Key  xpath=//div[@class="selectize-input focus"]/input  \\13
 
   Wait and Click          xpath=//span[@ng-if = 'createPlanModel.apiId']  10
@@ -579,9 +580,17 @@ add feature
   ${amount}=            float_to_string_2f      ${amount}
   ${number_of_items}=   Get Length              ${items}
   ${cpv_id}=            Get From Dictionary     ${plan.classification}          id
+  ${identifier_id}=     Get From Dictionary     ${plan.procuringEntity.identifier}  id
+  ${identifier_legalName}=   Get From Dictionary     ${plan.procuringEntity.identifier}  legalName
   Дочекатись зникнення blockUI
   Wait and Click        id=qa_myPlans
   Wait and Click        xpath=//a[@href="#/createPlan"]
+  Дочекатись зникнення blockUI
+
+  Wait and Click  id=newProcuringEntity
+  Wait and Input  id=procuringEntityEdrpou  ${identifier_id}
+  Wait and Input  id=procuringEntityName  ${identifier_legalName}
+
   Wait and Input        id=description          ${description}
   Input text            id=value                ${amount}
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
@@ -592,6 +601,7 @@ add feature
   Sleep  3
   Click element         xpath=//td[contains(.,'${cpv_id}')]
   Click element         xpath=//button[contains(.,'Зберегти та вийти')]
+  Sleep  5
   :FOR  ${i}  IN RANGE  ${number_of_items}
   \     Wait Scroll Click       xpath=//button[@ng-click='addItem()']
   \     ${item_description}=    Get From Dictionary         ${items[${i}]}          description
@@ -601,7 +611,12 @@ add feature
   \     ${item_unit}=           Get From Dictionary         ${items[${i}].unit}     name
   \     Input text              xpath=//unit[@id='unit_${i}']//input[@type="search"]                 ${item_unit}
   \     Press Key               xpath=//unit[@id='unit_${i}']//input[@type="search"]                 \\13
+  \     Sleep                   3
   \     Wait and Click          xpath=//div[contains(@ng-model,'unit.selected')]//span[@class="ui-select-highlight"]
+  \     ${delivery_date}=       Get From Dictionary         ${items[${i}].deliveryDate}      endDate
+  \     ${delivery_date}=       convert_date_to_etender_format  ${delivery_date}
+  \     Wait and Input          id=deliveryDate${i}         ${delivery_date}
+
   Wait Scroll Click     xpath=//button[contains(., 'Створити план')]
   Дочекатись зникнення blockUI
   Wait Until Keyword Succeeds   2x  10 sec  Дочекатися завершення обробки плану
@@ -609,6 +624,51 @@ add feature
   Зберегти посилання
   ${global_plan_id}  Set Global Variable  ${plan_id}
   [Return]  ${plan_id.split()[0]}    #id=planId_0
+
+Перейти до редагування плану
+  Перейти на сторінку плану за потреби
+  Дочекатись зникнення blockUI
+  Wait Scroll Click     xpath=//a[text()="Редагувати план"]
+  Дочекатись зникнення blockUI
+
+Редагувати поле плану
+  [Arguments]  ${field}  ${new_value}
+  Run Keyword And Return  Редагувати поле ${field}  ${new_value}
+
+Редагувати поле budget.description
+  [Arguments]  ${new_value}
+  Wait and Input  id=description  ${new_value}
+
+Редагувати поле budget.amount
+  [Arguments]  ${new_value}
+  Wait and Input  id=value  ${new_value}
+
+Редагувати поле items[0].deliveryDate.endDate
+  [Arguments]  ${new_value}
+  ${new_value}=  convert_date_to_etender_format  ${new_value}
+  Wait and Input  id=deliveryDate0  ${new_value}
+
+Редагувати поле items[0].quantity
+  [Arguments]  ${new_value}
+  Wait and Input  id=itemsQuantity0  ${new_value}
+
+Редагувати поле budget.period
+  [Arguments]  ${new_value}
+  ${start}=  Get From Dictionary  ${new_value}  startDate
+  ${start_year}=  get_year_from_full_date  ${start}
+
+  ${end_date}=    Get From Dictionary  ${new_value}  endDate
+  ${end_year}=  get_year_from_full_date  ${end_date}
+  Wait and Select By Label  xpath=//*[@name="startProjectBudget"]  ${start_year}
+  Wait and Select By Label  xpath=//*[@name="endProjectBudget"]  ${end_year}
+  Capture Page Screenshot
+
+Внести зміни в план
+  [Arguments]  ${username}  ${plan_id}  ${field}  ${new_value}
+  Перейти до редагування плану
+  Редагувати поле плану  ${field}  ${new_value}
+  Wait and Click  xpath=//button[@click-and-block="savePlan()"]  #опублікувати
+
 
 Опрацювати дотаткові класифікації
   [Arguments]  ${additionalClassifications}  ${index}  ${lot_index}
@@ -716,9 +776,6 @@ add feature
   ${items_count}=  Get Length  ${items}
   :FOR  ${j}  IN RANGE  ${items_count}-1
   \     Wait Scroll Click  id=addLotItem_${lot_index}
-
-
-
 
   :FOR  ${j}  IN RANGE  ${items_count}
   \     ${status}  ${relatedLot}    Run Keyword And Ignore Error  Get From Dictionary  ${items[${j}]}  relatedLot

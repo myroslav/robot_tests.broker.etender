@@ -100,7 +100,10 @@ def convet_raw_to_chack(raw):
     return c, d, e
 
 
-
+def get_year_from_full_date(string):
+    data_as_str = string.split('T')[0]
+    data_as_datetime = datetime.strptime(data_as_str, '%Y-%m-%d')
+    return str(data_as_datetime.year)
 
 def convert_date_to_etender_format(isodate):
     iso_dt = parse_date(isodate)
