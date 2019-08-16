@@ -143,6 +143,9 @@ Wait and Get Attribute
 
 Підготувати дані для оголошення тендера
   [Arguments]  ${username}  ${tender_data}  ${username_2}
+  Log  ${tender_data}
+  ${status}=  Run Keyword And Return Status     Dictionary Should Contain Key   ${data}  buyers
+  Run Keyword And Return If    '${status}'=='True'     change_buyers_data  ${tender_data.buyers[0]}
   ${tender_data}=  change_data  ${tender_data}
   Log  ${tender_data}
   Log  ${username}
@@ -173,7 +176,7 @@ Login
   #Set To Dictionary  ${USERS.users['${username}']}  tender_data=${tender_data}
   ${tender_data}=       Get From Dictionary     ${tender_data}              data
   ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
-  log to console  check presence of procurementMethodType in dictionary: ${status}
+  Log To Console  check presence of procurementMethodType in dictionary: ${status}
   ${methodType}=  Set Variable IF  '${status}' != 'PASS'       belowThreshold  ${methodType}
   Set To Dictionary  ${USERS.users['${username}']}  method_type=${methodType}
   Run Keyword If  '${methodType}' == 'esco'  Run Keyword And Return  Створити тендер ESCO  ${username}  ${tender_data}  ${methodType}
@@ -203,7 +206,7 @@ Login
 
   ${status}  ${lots}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  lots
   Log  ${lots[0]}
-  log to console  presence of lots: ${status}
+  Log to console  presence of lots: ${status}
   ${lots_count}=  Run Keyword IF  '${status}' != 'PASS'  Set Variable  0
   ...             ELSE  Get Length  ${lots}
   Run Keyword If  ${lots_count}>0  Run Keywords  Wait Scroll Click  id=isMultilots  AND  Додати лоти і їх предмети  ${lots_count}  ${lots}  ${items}
@@ -580,16 +583,11 @@ add feature
   ${amount}=            float_to_string_2f      ${amount}
   ${number_of_items}=   Get Length              ${items}
   ${cpv_id}=            Get From Dictionary     ${plan.classification}          id
-  ${identifier_id}=     Get From Dictionary     ${plan.procuringEntity.identifier}  id
-  ${identifier_legalName}=   Get From Dictionary     ${plan.procuringEntity.identifier}  legalName
   Дочекатись зникнення blockUI
   Wait and Click        id=qa_myPlans
   Wait and Click        xpath=//a[@href="#/createPlan"]
   Дочекатись зникнення blockUI
-
-  Wait and Click  id=newProcuringEntity
-  Wait and Input  id=procuringEntityEdrpou  ${identifier_id}
-  Wait and Input  id=procuringEntityName  ${identifier_legalName}
+  Заповнити інформацію про buyers при наявності  ${plan.buyers}
 
   Wait and Input        id=description          ${description}
   Input text            id=value                ${amount}
@@ -624,6 +622,18 @@ add feature
   Зберегти посилання
   ${global_plan_id}  Set Global Variable  ${plan_id}
   [Return]  ${plan_id.split()[0]}    #id=planId_0
+
+
+Заповнити інформацію про buyers при наявності  # Заполнение объекта при создании плана
+  [Arguments]  ${buyers}
+  Wait and Click  id=newProcuringEntity
+  ${buyers_list_len}=  Get Length  ${buyers}
+  :FOR  ${b_id}  IN RANGE  ${buyers_list_len}
+  \    ${buyer_identifier_id}=     Get From Dictionary     ${buyers[${b_id}].identifier}  id
+  \    ${buyer_identifier_legalName}=   Get From Dictionary     ${buyers[${b_id}].identifier}  legalName
+  \    Wait and Input  id=procuringEntityEdrpou${b_id}  ${buyer_identifier_id}
+  \    Wait and Input  id=procuringEntityName${b_id}  ${buyer_identifier_legalName}
+
 
 Перейти до редагування плану
   Перейти на сторінку плану за потреби
@@ -916,9 +926,6 @@ add feature
   Wait and Input    id=postIndex_0${index}    ${postalCode}
 
 
-
-
-
 Видалити предмет закупівлі
   [Arguments]  ${username}  ${tender_uaid}  ${index}  ${lot_index}
   Перейти до редагування тендера    ${username}  ${tender_uaid}
@@ -1193,6 +1200,19 @@ add feature
   sleep  3
 
 
+Отримати інформацію із плану
+  [Arguments]  ${username}  ${plan_id}  ${field}
+  Run Keyword and Ignore Error  Wait and Click  xpath=//td[@data-title="\'Номер плану\'"]/span[.="${plan_id}"]/parent::td//following-sibling::td[@data-title="\'Конкретна Назва\'"]/a
+  Run Keyword And Return  Отримати інформацію із плану про ${field}
+
+#TODO: добавить локаторы в проект для элементов ниже
+Отримати інформацію із плану про tender.procurementMethodType
+  ${text}=  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@value
+  Run Keyword And Ignore Error  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@value
+  Run Keyword And Ignore Error  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@outerText
+  Run Keyword And Ignore Error  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@text
+  Run Keyword And Ignore Error  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@textContent
+  Run Keyword And Return  get_method_type  ${text.lower()}
 
 
 Отримати інформацію із пропозиції
