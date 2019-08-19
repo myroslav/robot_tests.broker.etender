@@ -141,11 +141,12 @@ Wait and Get Attribute
   [Arguments]
   Wait Until Keyword Succeeds  15x  0s  Wait Until Page Does Not Contain Element  xpath=//div[@class='blockUI blockOverlay']  2
 
+
 Підготувати дані для оголошення тендера
   [Arguments]  ${username}  ${tender_data}  ${username_2}
-  Log  ${tender_data}
-  ${status}=  Run Keyword And Return Status     Dictionary Should Contain Key   ${data}  buyers
-  Run Keyword And Return If    '${status}'=='True'     change_buyers_data  ${tender_data.buyers[0]}
+  ${status}=  Run Keyword And Return Status     Dictionary Should Contain Key   ${tender_data.data}  buyers
+  Run Keyword If  '${status}'=='True'  change_buyers_data  ${tender_data}
+  Return From Keyword If   '${status}'=='True'  ${tender_data}
   ${tender_data}=  change_data  ${tender_data}
   Log  ${tender_data}
   Log  ${username}

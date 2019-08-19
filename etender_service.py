@@ -151,9 +151,10 @@ def change_data(initial_data):
 
 
 def change_buyers_data(initial_data):
-    initial_data['data']['buyers'][0]['name'] = u"TenderOwner#"
-    initial_data['data']['buyers'][0]['identifier']['id'] = u"88008800"
-    initial_data['data']['buyers'][0]['identifier']['legalName'] = u"TenderOwner#"
+    initial_data['data']['procuringEntity']['name'] = initial_data['data']['buyers'][0]['name']
+    initial_data['data']['procuringEntity']['identifier']['id'] = initial_data['data']['buyers'][0]['identifier']['id']
+    initial_data['data']['procuringEntity']['identifier']['legalName'] = \
+        initial_data['data']['buyers'][0]['identifier']['legalName']
     return initial_data
 
 
