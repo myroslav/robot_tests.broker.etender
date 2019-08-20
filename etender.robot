@@ -591,6 +591,10 @@ add feature
   Дочекатись зникнення blockUI
   Заповнити інформацію про buyers при наявності  ${plan.buyers}
 
+  ${plan_tender_type}=       Get From Dictionary     ${plan.tender}  procurementMethodType
+  ${tender_type_value}=             get_procedure_type      ${plan_tender_type}
+  Wait and Select By Label  xpath=//select[@name="procedureType"]          ${tender_type_value}
+
   Wait and Input        id=description          ${description}
   Input text            id=value                ${amount}
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
@@ -1262,7 +1266,10 @@ add feature
 
 
 Отримати інформацію із плану про tender.tenderPeriod.startDate
-  # TODO у нас вместо даты - Серпень 2019
+  # TODO: кейворд некорректный, цбд ждет 2019-08-20T00:00:00+03:00, которую мы никак не заполним
+  ${tender_period_month}=  Wait and Get Text   id=qa_plan_tender_period_start_month
+  ${tender_period_year}=  Wait and Get Text  id=qa_plan_tender_period_start_year
+  return from keyword  ${tender_period_year} + ${tender_period_month}
 
 Отримати інформацію із плану про items[${n}].description
   Run Keyword And Return  Wait and Get Text  xpath=//*[contains(@id,'item_description_0${n}')]
