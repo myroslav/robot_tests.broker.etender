@@ -199,6 +199,7 @@ Login
   Wait and Select By Label  id=chooseProcedureType  ${procedure_type}
   Wait and Click        id=goToCreate
   Дочекатись зникнення blockUI
+  Wait and Input        xpath=//input[@name="planExternalId"]          ${global_plan_id}
   Input text    id=title    ${title}
   Input text    id=description            ${description}
   Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU')   Input text    id=titleEN    ${title_en}
@@ -1085,7 +1086,6 @@ add feature
   Дочекатись зникнення blockUI
   Wait Until Page Contains  ${TENDER_UAID}  10
 
-
 Завантажити документ в ставку
   [Arguments]  ${username}  ${file}  ${tender_uaid}  ${doc_type}=1  ${doc_name}=
   Перейти на сторінку тендера за потреби
@@ -1204,16 +1204,99 @@ add feature
 Отримати інформацію із плану
   [Arguments]  ${username}  ${plan_id}  ${field}
   Run Keyword and Ignore Error  Wait and Click  xpath=//td[@data-title="\'Номер плану\'"]/span[.="${plan_id}"]/parent::td//following-sibling::td[@data-title="\'Конкретна Назва\'"]/a
+  Дочекатись зникнення blockUI
   Run Keyword And Return  Отримати інформацію із плану про ${field}
 
 #TODO: добавить локаторы в проект для элементов ниже
 Отримати інформацію із плану про tender.procurementMethodType
-  ${text}=  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@value
-  Run Keyword And Ignore Error  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@value
-  Run Keyword And Ignore Error  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@outerText
-  Run Keyword And Ignore Error  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@text
-  Run Keyword And Ignore Error  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@textContent
+  ${text}=  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@outerText
   Run Keyword And Return  get_method_type  ${text.lower()}
+
+Отримати інформацію із плану про budget.amount
+  ${return_value}=   Get Text  tenderBudget
+  ${return_value}=   Set Variable  ${return_value.replace(u'\xa0','')}  # nbsp converting attempt
+  ${return_value}=   Set Variable  ${return_value.replace(' ','')}
+  Run Keyword And Return  Convert To Number   ${return_value.replace(',','.')}
+
+
+Отримати інформацію із плану про budget.currency
+  Run Keyword And Return  Get Text  id=tenderCurrency
+
+Отримати інформацію із плану про budget.id
+  # поидее должны убрать данный кейворд
+
+Отримати інформацію із плану про budget.description
+  Run Keyword And Return  Get Text  id=qa_projectBudget_description
+
+
+Отримати інформацію із плану про procuringEntity.name
+  Run Keyword And Return  Get Text  id=tenderOwner
+
+
+Отримати інформацію із плану про procuringEntity.identifier.scheme
+  ${return_value}=  Get Text   id=organization_scheme
+  ${return_value}=  Set Variable   ${return_value[:-1]}
+  ${return_value}=  Set Variable   ${return_value.replace(u"Код ","")}
+  Run Keyword and Return  Set Variable   ${return_value.replace(u"ЄДРПОУ","UA-EDR")}
+
+
+Отримати інформацію із плану про procuringEntity.identifier.id
+  Run Keyword And Return  Get Text  id=organization_identifier
+
+
+Отримати інформацію із плану про procuringEntity.identifier.legalName
+  Run Keyword And Return  Get Text  id=tenderOwner
+
+
+Отримати інформацію із плану про classification.description
+  Run Keyword And Return  Wait and Get Text  xpath=//*[contains(@id,'classification_name')]
+
+
+Отримати інформацію із плану про classification.scheme
+  ${return}=  Wait and Get Text  xpath=//table[contains(@class,"itemTable")]//th[contains(.,"Класифікатор ")]
+  Run Keyword And Return  convert_etender_string_to_common_string  ${return}
+
+
+Отримати інформацію із плану про classification.id
+  Run Keyword And Return  Wait and Get Text  xpath=//*[contains(@id,'classification_code')]
+
+
+Отримати інформацію із плану про tender.tenderPeriod.startDate
+  # TODO у нас вместо даты - Серпень 2019
+
+Отримати інформацію із плану про items[${n}].description
+  Run Keyword And Return  Wait and Get Text  xpath=//*[contains(@id,'item_description_0${n}')]
+
+
+Отримати інформацію із плану про items[${n}].quantity
+  ${quantity}=  Wait and Get Text  xpath=//*[contains(@id,'item_quantity_0${n}')]
+  Run Keyword And Return  Convert To Number  ${quantity}
+
+
+Отримати інформацію із плану про items[${n}].deliveryDate.endDate
+#  ${return_value}=  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_end')]
+#  Run Keyword And Return    convert_etender_date_to_iso_format   ${return_value.replace(u'по ','')}, 00:00
+
+Отримати інформацію із плану про items[${n}].unit.code
+  ${return_value}=  Wait and Get Text  xpath=//*[contains(@id,'item_unit_0${n}')]
+  Run Keyword And Return  convert_unit_name_to_unit_code  ${return_value}
+
+
+Отримати інформацію із плану про items[${n}].unit.name
+  Run Keyword And Return  Wait and Get Text  xpath=//*[contains(@id,'item_unit_0${n}')]
+
+
+Отримати інформацію із плану про items[${n}].classification.description
+  Run Keyword And Return  Wait and Get Text  xpath=//*[contains(@id,'classification_name_0${n}')]
+
+
+Отримати інформацію із плану про items[${n}].classification.scheme
+  ${return}=  Wait and Get Text  xpath=//table[contains(@class,"itemTable")]//th[contains(.,"Класифікатор ")]
+  Run Keyword And Return  convert_etender_string_to_common_string  ${return}
+
+
+Отримати інформацію із плану про items[${n}].classification.id
+  Run Keyword And Return  Wait and Get Text  xpath=//*[contains(@id,'classification_code_0${n}')]
 
 
 Отримати інформацію із пропозиції
