@@ -176,6 +176,7 @@ Login
   [Arguments]  ${username}  ${tender_data}
   #Set To Dictionary  ${USERS.users['${username}']}  tender_data=${tender_data}
   ${tender_data}=       Get From Dictionary     ${tender_data}              data
+  Log  ${tender_data}
   ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
   Log To Console  check presence of procurementMethodType in dictionary: ${status}
   ${methodType}=  Set Variable IF  '${status}' != 'PASS'       belowThreshold  ${methodType}
@@ -602,7 +603,7 @@ add feature
   Select From List By Index     xpath=//select[@name="startDateMonth"]          6
   Wait and Click        xpath=//input[@ng-click="openClassificationModal(null)"]
   Wait and Input        xpath=//div[@id="planClassification"]//input                           ${cpv_id}
-  Sleep  3
+  Дочекатись зникнення blockUI
   Click element         xpath=//td[contains(.,'${cpv_id}')]
   Click element         xpath=//button[contains(.,'Зберегти та вийти')]
   Sleep  5
@@ -690,7 +691,7 @@ add feature
   [Arguments]  ${additionalClassifications}  ${index}  ${lot_index}
   # TODO: Обробляти випадок коли є більше однієї додаткової класифікації
   ${scheme}=  Get From Dictionary  ${additionalClassifications[0]}  scheme
-  Run Keyword If  '${scheme}' in ('INN', 'UA-ROAD')  Вказати ${scheme} додаткову класифікацію  ${additionalClassifications[0]}  ${index}  ${lot_index}
+  Run Keyword If  '${scheme}' in ('INN', 'ДКПП', 'UA-ROAD', 'GMDN')  Вказати ${scheme} додаткову класифікацію  ${additionalClassifications[0]}  ${index}  ${lot_index}
   ...         ELSE  Вказати додаткову класифікацію  ${additionalClassifications[0]}  ${index}  ${lot_index}  ${scheme}
   Дочекатись зникнення blockUI
 
@@ -718,7 +719,6 @@ add feature
   [Arguments]  ${additionalClassification}  ${index}  ${lot_index}
   ${description}=   Get From Dictionary  ${additionalClassification}  description
   ${id}=            Get From Dictionary  ${additionalClassification}  id
-
   Wait and Click    id=openAddClassificationRoadsModal${lot_index}${index}
   Wait and Input    xpath=//div[contains(@id, "addClassificationRoads_") and contains(@class,"modal")]//input  ${id}
   Дочекатись зникнення blockUI
@@ -726,9 +726,22 @@ add feature
   Wait and Click    xpath=//div[contains(@id, "addClassificationRoads_") and contains(@class,"modal")]//*[@id="addClassification_choose"]
   Дочекатись зникнення blockUI
 
-#Вказати ДКПП додаткову класифікацію
-#  [Arguments]  ${additionalClassification}  ${index}  @{arguments}
-#  log  Це щось старе, і його мають прибрати. Не буду нічого тут робити!  WARN
+
+Вказати GMDN додаткову класифікацію
+  [Arguments]  ${additionalClassification}  ${index}  ${lot_index}
+  ${description}=   Get From Dictionary  ${additionalClassification}  description
+  ${id}=            Get From Dictionary  ${additionalClassification}  id
+  Wait and Click    id=openAddClassificationGmdnsModal${lot_index}${index}
+  Wait and Input    xpath=//div[contains(@id, "addClassificationGmdns_") and contains(@class,"modal")]//input  ${id}
+  Дочекатись зникнення blockUI
+  Wait and Click    xpath=//td[contains(., '${id}')]
+  Wait and Click    xpath=//div[contains(@id, "addClassificationGmdns_") and contains(@class,"modal")]//*[@id="addClassification_choose"]
+  Дочекатись зникнення blockUI
+
+
+Вказати ДКПП додаткову класифікацію
+  [Arguments]  ${additionalClassification}  ${index}  @{arguments}
+  log  Це щось старе, і його мають прибрати. Не буду нічого тут робити!  WARN
 
 
 Дочекатися завершення обробки тендера
