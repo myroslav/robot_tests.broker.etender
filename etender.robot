@@ -690,11 +690,11 @@ add feature
   [Arguments]  ${additionalClassifications}  ${index}  ${lot_index}
   # TODO: Обробляти випадок коли є більше однієї додаткової класифікації
   ${scheme}=  Get From Dictionary  ${additionalClassifications[0]}  scheme
-  Run Keyword If  '${scheme}' in ('INN','ДКПП')  Вказати ${scheme} дотаткову класифікацію  ${additionalClassifications[0]}  ${index}  ${lot_index}
-  ...         ELSE  Вказати дотаткову класифікацію  ${additionalClassifications[0]}  ${index}  ${lot_index}  ${scheme}
+  Run Keyword If  '${scheme}' in ('INN', 'UA-ROAD')  Вказати ${scheme} додаткову класифікацію  ${additionalClassifications[0]}  ${index}  ${lot_index}
+  ...         ELSE  Вказати додаткову класифікацію  ${additionalClassifications[0]}  ${index}  ${lot_index}  ${scheme}
   Дочекатись зникнення blockUI
 
-Вказати INN дотаткову класифікацію
+Вказати INN додаткову класифікацію
   [Arguments]  ${additionalClassification}  ${index}  ${lot_index}
   ${description}=  Get From Dictionary  ${additionalClassification}  description
   Wait Scroll Click     xpath=//input[@id='openAddClassificationInnModal${lot_index}${index}']
@@ -703,7 +703,7 @@ add feature
   Wait and Click    xpath=//td[contains(., '${description}')]
   Wait and Click    xpath=//div[@id="addClassificationInn_${lot_index}_${index}" and contains(@class,"top")]//button[@id="addClassification_choose"]
 
-Вказати дотаткову класифікацію
+Вказати додаткову класифікацію
   [Arguments]  ${additionalClassification}  ${index}  ${lot_index}  ${scheme}
   [Documentation]  Works same for all DK0** schemes
   ${description}=   Get From Dictionary  ${additionalClassification}  description
@@ -714,9 +714,22 @@ add feature
   Wait and Click    xpath=//td[contains(., '${description}')]
   Wait and Click    xpath=//div[@id="addClassification" and contains(@class,"modal")]//*[@id="addClassification_choose"]
 
-Вказати ДКПП дотаткову класифікацію
-  [Arguments]  ${additionalClassification}  ${index}  @{arguments}
-  log  Це щось старе, і його мають прибрати. Не буду нічого тут робити!  WARN
+Вказати UA-ROAD додаткову класифікацію
+  [Arguments]  ${additionalClassification}  ${index}  ${lot_index}
+  ${description}=   Get From Dictionary  ${additionalClassification}  description
+  ${id}=            Get From Dictionary  ${additionalClassification}  id
+
+  Wait and Click    id=openAddClassificationRoadsModal${lot_index}${index}
+  Wait and Input    xpath=//div[contains(@id, "addClassificationRoads_") and contains(@class,"modal")]//input  ${id}
+  Дочекатись зникнення blockUI
+  Wait and Click    xpath=//td[contains(., '${id}')]
+  Wait and Click    xpath=//div[contains(@id, "addClassificationRoads_") and contains(@class,"modal")]//*[@id="addClassification_choose"]
+  Дочекатись зникнення blockUI
+
+#Вказати ДКПП додаткову класифікацію
+#  [Arguments]  ${additionalClassification}  ${index}  @{arguments}
+#  log  Це щось старе, і його мають прибрати. Не буду нічого тут робити!  WARN
+
 
 Дочекатися завершення обробки тендера
   Reload Page
