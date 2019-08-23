@@ -135,9 +135,9 @@ def string_to_float(string):
 
 def change_data(initial_data):
     #TODO: remove redundant hardcoded values
-    initial_data['data']['procuringEntity']['identifier']['legalName'] = u"TenderOwner#"
-    initial_data['data']['procuringEntity']['identifier']['id'] =        u"88008800"
-    initial_data['data']['procuringEntity']['name'] = u"TenderOwner#"
+    # initial_data['data']['procuringEntity']['identifier']['legalName'] = u"TenderOwner#"
+    # initial_data['data']['procuringEntity']['identifier']['id'] =        u"88008800"
+    # initial_data['data']['procuringEntity']['name'] = u"TenderOwner#"
     initial_data['data']['items'][0]['deliveryAddress']['locality'] = u"м. Київ"
     initial_data['data']['items'][0]['deliveryAddress']['region'] =  u"Київська область"
     initial_data['data']['procuringEntity']['address']['locality']       = u"Алупка"
@@ -150,11 +150,22 @@ def change_data(initial_data):
     return initial_data
 
 
+def change_data_for_tender_owner(initial_data):
+    initial_data['data']['procuringEntity']['identifier']['legalName'] = u"TenderOwner#"
+    initial_data['data']['procuringEntity']['identifier']['id'] =        u"88008800"
+    initial_data['data']['procuringEntity']['name'] = u"TenderOwner#"
+    return initial_data
+
 def change_buyers_data(initial_data):
+    initial_data['data']['buyers'][0]['name'] = u"TenderOwner#"
+    initial_data['data']['buyers'][0]['identifier']['id'] = u"88008800"
+    initial_data['data']['buyers'][0]['identifier']['legalName'] = u"TenderOwner#"
+
     initial_data['data']['procuringEntity']['name'] = initial_data['data']['buyers'][0]['name']
     initial_data['data']['procuringEntity']['identifier']['id'] = initial_data['data']['buyers'][0]['identifier']['id']
     initial_data['data']['procuringEntity']['identifier']['legalName'] = \
         initial_data['data']['buyers'][0]['identifier']['legalName']
+
     return initial_data
 
 

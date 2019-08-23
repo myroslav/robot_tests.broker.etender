@@ -144,9 +144,20 @@ Wait and Get Attribute
 
 Підготувати дані для оголошення тендера
   [Arguments]  ${username}  ${tender_data}  ${username_2}
+  Log  ${tender_data}
+
+  # Достаем айдишник плана для создания тендера
+  ${file_path}=  Get Variable Value  ${ARTIFACT_FILE}  artifact.yaml
+  ${ARTIFACT}=  load_data_from  ${file_path}
+  Set Global Variable  ${global_plan_id}    ${ARTIFACT.tender_uaid}
+
+  # Если есть объект закупівельника (buyers) - то это план, из за особенностей площадки меняем данные
   ${status}=  Run Keyword And Return Status     Dictionary Should Contain Key   ${tender_data.data}  buyers
   Run Keyword If  '${status}'=='True'  change_buyers_data  ${tender_data}
   Return From Keyword If   '${status}'=='True'  ${tender_data}
+
+  # Обновлять данные создателя тендера, только в случае tender_owner'a
+  Run Keyword If  '${username}'=='Etender_Owner'  change_data_for_tender_owner  ${tender_data}
   ${tender_data}=  change_data  ${tender_data}
   Log  ${tender_data}
   Log  ${username}
@@ -191,7 +202,6 @@ Login
   ${budget}=            Get From Dictionary     ${tender_data.value}        amount
   ${budgetToStr}=       float_to_string_2f      ${budget}      # at least 2 fractional point precision, avoid rounding
 
-
   Log  ${items[0]}
   Click Element         id=qa_myTenders  # Мої закупівлі
   Дочекатись зникнення blockUI
@@ -203,6 +213,11 @@ Login
   Wait and Input        xpath=//input[@name="planExternalId"]          ${global_plan_id}
   Input text    id=title    ${title}
   Input text    id=description            ${description}
+
+  Wait And Input  id=planExternalId  ${global_plan_id}
+  Wait and Click  id=searchPlan
+  Дочекатись зникнення blockUI
+
   Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU')   Input text    id=titleEN    ${title_en}
   Run Keyword Unless  '${methodType}' in ('closeFrameworkAgreementUA')   Wait Scroll Click     id=valueAddedTaxIncluded
   Select From List By Value  id=mainProcurementCategory     ${mainProcurementCategory}
@@ -627,7 +642,6 @@ add feature
   Wait Until Keyword Succeeds   2x  10 sec  Дочекатися завершення обробки плану
   ${plan_id}=  Get Text  xpath=//div[@class = 'col-xs-6 ng-binding' and contains(text(), 'UA-P')]
   Зберегти посилання
-  ${global_plan_id}  Set Global Variable  ${plan_id}
   [Return]  ${plan_id.split()[0]}    #id=planId_0
 
 
