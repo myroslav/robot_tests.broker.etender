@@ -649,7 +649,7 @@ add feature
   Wait Scroll Click     xpath=//button[contains(., 'Створити план')]
   Дочекатись зникнення blockUI
   Wait Until Keyword Succeeds   2x  10 sec  Дочекатися завершення обробки плану
-  ${plan_id}=  Get Text  xpath=//div[@class = 'col-xs-6 ng-binding' and contains(text(), 'UA-P')]
+  ${plan_id}=  Get Text  id=planId
   Зберегти посилання
 
 
@@ -774,8 +774,8 @@ add feature
 Дочекатися завершення обробки плану
   Reload Page
   Дочекатись зникнення blockUI
-  Wait Until Element Is Visible      xpath=//div[@class = 'col-xs-6 ng-binding' and contains(text(), 'UA-P')]  30  #id=planId_0
-  ${plan_id}=                        Get Text  xpath=//div[@class = 'col-xs-6 ng-binding' and contains(text(), 'UA-P')]  #id=planId_0
+  Wait Until Element Is Visible      id=planId  30
+  ${plan_id}=                        Get Text  id=planId
   ${plan_id}=                        Set Variable  ${plan_id.split()[0]}
   Log  ${plan_id}
   Should Match Regexp                ${plan_id}  UA-P-\\d{4}-.*
