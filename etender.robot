@@ -605,8 +605,6 @@ add feature
   ${amount}=            float_to_string_2f      ${amount}
   ${number_of_items}=   Get Length              ${items}
   ${cpv_id}=            Get From Dictionary     ${plan.classification}          id
-  ${identifier_id}=     Get From Dictionary     ${plan.procuringEntity.identifier}  id
-  ${identifier_legalName}=   Get From Dictionary     ${plan.procuringEntity.identifier}  legalName
   ${procurementMethodType}=  Get From Dictionary  ${plan.tender}                procurementMethodType
   ${procurementMethodTypeStr}=  get procedure type  ${procurementMethodType}
   Дочекатись зникнення blockUI
@@ -1629,12 +1627,6 @@ Input String
   ${value}=     Convert To String       ${value}
   Input text    ${locator}              ${value}
 
-Check Is Element Loaded
-  [Arguments]  ${locator}
-  ${text_value}=   Get Text  ${locator}
-  Log  ${text_value}
-  Should Not Be Empty  ${text_value}
-  Should Not Be Equal  ${text_value}  -
 
 Внести зміни в тендер
   [Arguments]  ${username}  ${tender_uaid}  ${field}  ${new_value}
