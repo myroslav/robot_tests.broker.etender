@@ -410,6 +410,7 @@ Login
 Додати умови оплати
   [Arguments]  ${milestones}
   ${count}=   Get Length  ${milestones}
+  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' == 'reporting'  Wait Scroll Click     id=addMilestone
   :FOR  ${i}  IN RANGE  ${count}
   \     Додати умову оплати  ${milestones[${i}]}  ${i}
 
@@ -743,7 +744,7 @@ add feature
   Wait and Click    id=openAddClassificationRoadsModal${lot_index}${index}
   Wait and Input    xpath=//div[contains(@id, "addClassificationRoads_") and contains(@class,"modal")]//input  ${id}
   Дочекатись зникнення blockUI
-  Wait and Click    xpath=//td[contains(., '${id}')]
+  Wait and Click    xpath=//div[contains(@id, "addClassificationRoads_")]//td[contains(., '${id}')]
   Wait and Click    xpath=//div[contains(@id, "addClassificationRoads_") and contains(@class,"modal")]//*[@id="addClassification_choose"]
   Дочекатись зникнення blockUI
 
@@ -755,7 +756,7 @@ add feature
   Wait and Click    id=openAddClassificationGmdnsModal${lot_index}${index}
   Wait and Input    xpath=//div[contains(@id, "addClassificationGmdns_") and contains(@class,"modal")]//input  ${id}
   Дочекатись зникнення blockUI
-  Wait and Click    xpath=//td[contains(., '${id}')]
+  Wait and Click    xpath=//div[contains(@id, "addClassificationGmdns_")]//td[contains(., '${id}')]
   Wait and Click    xpath=//div[contains(@id, "addClassificationGmdns_") and contains(@class,"modal")]//*[@id="addClassification_choose"]
   Дочекатись зникнення blockUI
 
@@ -2257,19 +2258,26 @@ Check Is Element Loaded
 
 Отримати інформацію із предмету про deliveryAddress.countryName
   [Arguments]  ${item_row}
-  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_country')]
+  ${text}=  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_country')]
+#  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_country')]
+  Run Keyword And Return  Fetch From Left  ${text}  ,
 
 Отримати інформацію із предмету про deliveryAddress.region
   [Arguments]  ${item_row}
-  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_region')]
+#  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_region')]
+  ${text}=  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_region')]
+  Run Keyword And Return  Fetch From Left  ${text}  ,
 
 Отримати інформацію із предмету про deliveryAddress.postalCode
   [Arguments]  ${item_row}
-  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_postIndex')]
+#  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_postIndex')]
+  ${text}=  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_postIndex')]
+  Run Keyword And Return  Fetch From Left  ${text}  ,
 
 Отримати інформацію із предмету про deliveryAddress.locality
   [Arguments]  ${item_row}
-  Run Keyword And Return  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_city')]
+  ${text}=  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_city')]
+  Run Keyword And Return  Fetch From Left  ${text}  ,
 
 Отримати інформацію із предмету про deliveryAddress.streetAddress
   [Arguments]  ${item_row}
