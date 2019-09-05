@@ -211,11 +211,9 @@ Login
   Wait and Click        id=goToCreate
   Дочекатись зникнення blockUI
   Wait and Input        xpath=//input[@name="planExternalId"]          ${global_plan_id}
+  Wait and Click  id=searchPlan
   Input text    id=title    ${title}
   Input text    id=description            ${description}
-
-  Wait And Input  id=planExternalId  ${global_plan_id}
-  Wait and Click  id=searchPlan
   Дочекатись зникнення blockUI
 
   Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU')   Input text    id=titleEN    ${title_en}
@@ -649,7 +647,7 @@ add feature
   Wait Until Keyword Succeeds   2x  10 sec  Дочекатися завершення обробки плану
   ${plan_id}=  Get Text  id=planId
   Зберегти посилання
-
+  [Return]  ${plan_id.split()[0]}
 
 Заповнити інформацію про buyers при наявності  # Заполнение объекта при создании плана
   [Arguments]  ${buyers}
@@ -1912,6 +1910,7 @@ Input String
 Отримати інформацію про Contracts[${n}].status
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
+  log  ${n}
   ${n}=  Run Keyword If  '${n}'=='0'  Evaluate  ${n}+1  ELSE  Set Variable  0
   ${i}=  Convert To String  ${n}
   ${return_value}=  Get Text  xpath=(//div[@id="qa_contractStatus"])[${i}]
