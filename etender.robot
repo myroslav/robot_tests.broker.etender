@@ -2542,12 +2542,16 @@ Wait for upload before signing
   Log  Temporary sleep to compensate timings, let's wait for 1 minute to be sure  WARN
   Sleep  60
   Reload Page
-  Відкрити розділ Деталі Закупівлі
-  ${tmp_location_tender}=  Get Location
+  Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
+
+  #сделал чтобы не сломать остальную логику на контрактах
+  #TODO: вынести переход на стр. контракта в кейворд, почистить код от ненужных действий и ожиданий.
+
+#  ${tmp_location_tender}=  Get Location
 
 # ==================  1 - enter values into fields, save
   Run Keyword And Ignore Error  Відкрити всі лоти
-  Click Element     xpath=//a[.="Внести інформацію про договір"]
+  Run Keyword And Ignore Error  Click Element     xpath=//a[.="Внести інформацію про договір"]
   Wait and Input    id=contractNumber  ${contract_index}
   ${time_now_tmp}=     get_time_now
   ${date_now_tmp}=     get_date_now
@@ -2556,26 +2560,26 @@ Wait for upload before signing
   Input text  name=timeSigned  ${time_now_tmp}
   Input text  name=endDate     ${date_future_tmp}
   Зберегти інформацію про контракт
-  Wait Scroll Click     xpath=//button[@data-target="#saveData"]  # button - Опублікувати документи та завершити пізніше
-  Wait and Input        xpath=//div[@id="saveData"]//button[@ng-click="save(documentsToAdd)"]  10
+#  Wait Scroll Click     id=qa_saveContractInfo  # button - Опублікувати документи та завершити пізніше
+#  Wait and Input        xpath=//div[@id="saveData"]//button[@ng-click="save(documentsToAdd)"]  10
 
 # ==================  2 - wait for upload
-  Sleep  60  # wait for upload
-  Go To  ${tmp_location_tender}
-  Sleep  5
-  Capture Page Screenshot
-  Відкрити розділ Деталі Закупівлі
-  Wait Scroll Click     xpath=//a[.="Редагувати інформацію про договір "]
+#  Sleep  60  # wait for upload
+#  Go To  ${tmp_location_tender}
+  Reload Page
+#  Capture Page Screenshot
+#  Відкрити розділ Деталі Закупівлі
+#  Wait Scroll Click     xpath=//a[.="Редагувати інформацію про договір "]
 
 # ==================  3 - upload doc
 
   Wait and Select By Label      id=docType  Підписаний договір
   ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
   Завантажити док  ${username}  ${file_path}  xpath=//button[@ng-model="documentsToAdd"]
-  Відкрити розділ Деталі Закупівлі
-  Wait Scroll Click     xpath=//a[.="Редагувати інформацію про договір "]
+  Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
+  Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
   ${methodType}=  Get From Dictionary  ${USERS.users['${username}']}  method_type
-  Run Keyword If  '${methodType}' in ('aboveThresholdEU', 'aboveThresholdUA', 'negotiation')  Підтвердити контракт додаванням ЕЦП
+  Run Keyword If  '${methodType}' in ('aboveThresholdEU', 'aboveThresholdUA', 'negotiation', 'reporting')  Підтвердити контракт додаванням ЕЦП
   Wait Scroll Click  xpath=//button[@click-and-block="sign()"]  # button - Завершити закупівлю
   Capture Page Screenshot
   Wait Until Page Contains  Підтверджено!  60
