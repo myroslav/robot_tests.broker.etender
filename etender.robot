@@ -1599,7 +1599,7 @@ Select From List By Partial Label
   Sleep  5
 
 Відкрити розділ запитань
-  Wait Scroll Click     xpath=//li[@id="naviTitle1"]/span
+  JavascriptClick  '//li[@id="naviTitle1"]/span'
   Дочекатись зникнення blockUI
 
 scrollIntoView by script
