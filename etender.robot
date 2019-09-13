@@ -2471,12 +2471,12 @@ Input String
 
 Відкрити розділ Деталі Закупівлі
   Дочекатись зникнення blockUI
-  Wait Scroll Click     xpath=//li[@id="naviTitle0"]/span  # go to Деталі Закупівлі tab
+  JavascriptClick  '//li[@id="naviTitle0"]/span'  # go to Деталі Закупівлі tab
   Дочекатись зникнення blockUI
 
 Відкрити розділ вимог і скарг
   Дочекатись зникнення blockUI
-  Wait Scroll Click     xpath=//li[@id="naviTitle2"]/span  # go to complaints
+  JavascriptClick     '//li[@id="naviTitle2"]/span'  # go to complaints
   Дочекатись зникнення blockUI
 
 Заповнити інформацію про постачальника
