@@ -868,7 +868,7 @@ add feature
   ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
   ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
   Wait and Input    id=itemsDescription${lot_index}${index}      ${items_description}
-  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${items_descriptionEN}
+  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${items_descriptionEN}
   Input String      id=itemsQuantity${lot_index}${index}         ${quantity}
   Wait and Click    xpath=//unit[@id="itemsUnit${lot_index}${index}"]//input[@type="search"]
   #Wait and Click    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
@@ -2948,7 +2948,7 @@ Wait for doc upload in qualification
   Дочекатись зникнення blockUI
   Click Element  xpath=//a[contains(normalize-space(text()), "Посилання на 2-й етап")]
   Дочекатись зникнення blockUI
-  Click Element  id=update_tender_selective
+  Click Element  id=update_tender_btn
   Дочекатись зникнення blockUI
   ${new_time_value}=  Run Keyword  get_time_offset
   Input String  xpath=//input[@ng-model="updateTenderModel.tenderPeriod.endDate" and @placeholder="час"]  ${new_time_value}
