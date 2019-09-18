@@ -28,6 +28,7 @@ ${locator.tenderPeriod.startDate}                              id=tenderStart
 ${locator.tenderPeriod.endDate}                                id=tenderEnd
 ${locator.enquiryPeriod.startDate}                             id=enquiryStart
 ${locator.enquiryPeriod.endDate}                               id=enquiryEnd
+${locator.enquiryPeriod.clarificationsUntil}                   xpath=//*[@id='qa_ComplaintPeriodFinished']
 ${locator.causeDescription}                                    id=causeDescription
 ${locator.cause}                                               id=cause
 ${locator.qualificationPeriod.endDate}                         id=qualificationPeriod_endDate
@@ -496,8 +497,9 @@ Login
   Wait and Click  xpath=//*[@id="unit_${items_index}"]//*[@class="selectize-input"]
   Wait and Input  xpath=//div[@class="selectize-input focus"]/input  ${unit}
   Sleep  3
+  Capture Page Screenshot
   Press Key  xpath=//div[@class="selectize-input focus"]/input  \\13
-
+  Capture Page Screenshot
   Wait and Click          xpath=//span[@ng-if = 'createPlanModel.apiId']  10
   Reload Page
 
@@ -1220,6 +1222,7 @@ add feature
 
 Завантажити документ в лот
   [Arguments]  ${username}  ${file}  ${tender_uaid}  ${lot_id}
+  Дочекатись зникнення blockUI
   Wait and Select By Label  xpath=//div[@id="treeDocs0"]//select[@id="docType"]  Інші
   Завантажити док  ${username}  ${file}  xpath=//button[contains(@id, "lot_doc")]
 
@@ -1636,7 +1639,7 @@ Select From List By Partial Label
   Reload Page
   Дочекатись зникнення blockUI
   Відкрити розділ запитань
-  Wait Scroll Click     id=addAnswer_0
+  Wait Scroll Click     xpath=//*[contains(@id, "addAnswer_")]  # id=addAnswer_0
   Wait and Input        xpath=//*[@name="questionContainer"]/form/div/textarea            ${answer}
   Wait Scroll Click     xpath=//*[@name="questionContainer"]/form/div/span/button[1]
   Sleep  5
@@ -2047,6 +2050,17 @@ Input String
 Отримати інформацію про enquiryPeriod.endDate
   ${return_value}=   Отримати текст із поля і показати на сторінці  enquiryPeriod.endDate
   ${return_value}=   Set Variable  ${return_value.replace(u'по ','')}
+  ${return_value}=   convert_etender_date_to_iso_format   ${return_value}
+  [return]  ${return_value}
+
+Отримати інформацію про enquiryPeriod.clarificationsUntil
+  Reload Page
+  ${return_value}=   Отримати текст із поля і показати на сторінці  enquiryPeriod.clarificationsUntil
+  ${return_value}=   Set Variable  ${return_value.replace(u'Період подачі вимог/скарг на умови закупівлі завершився - ','')}
+#  ${return_value}=   convert_etender_date_to_iso_format   ${return_value}
+  Log  ${return_value}
+  ${return_value}=  add_minutes_to_etender_date  ${return_value}
+  Log  ${return_value}
   ${return_value}=   convert_etender_date_to_iso_format   ${return_value}
   [return]  ${return_value}
 
