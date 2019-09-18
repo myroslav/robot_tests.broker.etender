@@ -39,7 +39,7 @@ def get_procedure_type(methodType):
         'open_esco': 'Відкриті торги для закупівлі енергосервісу',
         'esco': 'Відкриті торги для закупівлі енергосервісу',
         'closeFrameworkAgreementUA': 'Відкриті торги для укладання рамкової угоди',
-        'open_framework': 'Відкриті торгии для укладання рамкової угоди'
+        'open_framework': 'Відкриті торги для укладання рамкової угоди'
     }[methodType].decode('utf-8')
 
 def get_method_type(procedure_name):
@@ -57,7 +57,7 @@ def get_method_type(procedure_name):
         u'конкурентний діалог з публікацією англійською мовою 1-ий етап': 'competitiveDialogueEU',
         u'конкурентний діалог з публікацією англійською мовою 2-ий етап': 'competitiveDialogueEU.stage2',
         u'відкриті торги для укладання рамкової угоди': 'closeFrameworkAgreementUA',
-        u'відкриті торгии для укладання рамкової угоди': 'open_framework'
+        u'відкриті торги для укладання рамкової угоди': 'open_framework'
 
 
 

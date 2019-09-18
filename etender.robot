@@ -107,7 +107,7 @@ Wait Scroll Click
   Wait and Click  ${locator}  ${timeout}  True
 
 Wait and Click
-  [Arguments]  ${locator}  ${timeout}=5  ${scroll}=False
+  [Arguments]  ${locator}  ${timeout}=7  ${scroll}=False
   [Documentation]  Wait for visibility and then click
   Wait Until Element Is Visible  ${locator}  ${timeout}
   Run Keyword If  '${scroll}'=='True'  scrollIntoView by script  ${locator}
@@ -647,7 +647,7 @@ add feature
   Wait Until Keyword Succeeds   2x  10 sec  Дочекатися завершення обробки плану
   ${plan_id}=  Get Text  id=planId
   Зберегти посилання
-  [Return]  ${plan_id.split()[0]}
+  [Return]  ${plan_id}
 
 Заповнити інформацію про buyers при наявності  # Заполнение объекта при создании плана
   [Arguments]  ${buyers}
@@ -737,7 +737,7 @@ add feature
   [Arguments]  ${additionalClassification}  ${index}  ${lot_index}
   ${description}=   Get From Dictionary  ${additionalClassification}  description
   ${id}=            Get From Dictionary  ${additionalClassification}  id
-  Wait and Click    id=openAddClassificationRoadsModal${lot_index}${index}
+  Wait and Click    id=openAddClassificationRoadsModal0${index}
   Wait and Input    xpath=//div[contains(@id, "addClassificationRoads_") and contains(@class,"modal")]//input  ${id}
   Дочекатись зникнення blockUI
   Wait and Click    xpath=//div[contains(@id, "addClassificationRoads_")]//td[contains(., '${id}')]
@@ -771,8 +771,7 @@ add feature
   Reload Page
   Дочекатись зникнення blockUI
   Wait Until Element Is Visible      id=planId  30
-  ${plan_id}=                        Get Text  id=planId
-  ${plan_id}=                        Set Variable  ${plan_id.split()[0]}
+  ${plan_id}=                        Get Text  id=planId  #id=planId_0
   Log  ${plan_id}
   Should Match Regexp                ${plan_id}  UA-P-\\d{4}-.*
 
@@ -866,11 +865,8 @@ add feature
   ${locality}=           convert_common_string_to_etender_string  ${locality}
   ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
   ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
-
-  Run Keyword If  '${USERS.users['${tender_owner}'].method_type}' != 'closeFrameworkAgreementUA'   Wait and Input    id=itemsDescription${lot_index}${index}      ${items_description}
-  ...             ELSE  Wait and Input    id=itemsDescription0${index}      ${items_description}
-  Run Keyword If  '${USERS.users['${tender_owner}'].method_type}' != 'closeFrameworkAgreementUA'  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${items_descriptionEN}
-  ...             ELSE  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN0${index}      ${items_descriptionEN}
+  Wait and Input    id=itemsDescription${lot_index}${index}      ${items_description}
+  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${items_descriptionEN}
   Input String      id=itemsQuantity${lot_index}${index}         ${quantity}
   Wait and Click    xpath=//unit[@id="itemsUnit${lot_index}${index}"]//input[@type="search"]
   #Wait and Click    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
@@ -2095,7 +2091,7 @@ Input String
   Відкрити розділ Деталі Закупівлі
   ${i}=  Evaluate  ${n}+1
   ${i}=  Convert To String  ${i}
-  ${return_value}=  Get Text  xpath=(//div[@ng-if="award.complaintPeriod.endDate"]/div[2]/span)[${i}]
+  ${return_value}=  Get Text  xpath=//div[@ng-if="award.complaintPeriod.endDate"]/div[2]/span
   ${return_value}=  Set Variable  ${return_value.replace(u'по ','')}
   Run Keyword And Return     convert_etender_date_to_iso_format_and_add_timezone   ${return_value}
 
@@ -2750,9 +2746,6 @@ temporary keyword for title update
   [Arguments]  ${username}  ${tender_uaid}  ${bid_index}
   Reload Page
   Wait Scroll Click  xpath=//button[@id = '#qa_rejectQualif' and @data-target='#cansel-0-${bid_index}']  15
-  Wait and Click     xpath=//div[@id='cansel-0-${bid_index}']//button[@id="qa_signRejectionPrequalification"]  10
-  Підписати ЕЦП
-  Capture Page Screenshot
   Sleep  30
   Capture Page Screenshot
   Reload Page
@@ -2784,6 +2777,8 @@ temporary keyword for title update
   RUN KEYWORD IF  '${status}'=='True'  Wait and Click         id=qa_selfQualified  10
   Підтвердити переможця
 
+Затвердити постачальник?в
+  Wait and Click  id=submitPreQualification  10
 
 Дискваліфікувати постачальника
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}
@@ -2801,6 +2796,7 @@ temporary keyword for title update
   Перейти до оцінки кандидата
   Wait Scroll Click     id=qa_NextStep
   Відхилити переможця
+  Sleep  5
   Wait and Click  xpath=//input[@ng-model="checked"]
   Wait and Input  id=qa_causeDesc  Hello
   Wait and Click  id=qa_CancelAward
@@ -2819,7 +2815,7 @@ temporary keyword for title update
   Wait and Click    id=qa_disqualify_award
 
 Перейти до оцінки кандидата
-  Sleep  10
+  Sleep  20
   Wait Scroll Click    xpath=//a[@data-target="#modalGetAwards"]
   Дочекатись зникнення blockUI
 
@@ -2881,24 +2877,11 @@ Wait for doc upload in qualification
   Дочекатись зникнення blockUI
   Відкрити розділ Деталі Закупівлі
   Відкрити подробиці кваліфікації за індексом  ${qualification_num}
-  ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
-  ${status}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//div[@id="qa_qualification_block_0${qualification_num}"]//button[@id="qa_uploadApprovalDoc"]
-  RUN KEYWORD IF  '${status}'=='True'  Завантажити док  ${username}  ${file_path}  xpath=//div[@id="qa_qualification_block_0${qualification_num}"]//button[@id="qa_uploadApprovalDoc"]
-  ...         ELSE                   Завантажити док  ${username}  ${file_path}  xpath=//div[contains(@id, "qa_qualification_block_0")]//button[@id="qa_uploadApprovalDoc"]
-# Sign qualification object
-  Відкрити подробиці кваліфікації за індексом  ${qualification_num}
-  ${newstatus}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//div[@id="aply-0-${qualification_num}"]//button[@ng-click="showSignModalQualification(qualification)"]
-  run keyword if  '${newstatus}'=='True'  Wait and Click    xpath=//div[@id="aply-0-${qualification_num}"]//button[@ng-click="showSignModalQualification(qualification)"]
-  ...         ELSE                      Wait and Click    xpath=//div[contains(@id, "aply-0-")]//button[@ng-click="showSignModalQualification(qualification)"]
-  Підписати ЕЦП
-  Capture Page Screenshot
-  Sleep  30
-  Capture Page Screenshot
-  Reload Page
 
 # Set qualification checkboxes and approve it
   Sleep  10
   Відкрити подробиці кваліфікації за індексом  ${qualification_num}
+  ${newstatus}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//div[@id="aply-0-${qualification_num}"]//input[@ng-model="qualification.eligible"]
   run keyword if  '${newstatus}'=='True'  Wait Scroll Click  xpath=//div[@id="aply-0-${qualification_num}"]//input[@ng-model="qualification.eligible"]
    ...         ELSE                     Wait Scroll Click  xpath=//div[contains(@id, "aply-0-")]//input[@ng-model="qualification.eligible"]
   run keyword if  '${newstatus}'=='True'  Wait and Click     xpath=//div[@id="aply-0-${qualification_num}"]//input[@ng-model="qualification.qualified"]
