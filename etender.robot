@@ -609,7 +609,7 @@ add feature
   ${procurementMethodTypeStr}=  get procedure type  ${procurementMethodType}
   Дочекатись зникнення blockUI
   Wait and Click        id=qa_myPlans
-  Wait and Click        xpath=//a[@href="#/createPlan"]
+  Wait and Click        xpath=//a[@href="createPlan"]
   Дочекатись зникнення blockUI
   Заповнити інформацію про buyers при наявності  ${plan.buyers}
 
@@ -847,178 +847,47 @@ add feature
 
 Додати предмет
   [Arguments]  ${item}  ${index}  ${lot_index}
-  Run Keyword If  '${USERS.users['${tender_owner}'].method_type}' == 'esco'  run keyword and return  Додати предмет ESCO  ${item}  ${index}  ${lot_index}
-  Run Keyword If  '${USERS.users['${tender_owner}'].method_type}' == 'closeFrameworkAgreementUA'  run keyword and return  Додати предмет Framework Agreement  ${item}  ${index}  ${lot_index}
-  Run Keyword If  '${USERS.users['${tender_owner}'].method_type}' == 'aboveThresholdUA.defense'  run keyword and return  Додати предмет defense    ${item}  ${index}  ${lot_index}
-  ${items_description}=  Get From Dictionary    ${item}                     description
-  ${items_descriptionEN}=  Get From Dictionary  ${item}                     description_en
-  ${quantity}=           set Variable           ${item.quantity}
-  ${unit}=               Get From Dictionary    ${item.unit}                name
-  ${cpv}=                Get From Dictionary    ${item.classification}      id
+  ${procedureType}=  set variable  ${USERS.users['${tender_owner}'].method_type}
   log  ${item}
-  ${deliveryDateStart}=  Get From Dictionary    ${item.deliveryDate}        startDate
-  ${deliveryDateEnd}=    Get From Dictionary    ${item.deliveryDate}        endDate
-  ${deliveryDateStart}=  convert_date_to_etender_format  ${deliveryDateStart}
-  ${deliveryDateEnd}=    convert_date_to_etender_format  ${deliveryDateEnd}
-  ${latitude}=           Get From Dictionary    ${item.deliveryLocation}    latitude
-  ${longitude}=          Get From Dictionary    ${item.deliveryLocation}    longitude
-  ${region}=             Get From Dictionary    ${item.deliveryAddress}     region
-  ${locality}=           Get From Dictionary    ${item.deliveryAddress}     locality
-  ${locality}=           convert_common_string_to_etender_string  ${locality}
-  ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
-  ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
-  Wait and Input    id=itemsDescription${lot_index}${index}      ${items_description}
-  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${items_descriptionEN}
-  Input String      id=itemsQuantity${lot_index}${index}         ${quantity}
-  Wait and Click    xpath=//unit[@id="itemsUnit${lot_index}${index}"]//input[@type="search"]
-  #Wait and Click    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
-  ${items_count}=   Get Matching Xpath Count   xpath=//div[contains(@ng-model,"unit.selected")]//input[@type="search"]
-  #${items_count}=   Get Length  ${items_count}
-  Wait and Input    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${items_count}]  ${unit}
-  Wait and Click    xpath=//div[contains(@class,"selectize-dropdown") and contains(@repeat,"unit")]//div[@role="option" and contains(@class,"active")]
+  ${locality}=           convert_common_string_to_etender_string  ${item.deliveryAddress.locality}
+  Wait and Input    id=itemsDescription${lot_index}${index}      ${item.description}
+  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${item.description_en}
+  run keyword if  '${procedureType}' != 'esco'  Заповнити певні поля за наявності  ${item}  ${index}  ${lot_index}
 
   Wait Scroll Click     id=openClassificationModal${lot_index}${index}
   #Sleep 2
-  Wait and Input        id=classificationCode  ${cpv}
+  Wait and Input        id=classificationCode   ${item.classification.id}
   Дочекатись зникнення blockUI
-  Wait and Click    xpath=//td[contains(., '${cpv}')]
+  Wait and Click    xpath=//td[contains(., '${item.classification.id}')]
   Wait and Click    id=classification_choose
   Дочекатись зникнення blockUI
-
+  ${region}=             Get From Dictionary    ${item.deliveryAddress}     region
   ${status}  ${value}=  Run Keyword And Ignore Error  Get From Dictionary  ${item}  additionalClassifications
   log to console    Attempt to get 1st additonal classification scheme: ${status}
   Run Keyword If    '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}  ${lot_index}
+  run keyword if  '${procedureType}' != 'esco'  Заповнити дату за наявності  ${item}  ${index}  ${lot_index}
+  Wait and Select By Label  id=region_${lot_index}${index}  ${item.deliveryAddress.region}
+  Run Keyword If  '${item.deliveryAddress.region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_${lot_index}${index}"]  ${locality}
+  Wait and Input    id=street_${lot_index}${index}   ${item.deliveryAddress.streetAddress}
+  Wait and Input    id=postIndex_${lot_index}${index}    ${item.deliveryAddress.postalCode}
+
+Заповнити певні поля за наявності
+  [Arguments]  ${item}  ${index}  ${lot_index}
+  ${quantity}=           Set Variable           ${item.quantity}
+  Input String      id=itemsQuantity0${index}         ${quantity}
+  Wait and Click    xpath=//unit[@id="itemsUnit0${index}"]//input[@type="search"]
+  #Wait and Click    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
+  ${items_count}=   Get Matching Xpath Count   xpath=//div[contains(@ng-model,"unit.selected")]//input[@type="search"]
+  #${items_count}=   Get Length  ${items_count}
+  Wait and Input    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${items_count}]  ${item.unit.name}
+  Wait and Click    xpath=//div[contains(@class,"selectize-dropdown") and contains(@repeat,"unit")]//div[@role="option" and contains(@class,"active")]
+
+Заповнити дату за наявності
+  [Arguments]  ${item}  ${index}  ${lot_index}
+  ${deliveryDateStart}=  convert_date_to_etender_format  ${item.deliveryDate.startDate}
+  ${deliveryDateEnd}=    convert_date_to_etender_format  ${item.deliveryDate.endDate}
   Wait and Input    id=delStartDate${lot_index}${index}        ${deliveryDateStart}
   Wait and Input    id=delEndDate${lot_index}${index}          ${deliveryDateEnd}
-  Wait and Select By Label  id=region_${lot_index}${index}  ${region}
-  Run Keyword If  '${region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_${lot_index}${index}"]  ${locality}
-  Wait and Input    id=street_${lot_index}${index}   ${streetAddress}
-  Wait and Input    id=postIndex_${lot_index}${index}    ${postalCode}
-
-
-Додати предмет defense
-  [Arguments]  ${item}  ${index}  ${lot_index}
-  ${items_description}=  Get From Dictionary    ${item}                     description
-  ${items_descriptionEN}=  Get From Dictionary  ${item}                     description_en
-  ${quantity}=           set Variable           ${item.quantity}
-  ${unit}=               Get From Dictionary    ${item.unit}                name
-  ${cpv}=                Get From Dictionary    ${item.classification}      id
-  log  ${item}
-  ${deliveryDateStart}=  Get From Dictionary    ${item.deliveryDate}        startDate
-  ${deliveryDateEnd}=    Get From Dictionary    ${item.deliveryDate}        endDate
-  ${deliveryDateStart}=  convert_date_to_etender_format  ${deliveryDateStart}
-  ${deliveryDateEnd}=    convert_date_to_etender_format  ${deliveryDateEnd}
-  ${latitude}=           Get From Dictionary    ${item.deliveryLocation}    latitude
-  ${longitude}=          Get From Dictionary    ${item.deliveryLocation}    longitude
-  ${region}=             Get From Dictionary    ${item.deliveryAddress}     region
-  ${locality}=           Get From Dictionary    ${item.deliveryAddress}     locality
-  ${locality}=           convert_common_string_to_etender_string  ${locality}
-  ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
-  ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
-
-  Wait and Input    id=itemsDescription0${index}      ${items_description}
-  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN0${index}      ${items_descriptionEN}
-  Input String      id=itemsQuantity0${index}         ${quantity}
-  Wait and Click    xpath=//unit[@id="itemsUnit0${index}"]//input[@type="search"]
-  ${items_count}=   Get Matching Xpath Count   xpath=//div[contains(@ng-model,"unit.selected")]//input[@type="search"]
-  Wait and Input    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${items_count}]  ${unit}
-  Wait and Click    xpath=//div[contains(@class,"selectize-dropdown") and contains(@repeat,"unit")]//div[@role="option" and contains(@class,"active")]
-  Wait Scroll Click     id=openClassificationModal0${index}
-  Wait and Input        id=classificationCode  ${cpv}
-  Дочекатись зникнення blockUI
-  Wait and Click    xpath=//td[contains(., '${cpv}')]
-  Wait and Click    id=classification_choose
-  Дочекатись зникнення blockUI
-  ${status}  ${value}=  Run Keyword And Ignore Error  Get From Dictionary  ${item}  additionalClassifications
-  log to console    Attempt to get 1st additonal classification scheme: ${status}
-  Run Keyword If    '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}  0
-  Wait and Input    id=delStartDate0${index}        ${deliveryDateStart}
-  Wait and Input    id=delEndDate0${index}          ${deliveryDateEnd}
-  Wait and Select By Label  id=region_0${index}  ${region}
-  Run Keyword If  '${region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_0${index}"]  ${locality}
-  Wait and Input    id=street_0${index}   ${streetAddress}
-  Wait and Input    id=postIndex_0${index}    ${postalCode}
-
-
-
-Додати предмет ESCO
-  [Arguments]  ${item}  ${index}  ${lot_index}
-  ${items_description}=  Get From Dictionary    ${item}                     description
-  ${items_descriptionEN}=  Get From Dictionary  ${item}                     description_en
-  ${quantity}=           Set Variable           ${item.quantity}
-  ${cpv}=                Get From Dictionary    ${item.classification}      id
-  log  ${item}
-  ${latitude}=           Get From Dictionary    ${item.deliveryLocation}    latitude
-  ${longitude}=          Get From Dictionary    ${item.deliveryLocation}    longitude
-  ${region}=             Get From Dictionary    ${item.deliveryAddress}     region
-  ${locality}=           Get From Dictionary    ${item.deliveryAddress}     locality
-  ${locality}=           convert_common_string_to_etender_string  ${locality}
-  ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
-  ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
-  Wait and Input    id=itemsDescription${lot_index}${index}      ${items_description}
-  Run Keyword And Ignore Error  Wait and Input    id=itemsDescriptionEN${lot_index}${index}      ${items_descriptionEN}
-  Wait Scroll Click     id=openClassificationModal${lot_index}${index}
-  #Sleep 2
-  Wait and Input        id=classificationCode  ${cpv}
-  Дочекатись зникнення blockUI
-  Wait and Click    xpath=//td[contains(., '${cpv}')]
-  Wait and Click    id=classification_choose
-  Дочекатись зникнення blockUI
-
-  ${status}  ${value}=  Run Keyword And Ignore Error  Get From Dictionary  ${item}  additionalClassifications
-  log to console    Attempt to get 1st additonal classification scheme: ${status}
-  Run Keyword If    '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}  ${lot_index}
-  Wait and Select By Label  id=region_${lot_index}${index}  ${region}
-  Run Keyword If  '${region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_${lot_index}${index}"]  ${locality}
-  Wait and Input    id=street_${lot_index}${index}   ${streetAddress}
-  Wait and Input    id=postIndex_${lot_index}${index}    ${postalCode}
-
-Додати предмет Framework Agreement
-  [Arguments]  ${item}  ${index}  ${lot_index}
-  ${items_description}=  Get From Dictionary    ${item}                     description
-  ${items_descriptionEN}=  Get From Dictionary  ${item}                     description_en
-  ${quantity}=           set Variable           ${item.quantity}
-  ${unit}=               Get From Dictionary    ${item.unit}                name
-  ${cpv}=                Get From Dictionary    ${item.classification}      id
-  log  ${item}
-  ${deliveryDateStart}=  Get From Dictionary    ${item.deliveryDate}        startDate
-  ${deliveryDateEnd}=    Get From Dictionary    ${item.deliveryDate}        endDate
-  ${deliveryDateStart}=  convert_date_to_etender_format  ${deliveryDateStart}
-  ${deliveryDateEnd}=    convert_date_to_etender_format  ${deliveryDateEnd}
-  ${latitude}=           Get From Dictionary    ${item.deliveryLocation}    latitude
-  ${longitude}=          Get From Dictionary    ${item.deliveryLocation}    longitude
-  ${region}=             Get From Dictionary    ${item.deliveryAddress}     region
-  ${locality}=           Get From Dictionary    ${item.deliveryAddress}     locality
-  ${locality}=           convert_common_string_to_etender_string  ${locality}
-  ${postalCode}=         Get From Dictionary  ${item.deliveryAddress}   postalCode
-  ${streetAddress}=      Get From Dictionary  ${item.deliveryAddress}   streetAddress
-  Wait and Input    id=itemsDescription0${index}      ${items_description}
-  Wait and Input    id=itemsDescriptionEN0${index}      ${items_descriptionEN}
-  Input String      id=itemsQuantity0${index}         ${quantity}
-  Wait and Click    xpath=//unit[@id="itemsUnit0${index}"]//input[@type="search"]
-  #Wait and Click    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${index}+1]
-  ${items_count}=   Get Matching Xpath Count   xpath=//div[contains(@ng-model,"unit.selected")]//input[@type="search"]
-  #${items_count}=   Get Length  ${items_count}
-  Wait and Input    xpath=(//div[contains(@ng-model,"unit.selected")]//input[@type="search"])[${items_count}]  ${unit}
-  Wait and Click    xpath=//div[contains(@class,"selectize-dropdown") and contains(@repeat,"unit")]//div[@role="option" and contains(@class,"active")]
-
-  Wait Scroll Click     id=openClassificationModal0${index}
-  #Sleep  2
-  Wait and Input        id=classificationCode  ${cpv}
-  Дочекатись зникнення blockUI
-  Wait and Click    xpath=//td[contains(., '${cpv}')]
-  Wait and Click    id=classification_choose
-  Дочекатись зникнення blockUI
-
-  ${status}  ${value}=  Run Keyword And Ignore Error  Get From Dictionary  ${item}  additionalClassifications
-  log to console    Attempt to get 1st additonal classification scheme: ${status}
-  Run Keyword If    '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}  ${lot_index}
-  Wait and Input    id=delStartDate0${index}        ${deliveryDateStart}
-  Wait and Input    id=delEndDate0${index}          ${deliveryDateEnd}
-  Wait and Select By Label  id=region_0${index}  ${region}
-  Run Keyword If  '${region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_0${index}"]  ${locality}
-  Wait and Input    id=street_0${index}   ${streetAddress}
-  Wait and Input    id=postIndex_0${index}    ${postalCode}
 
 
 Видалити предмет закупівлі
@@ -1392,6 +1261,33 @@ add feature
 
 Отримати інформацію із плану про items[${n}].classification.id
   Run Keyword And Return  Wait and Get Text  xpath=//*[contains(@id,'classification_code_0${n}')]
+
+
+Отримати інформацію про agreements[${n}].agreementID
+
+
+
+Отримати інформацію про items[${n}].quantity
+  run keyword and return  Wait and Get Text  xpath=//td[@class='itemQuantity']//span[contains(@id, 'item_quantity_0${n}')]
+
+
+Отримати інформацію про lots[${n}].value.amount
+  run keyword and return  Wait and Get Attribute  xpath=//span[@id='lotValue_${n}' and @class='hidden-xs fwn pl15 ng-binding']  value
+
+
+Отримати інформацію про lots[${n}].minimalStep.amount
+  ${result}=  Wait and Get Text  id=lotMinimalStep_${n}
+  run keyword and return  parse_currency_value_with_spaces  ${result}
+
+Отримати інформацію про features[${n}].title
+  run keyword and return  wait and get text  xpath=//div[@id='item-futers-0-${n}']//span[@name='item']
+
+
+Отримати інформацію про features[${n}].description
+  run keyword and return  wait and get text  xpath=//div[@id='item-futers-0-${n}']//span[@ng-bind='::feature.description']
+
+Отримати інформацію про features[${n}].featureOf
+ #run keyword and return  wait and get text  xpath=//div[@id='item-futers-0-${n}']//span
 
 
 Отримати інформацію із пропозиції
@@ -2791,7 +2687,7 @@ temporary keyword for title update
   RUN KEYWORD IF  '${status}'=='True'  Wait and Click         id=qa_selfQualified  10
   Підтвердити переможця
 
-Затвердити постачальник?в
+Затвердити постачальників
   Wait and Click  id=submitPreQualification  10
 
 Дискваліфікувати постачальника
