@@ -245,6 +245,7 @@ Login
   # TODO FIX ELASTIC ISSUES ON UAT and delete ↑
 
 
+
 Видалити зайві айтеми
   # 2 последних
   Wait Scroll Click  id=itemRemove_03
@@ -473,10 +474,11 @@ Login
 Додати предмет закупівлі в лот
   [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${item}
   #Log   ${USERS.users['${username}'].lot_data}
+  ${l}=  Get Element Attribute  xpath=//span[@ng-bind= "::lot.title" and contains(text(), '${lot_id}')]@id
+  ${lot_index}=  get_lotIndex  ${l}
   Перейти до редагування тендера    ${username}  ${tender_uaid}
-  ${lots_count}=  Get Length  ${USERS.users['${username}'].initial_data.data['lots']}
-  Wait Scroll Click  id=addLotItem_0
-  Додати предмет  ${item}  1  ${lots_count}
+  Wait Scroll Click  id=addLotItem_${lot_index}
+  Додати предмет  ${item}  1  ${lot_index}
   Зберегти зміни в тендері
 
 Додати предмет закупівлі в план
