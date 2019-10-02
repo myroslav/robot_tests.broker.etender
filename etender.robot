@@ -64,6 +64,7 @@ ${locator.awards[0].suppliers[0].identifier.id}                xpath=//span[@id=
 ${locator_document_title}                                      xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]
 ${locator_document_href}                                       xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]//ancestor::td[contains(@class,"doc-name")]//preceding-sibling::td//a@href
 ${locator_document_description}                                xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]/following-sibling::p
+${locator_document_of}                                         xpath=//td[contains(@class,"doc-name")]//a[contains(.,"d-b0daaa5fdebitis8bu6eu.docx")]/parent::td@data-document-of
 ${locator.value.currency}                                      id=tenderCurrency
 ${locator.value.valueAddedTaxIncluded}                         id=includeVat
 ${locator.bids}                                                id=ParticipiantInfo_0
@@ -490,7 +491,7 @@ Login
   ${quantityStr}=  float to string 3f  ${quantity}
   Перейти на сторінку плану за потреби
   #Wait and Click  xpath=//a[contains(@href, '#/planDetails/')]
-  Wait Scroll Click  xpath=//a[contains(@ng-href, '#/updatePlan/')]
+  Wait Scroll Click  xpath=//a[contains(@ng-href, 'updatePlan/')]
   ${items_index}=  Get Matching Xpath Count  //textarea[contains(@id, 'itemsDescription')]
   Wait and Click  xpath=//button[@ng-click= 'addItem()']
   Wait and Input  xpath=//textarea[@id ='itemsDescription${items_index}']  ${items_description}
@@ -508,7 +509,7 @@ Login
 Видалити предмет закупівлі плану
   [Arguments]  ${username}  ${tender_uaid}  ${item_id}
   Перейти на сторінку плану за потреби
-  Wait Scroll Click  xpath=//a[contains(@ng-href, '#/updatePlan/')]  10
+  Wait Scroll Click  xpath=//a[contains(@ng-href, 'updatePlan/')]  10
   Sleep  5
   Wait Scroll Click  xpath=//h4[contains(text(), '№ 2')]//button[@ng-click = 'removeItem($index)']
   Wait and Click          xpath=//span[@ng-if = 'createPlanModel.apiId']  10
@@ -1240,8 +1241,8 @@ add feature
 
 
 Отримати інформацію із плану про items[${n}].deliveryDate.endDate
-#  ${return_value}=  Wait and Get Text  ${item_row}//*[contains(@id,'delivery_end')]
-#  Run Keyword And Return    convert_etender_date_to_iso_format   ${return_value.replace(u'по ','')}, 00:00
+  ${return_value}=  Wait and Get Text  xpath=//*[contains(@id,'item_deliveryDate_0${n}')]
+  Run Keyword And Return    convert_etender_date_to_iso_format   ${return_value.replace(u'по ','')}, 00:00
 
 Отримати інформацію із плану про items[${n}].unit.code
   ${return_value}=  Wait and Get Text  xpath=//*[contains(@id,'item_unit_0${n}')]
