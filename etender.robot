@@ -445,7 +445,7 @@ Login
   [Arguments]  ${lot}  ${index}
   Wait and Input    id=lotTitle_${index}        ${lot['title']}
   Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' == 'esco'  Run Keyword and Return  Заповнити інформацію про лот ESCO  ${lot}  ${index}
-  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' in ('aboveThresholdEU', 'aboveThresholdUA.defense', 'closeFrameworkAgreementUA')  Input Text   id=lotTitleEn_${index}        ${lot['title_en']}
+  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' in ('aboveThresholdEU', 'aboveThresholdUA.defense', 'closeFrameworkAgreementUA','competitiveDialogueEU')  Input Text   id=lotTitleEn_${index}        ${lot['title_en']}
   Input Text        id=lotDescription_${index}  ${lot['description']}
   Input String      id=lotValue_${index}        ${lot['value']['amount']}
   Run Keyword Unless  '${USERS.users['Etender_Owner']['method_type']}' in ('negotiation')  Input String      id=minimalStep_${index}     ${lot['minimalStep']['amount']}
@@ -472,11 +472,16 @@ Login
   Додати предмет  ${item}  0  ${lots_count}  # len is 1 more than index
   Зберегти зміни в тендері
 
+Отримати індекс лоту
+  [Arguments]  ${lot_id}
+  ${lot_id}=  Get Element Attribute  xpath=//span[@ng-bind= "::lot.title" and contains(text(), '${lot_id}')]@id
+  [return]  ${lot_id[-1]}
+
 Додати предмет закупівлі в лот
   [Arguments]  ${username}  ${tender_uaid}  ${lot_id}  ${item}
   #Log   ${USERS.users['${username}'].lot_data}
-  ${l}=  Get Element Attribute  xpath=//span[@ng-bind= "::lot.title" and contains(text(), '${lot_id}')]@id
-  ${lot_index}=  get_lotIndex  ${l}
+
+  ${lot_index}=  Отримати індекс лоту  ${lot_id}
   Перейти до редагування тендера    ${username}  ${tender_uaid}
   Wait Scroll Click  id=addLotItem_${lot_index}
   Додати предмет  ${item}  1  ${lot_index}
@@ -894,10 +899,10 @@ add feature
 
 
 Видалити предмет закупівлі
-  [Arguments]  ${username}  ${tender_uaid}  ${index}  ${lot_index}
+  [Arguments]  ${username}  ${tender_uaid}  ${index}  ${lot_id}
+  ${lot_index}=  Отримати індекс лоту  ${lot_id}
   Перейти до редагування тендера    ${username}  ${tender_uaid}
-  Run Keyword Unless  '${USERS.users['${tender_owner}'].method_type}' in ('closeFrameworkAgreementUA', 'aboveThresholdUA.defense', 'aboveThresholdEU')  Wait and Click  id=itemRemove_11
-  ...             ELSE  Wait and Click  id=itemRemove_01
+  Wait and Click  id=itemRemove_${lot_index}1
   Зберегти зміни в тендері
 
 Додати неціновий показник на предмет
