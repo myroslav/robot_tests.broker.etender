@@ -64,7 +64,7 @@ ${locator.awards[0].suppliers[0].identifier.id}                xpath=//span[@id=
 ${locator_document_title}                                      xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]
 ${locator_document_href}                                       xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]//ancestor::td[contains(@class,"doc-name")]//preceding-sibling::td//a@href
 ${locator_document_description}                                xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]/following-sibling::p
-${locator_document_of}                                         xpath=//td[contains(@class,"doc-name")]//a[contains(.,"d-b0daaa5fdebitis8bu6eu.docx")]/parent::td@data-document-of
+${locator_document_of}                                         xpath=//td[contains(@class,"doc-name")]//a[contains(.,"d-XX_doc_id_XX")]/parent::td@data-document-of
 ${locator.value.currency}                                      id=tenderCurrency
 ${locator.value.valueAddedTaxIncluded}                         id=includeVat
 ${locator.bids}                                                id=ParticipiantInfo_0
@@ -214,6 +214,7 @@ Login
   Дочекатись зникнення blockUI
   Wait and Input        xpath=//input[@name="planExternalId"]          ${global_plan_id}
   Wait and Click  id=searchPlan
+  Дочекатись зникнення blockUI
   Input text    id=title    ${title}
   Input text    id=description            ${description}
   Дочекатись зникнення blockUI
@@ -244,7 +245,6 @@ Login
   Зберегти посилання
   Run Keyword And Return  Get Text  ${locator.tenderId}
   # TODO FIX ELASTIC ISSUES ON UAT and delete ↑
-
 
 
 Видалити зайві айтеми
@@ -896,7 +896,7 @@ add feature
 Видалити предмет закупівлі
   [Arguments]  ${username}  ${tender_uaid}  ${index}  ${lot_index}
   Перейти до редагування тендера    ${username}  ${tender_uaid}
-  Run Keyword Unless  '${USERS.users['${tender_owner}'].method_type}' in ('closeFrameworkAgreementUA', 'aboveThresholdUA.defense')  Wait and Click  id=itemRemove_11
+  Run Keyword Unless  '${USERS.users['${tender_owner}'].method_type}' in ('closeFrameworkAgreementUA', 'aboveThresholdUA.defense', 'aboveThresholdEU')  Wait and Click  id=itemRemove_11
   ...             ELSE  Wait and Click  id=itemRemove_01
   Зберегти зміни в тендері
 
@@ -2658,22 +2658,34 @@ temporary keyword for title update
 Відхилити кваліфікацію
   [Arguments]  ${username}  ${tender_uaid}  ${bid_index}
   Reload Page
-  Wait Scroll Click  xpath=//button[@id = '#qa_rejectQualif' and @data-target='#cansel-0-${bid_index}']  15
-  Sleep  30
+  Дочекатись зникнення blockUI
+  ${is_btn_visible}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//button[@id = '#qa_rejectQualif' and @data-target='#cansel-0-${bid_index}']
+  run keyword if  '${is_btn_visible}'=='True'  Wait Scroll Click  xpath=//button[@id = '#qa_rejectQualif' and @data-target='#cansel-0-${bid_index}']  15
   Capture Page Screenshot
-  Reload Page
+  Wait Until Page Contains  Підстави для скасування  60
+
+  Capture Page Screenshot
+#  Reload Page
   Wait and Click  id=qa_cause0  7
   Wait and Input  id=qa_qualifCancelDescr  texttexttext
   Wait and Click  id=qa_disqualifyPrequalification  10
   Reload Page
+  Дочекатись зникнення blockUI
 
 
 Скасувати кваліфікацію
   [Arguments]  ${username}  ${tender_uaid}  ${bid_index}
-  Sleep  30
+  Wait Until Keyword Succeeds  3 x  10 s   Натиснути скасування прекваліфікації  ${bid_index}
+
+
+Натиснути скасування прекваліфікації
+  [Arguments]  ${bid_index}
   Reload Page
-  Sleep  15
-  Wait Scroll Click  xpath=//div[@id='qa_qualification_block_0${bid_index}']//button[@class='btn btn-sm btn-danger ml15 mb-10 mt15 ng-isolate-scope']
+  Дочекатись зникнення blockUI
+  Capture Page Screenshot
+  JavascriptClick  '//div[@id="qa_qualification_block_0${bid_index}"]//button[@id="qa_cancelQualification"]'
+  Дочекатись зникнення blockUI
+
 
 Підтвердити постачальника
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}
