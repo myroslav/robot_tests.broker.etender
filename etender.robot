@@ -28,7 +28,6 @@ ${locator.tenderPeriod.startDate}                              id=tenderStart
 ${locator.tenderPeriod.endDate}                                id=tenderEnd
 ${locator.enquiryPeriod.startDate}                             id=enquiryStart
 ${locator.enquiryPeriod.endDate}                               id=enquiryEnd
-${locator.enquiryPeriod.clarificationsUntil}                   xpath=//*[@id='qa_ComplaintPeriodFinished']
 ${locator.causeDescription}                                    id=causeDescription
 ${locator.cause}                                               id=cause
 ${locator.qualificationPeriod.endDate}                         id=qualificationPeriod_endDate
@@ -603,6 +602,22 @@ add feature
   \     Wait and Input  xpath=//*[@name="feature-${target}Option${feature_index}${index}"]  ${opt_title}
   \     Run Keyword If  '${opt_value}'!='0'  Input text  id=feature-${target}OptionValue${feature_index}${index}  ${opt_value}
 
+Заповнити інформацію про breakdown плану
+  [Arguments]  ${breakdown_list}
+  ${number_of_breakdown}=  Get Length  ${breakdown_list}
+
+      :FOR  ${i}  IN RANGE  ${number_of_breakdown}
+  \    Run Keyword Unless  '${i}'=='0'  Wait Scroll Click  id=addBreakdown  # present by default
+  \    ${breakdown_title}=  Get From Dictionary  ${breakdown_list[${i}]}  title
+  \    ${breakdown_title}=  get_breakdown_title_value  ${breakdown_title}
+  \    Select From List By Label   id=breakdownTitle${i}  ${breakdown_title}
+  \    ${breakdown_description}=  Get From Dictionary  ${breakdown_list[${i}]}  description
+  \    Input Text  id=breakdownDescription${i}    ${breakdown_description}
+  \    ${breakdown_amount}=  Get From Dictionary  ${breakdown_list[${i}].value}  amount
+  \    ${breakdown_amount}=  float_to_string_2f  ${breakdown_amount}
+  \    Input Text  id=breakDownValue${i}    ${breakdown_amount}
+
+
 Створити план
   [Arguments]  ${username}  ${arguments}
   Log  ${arguments}
@@ -610,6 +625,7 @@ add feature
   ${items}=             Get From Dictionary     ${plan}                         items
   ${description}=       Get From Dictionary     ${plan.budget}                  description
   ${amount}=            Get From Dictionary     ${plan.budget}                  amount
+  ${breakdown_list}=    Get From Dictionary     ${plan.budget}                  breakdown
   ${amount}=            float_to_string_2f      ${amount}
   ${number_of_items}=   Get Length              ${items}
   ${cpv_id}=            Get From Dictionary     ${plan.classification}          id
@@ -627,6 +643,9 @@ add feature
 
   Wait and Input        id=description          ${description}
   Input text            id=value                ${amount}
+
+  Заповнити інформацію про breakdown плану  ${breakdown_list}
+
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
   Select From List By Index     xpath=//select[@name="startDateMonth"]          6
@@ -1232,8 +1251,8 @@ add feature
 
 Отримати інформацію із плану про tender.tenderPeriod.startDate
   # TODO: кейворд некорректный, цбд ждет 2019-08-20T00:00:00+03:00, которую мы никак не заполним
-  ${tender_period_month}=  Wait and Get Text   id=qa_plan_tender_period_start_month
-  ${tender_period_year}=  Wait and Get Text  id=qa_plan_tender_period_start_year
+  ${tender_period_month}=  Wait and Get Text   id=qa_planTenderPeriodStartMonth
+  ${tender_period_year}=  Wait and Get Text  id=qa_planTenderPeriodStartYear
   return from keyword  ${tender_period_year} + ${tender_period_month}
 
 Отримати інформацію із плану про items[${n}].description
@@ -1605,8 +1624,18 @@ Input String
   Run Keyword  Редагувати поле лота ${field}  ${lot_id}  ${new_value}
   Зберегти зміни в тендері
 
+
+Натиснути кнопку зберегти зміни у тендері
+  ${locator}=  Set Variable  'Access to the path'
+  :FOR  ${i}  IN RANGE  3
+  \       Wait Scroll Click     id=SaveChanges
+  \       ${mutex_status}=  Run Keyword And Return Status  Wait Until Page Contains  ${locator}  5
+  \       Return From Keyword If  '${mutex_status}'=='False'
+  \       Sleep  20
+
+
 Зберегти зміни в тендері
-  Wait Scroll Click     id=SaveChanges
+  Run Keyword  Натиснути кнопку зберегти зміни у тендері
   Run Keyword And Ignore Error  Wait Scroll Click  xpath=//div[@id="SignModal" and //div[contains(@class,"modal-dialog")]//div[contains(.,"будь ласка, перевірте статус")]]//button[.="Закрити"]  #close info dialog, if present
   Дочекатись зникнення blockUI
 
@@ -1957,11 +1986,16 @@ Input String
   ${return_value}=   convert_etender_date_to_iso_format   ${return_value}
   [return]  ${return_value}
 
-Отримати інформацію про enquiryPeriod.clarificationsUntil
+
+Отримати дані про clarificationsUntil
   Reload Page
-  ${return_value}=   Отримати текст із поля і показати на сторінці  enquiryPeriod.clarificationsUntil
-  ${return_value}=   Set Variable  ${return_value.replace(u'Період подачі вимог/скарг на умови закупівлі завершився - ','')}
-#  ${return_value}=   convert_etender_date_to_iso_format   ${return_value}
+  Дочекатись зникнення blockUI
+  Run Keyword And Return  Get Text  xpath=//*[@id='qa_ComplaintPeriodFinished']
+
+
+Отримати інформацію про enquiryPeriod.clarificationsUntil
+  ${return_value}=  Wait Until Keyword Succeeds   10 s  5 x  Отримати дані про clarificationsUntil
+  ${return_value}=  Set Variable  ${return_value.replace(u'Період подачі вимог/скарг на умови закупівлі завершився - ','')}
   Log  ${return_value}
   ${return_value}=  add_minutes_to_etender_date  ${return_value}
   Log  ${return_value}

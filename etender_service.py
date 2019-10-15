@@ -383,3 +383,14 @@ def get_modulus_from_number(number):
     elif isinstance(number, unicode):
         number = int(number)
     return abs(number)
+
+
+def get_breakdown_title_value(value):
+    return {
+        'state': u'Державний бюджет України',
+        'crimea': u'Бюджет Автономної Республіки Крим',
+        'local': u'Місцевий бюджет',
+        'own': u'Власний бюджет(кошти від господарської діяльності підприємства)',
+        'fund': u'Бюджет цільових фондів(що не входять до складу Державного або місцевого бюджетів)',
+        'loan': u'Кредити та позики міжнародних валютно - кредитних організацій',
+        'other': u'Інше'}[value]
