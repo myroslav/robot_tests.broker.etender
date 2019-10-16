@@ -148,7 +148,7 @@ Wait and Get Attribute
   Log  ${tender_data}
 
   # Достаем айдишник плана для создания тендера
-  ${file_path}=  Get Variable Value  ${ARTIFACT_FILE}  artifact.yaml
+  ${file_path}=  Get Variable Value  ${ARTIFACT_FILE}  artifact_plan.yaml
   ${ARTIFACT}=  load_data_from  ${file_path}
   Set Global Variable  ${global_plan_id}    ${ARTIFACT.tender_uaid}
 
