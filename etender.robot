@@ -230,7 +230,6 @@ Login
   Run Keyword If  ${lots_count}>0  Run Keywords  Wait Scroll Click  id=isMultilots  AND  Додати лоти і їх предмети  ${lots_count}  ${lots}  ${items}
   ...           ELSE  Run Keywords  Додати мінімальний крок при наявності  ${tender_data}  AND  Input text  id=lotValue_0  ${budgetToStr}  AND  Додати предмети  ${items}  0
 # TODO: убрать костыль ▼, на переговорке создается по 2 лишних айтема для каждого лота
-  Run Keyword If    '${methodType}' in ('negotiation')  Видалити зайві айтеми
   Додати умови оплати при наявності  ${tender_data}
   Додати причину з описом при наявності  ${tender_data}
   Додати донора при наявності  ${tender_data}
@@ -244,15 +243,6 @@ Login
   Зберегти посилання
   Run Keyword And Return  Get Text  ${locator.tenderId}
   # TODO FIX ELASTIC ISSUES ON UAT and delete ↑
-
-
-Видалити зайві айтеми
-  # 2 последних
-  Wait Scroll Click  id=itemRemove_03
-  Wait Scroll Click  id=itemRemove_02
-  # 2 первых
-  Wait Scroll Click  id=itemRemove_10
-  Wait Scroll Click  id=itemRemove_10
 
 
 Створити тендер ESCO
@@ -2499,6 +2489,7 @@ Input String
   Підтвердити переможця
   Sleep  5
 
+
 Створити постачальника, додати документацію і підтвердити його
   [Arguments]  ${username}  ${tender_uaid}  ${object}  ${document}
   Sleep  30
@@ -2508,12 +2499,9 @@ Input String
   Run Keyword  Заповнити інформацію про постачальника  ${username}  ${tender_uaid}  ${object}  ${document}
   Run Keyword  Оцінити постачальника в limited процедурі  ${username}  ${document}
   Run Keyword  Підтвердити постачальника в limited процедурі  ${username}
-
   ${methodType}=  Get From Dictionary  ${USERS.users['${username}']}  method_type
-  Run Keyword If  '${methodType}' in ('negotiation')  Заповнити інформацію про постачальника  ${username}  ${tender_uaid}  ${object}  ${document}
-  Run Keyword If  '${methodType}' in ('negotiation')  Оцінити постачальника в limited процедурі  ${username}  ${document}
-  Run Keyword If  '${methodType}' in ('negotiation')  Підтвердити постачальника в limited процедурі  ${username}
   Sleep  15
+
 
 Wait for upload
   Reload Page
