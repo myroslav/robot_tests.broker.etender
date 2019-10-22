@@ -54,11 +54,9 @@ def get_method_type(procedure_name):
         u'конкурентний діалог 2-ий етап': 'competitiveDialogueUA.stage2',
         u'звіт про укладений договір': 'reporting',
         u'відкриті торги для закупівлі енергосервісу': 'open_esco',
-        u'відкриті торги для закупівлі енергосервісу': 'esco',
         u'конкурентний діалог з публікацією англійською мовою 1-ий етап': 'competitiveDialogueEU',
         u'конкурентний діалог з публікацією англійською мовою 2-ий етап': 'competitiveDialogueEU.stage2',
-        u'відкриті торги для укладання рамкової угоди': 'closeFrameworkAgreementUA',
-        u'відкриті торги для укладання рамкової угоди': 'open_framework'
+        u'відкриті торги для укладання рамкової угоди': 'closeFrameworkAgreementUA'
 
     }[procedure_name]
 
