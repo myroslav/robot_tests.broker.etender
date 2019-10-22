@@ -1616,10 +1616,10 @@ Input String
 
 
 Натиснути кнопку зберегти зміни у тендері
-  ${locator}=  Set Variable  'Access to the path'
-  :FOR  ${i}  IN RANGE  3
+  ${mutex_text}=  Set Variable  'Access to the path'
+  :FOR  ${i}  IN RANGE  5
   \       Wait Scroll Click     id=SaveChanges
-  \       ${mutex_status}=  Run Keyword And Return Status  Wait Until Page Contains  ${locator}  5
+  \       ${mutex_status}=  Run Keyword And Return Status  Wait Until Page Contains  ${mutex_text}  5
   \       Return From Keyword If  '${mutex_status}'=='False'
   \       Sleep  20
 
@@ -2710,7 +2710,7 @@ temporary keyword for title update
   Reload Page
   Дочекатись зникнення blockUI
   Capture Page Screenshot
-  JavascriptClick  '//div[@id="qa_qualification_block_0${bid_index}"]//button[@id="qa_cancelQualification"]'
+  Run Keyword And Ignore Error  JavascriptClick  '//div[@id="qa_qualification_block_0${bid_index}"]//button[@id="qa_cancelQualification"]'
   Дочекатись зникнення blockUI
 
 
@@ -2844,13 +2844,17 @@ Wait for doc upload in qualification
   Wait Until Page Contains  Пропозицію кваліфіковано!  60
 
 
-Затвердити остаточне рішення кваліфікації
-  [Arguments]  ${username}  ${tender_uaid}
-  Capture Page Screenshot
+Перевести тендер у блокування перед аукціоном
   Reload Page
   Wait Scroll Click     id=qa_startStandStillPeriod
-  Sleep  360
+  Sleep  5
   Reload Page
+  Wait Until Page Contains   Блокування перед аукціоном
+
+
+Затвердити остаточне рішення кваліфікації
+  [Arguments]  ${username}  ${tender_uaid}
+  Wait Until Keyword Succeeds  3x  10 sec   Перевести тендер у блокування перед аукціоном
 
 
 Створити другий етап
