@@ -299,7 +299,7 @@ Login
   ...             ELSE  Get Length  ${lots}
   Run Keyword If  ${lots_count}>0  Додати лоти і їх предмети  ${lots_count}  ${lots}  ${items}
   Run Keyword If  '${valueTax}' == 'True'  Wait Scroll Click     xpath=//input[@name= 'valueAddedTaxIncluded']
-  ${year}  ${month}  ${day}=  convet_fra_to_variable  ${agreementDuration}
+  ${year}  ${month}  ${day}=  convert_fra_to_variable  ${agreementDuration}
   Wait Scroll Click  xpath=//div[@ng-model='data.agreementDuration.years']  #//input[@placeholder='Рік']
   Wait and Click  xpath=//div[@ng-model='data.agreementDuration.years']//span[@ng-bind-html='years' and text()='${year}']         #//div[@ng-show='$select.open']//div[@class='ui-select-choices-content selectize-dropdown-content']
   Wait and Click  xpath=//div[@ng-model='data.agreementDuration.months']  #//input[@placeholder='Місяць']
@@ -1552,10 +1552,10 @@ Input String
 Редагувати поле tenderPeriod.endDate
   [Arguments]  ${new_value_isodate}
   ${date}=  convert_date_to_etender_format  ${new_value_isodate}
-  run keyword if  '${global_procedure_type}'!='open_esco'  Input text  id=TenderPeriod  ${date}
+  run keyword if  '${global_procedure_type}'!='esco'  Input text  id=TenderPeriod  ${date}
   ...              ELSE                    Input text  id=tenderPeriod_endDate_day  ${date}
   ${time}=  convert_time_to_etender_format  ${new_value_isodate}
-  run keyword if  '${global_procedure_type}'!='open_esco'  Input text  id=TenderPeriod_time  ${time}
+  run keyword if  '${global_procedure_type}'!='esco'  Input text  id=TenderPeriod_time  ${time}
   ...              ELSE                    Input text  id=tenderPeriod_endDate_time  ${time}
 
 
@@ -1657,10 +1657,11 @@ Input String
 Отримати інформацію про funders[0].identifier.scheme
   Run Keyword And Return   Get Text     xpath=//span[@id="funder_scheme"]
 
+
 Отримати інформацію про agreementDuration
   ${agreementDuration}=    Get Text     xpath=//p[contains(text(), 'Строк, на який укладається рамкова угода:')]
-  ${year}  ${month}  ${day}=  convet_raw_to_chack  ${agreementDuration}
-  run keyword and return  'P${year}Y${month}M${day}D'
+  ${year}  ${month}  ${day}=  get_numbers_from_string  ${agreementDuration}
+  [Return]  'P${year}Y${month}M${day}D'
 
 
 Отримати текст із поля і показати на сторінці

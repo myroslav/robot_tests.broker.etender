@@ -53,7 +53,7 @@ def get_method_type(procedure_name):
         u'конкурентний діалог 1-ий етап': 'competitiveDialogueUA',
         u'конкурентний діалог 2-ий етап': 'competitiveDialogueUA.stage2',
         u'звіт про укладений договір': 'reporting',
-        u'відкриті торги для закупівлі енергосервісу': 'open_esco',
+        u'відкриті торги для закупівлі енергосервісу': 'esco',
         u'конкурентний діалог з публікацією англійською мовою 1-ий етап': 'competitiveDialogueEU',
         u'конкурентний діалог з публікацією англійською мовою 2-ий етап': 'competitiveDialogueEU.stage2',
         u'відкриті торги для укладання рамкової угоди': 'closeFrameworkAgreementUA'
@@ -91,15 +91,8 @@ def convert_etender_date_to_iso_format(date):
     return TZ.localize(parse_etender_date(date)).isoformat()
 
 
-def convet_fra_to_variable(raw):
+def convert_fra_to_variable(raw):
     b = re.findall(r'P(\d+)Y(\d+)M(\d+)D.*', raw)
-    c, d, e = b[0]
-    return c, d, e
-
-
-def convet_raw_to_chack(raw):
-    raw = raw.replace(' ', '')
-    b = re.findall(r'(\d+)р(\d+)м(\d+)д', raw)
     c, d, e = b[0]
     return c, d, e
 
@@ -243,6 +236,12 @@ def parse_currency_value_with_spaces_percentage_NBU(raw):
     result = float(result)
     return result
 
+def get_numbers_from_string(raw):
+   x = []
+   for i in raw:
+       if i.isdigit():
+           x.append(i)
+   return x
 
 
 def convert_etender_string_to_common_string(string):
