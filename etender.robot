@@ -551,6 +551,11 @@ add feature
   \    Input Text  id=breakDownValue${i}    ${breakdown_amount}
 
 
+Підписати план ЕЦП
+  Wait Scroll Click  id=qa_showSignModal
+  Підписати ЕЦП
+  Reload Page
+
 Створити план
   [Arguments]  ${username}  ${arguments}
   Log  ${arguments}
@@ -609,6 +614,7 @@ add feature
   Wait Until Keyword Succeeds   2x  10 sec  Дочекатися завершення обробки плану
   ${plan_id}=  Get Text  id=planId
   Зберегти посилання
+  Підписати план ЕЦП
   [Return]  ${plan_id}
 
 Заповнити інформацію про buyers при наявності  # Заполнение объекта при создании плана
@@ -1188,6 +1194,11 @@ add feature
   ${tender_period_year}=  Wait and Get Text  id=qa_planTenderPeriodStartYear
   return from keyword  ${tender_period_year} + ${tender_period_month}
 
+
+Отримати інформацію із плану про status
+  Run Keyword And Return  Wait and Get Text  id=qa_planTenderEmpty
+
+
 Отримати інформацію із плану про items[${n}].description
   Run Keyword And Return  Wait and Get Text  xpath=//*[contains(@id,'item_description_0${n}')]
 
@@ -1562,6 +1573,7 @@ Input String
 Натиснути кнопку зберегти зміни у тендері
   ${mutex_text}=  Set Variable  'Access to the path'
   :FOR  ${i}  IN RANGE  5
+  \       Capture Page Screenshot
   \       Wait Scroll Click     id=SaveChanges
   \       ${mutex_status}=  Run Keyword And Return Status  Wait Until Page Contains  ${mutex_text}  5
   \       Return From Keyword If  '${mutex_status}'=='False'
@@ -2524,7 +2536,7 @@ Wait for upload before signing
   Sleep  5
   Wait and Click    id=SignDataButton  20
   Дочекатись Зникнення blockUI
-  Wait and Click    xpath=//div[@id="modalSign"]//button[contains(@class,"close")]
+  Run Keyword And Ignore Error  Wait and Click    xpath=//div[@id="modalSign"]//button[contains(@class,"close")]
 
 Підтвердити контракт додаванням ЕЦП
   Wait Scroll Click     xpath=//button[@click-and-block="showSignModalContract(contract)"]  10
