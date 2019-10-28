@@ -609,7 +609,7 @@ add feature
   \     ${delivery_date}=       convert_date_to_etender_format  ${delivery_date}
   \     Wait and Input          id=deliveryDate${i}         ${delivery_date}
 
-  Wait Scroll Click     xpath=//button[contains(., 'Створити план')]
+  Wait Scroll Click     id=qa_createPlan
   Дочекатись зникнення blockUI
   Wait Until Keyword Succeeds   2x  10 sec  Дочекатися завершення обробки плану
   ${plan_id}=  Get Text  id=planId
@@ -1013,6 +1013,9 @@ add feature
   Wait and Click    xpath=//span[@class = 'icon search']
   Дочекатись зникнення blockUI
   Wait Until Page Contains  ${TENDER_UAID}  10
+  Wait And Click  xpath=//td[contains(@data-title, "Конкретна Назва")]/a
+  Дочекатись зникнення blockUI
+
 
 Завантажити документ в ставку
   [Arguments]  ${username}  ${file}  ${tender_uaid}  ${doc_type}=1  ${doc_name}=
@@ -1196,7 +1199,7 @@ add feature
 
 
 Отримати інформацію із плану про status
-  Run Keyword And Return  Wait and Get Text  id=qa_planTenderEmpty
+  Run Keyword And Return  Wait and Get Text  id=qa_planStatus
 
 
 Отримати інформацію із плану про items[${n}].description
