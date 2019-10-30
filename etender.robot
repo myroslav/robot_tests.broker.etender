@@ -428,7 +428,8 @@ Login
   ${quantityStr}=  float to string 3f  ${quantity}
   Перейти на сторінку плану за потреби
   #Wait and Click  xpath=//a[contains(@href, '#/planDetails/')]
-  Wait Scroll Click  xpath=//a[contains(@ng-href, 'updatePlan/')]
+  Sleep  3
+  Wait Scroll Click  xpath=//a[contains(@ng-href, 'updatePlan')]
   ${items_index}=  Get Matching Xpath Count  //textarea[contains(@id, 'itemsDescription')]
   Wait and Click  xpath=//button[@ng-click= 'addItem()']
   Wait and Input  xpath=//textarea[@id ='itemsDescription${items_index}']  ${items_description}
@@ -588,11 +589,11 @@ add feature
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
   Select From List By Index     xpath=//select[@name="startDateMonth"]          6
   Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
-  Wait and Click        xpath=//input[@ng-click="openClassificationModal(null)"]
-  Wait and Input        xpath=//div[@id="planClassification"]//input                           ${cpv_id}
-  Дочекатись зникнення blockUI
+  Wait and Click        id=qa_mainPlanClassification
+  Wait and Input        id=classificationCode                            ${cpv_id}
+  Sleep  5
   Click element         xpath=//td[contains(.,'${cpv_id}')]
-  Click element         xpath=//button[contains(.,'Зберегти та вийти')]
+  Click element         id=classification_choose
   Sleep  5
   :FOR  ${i}  IN RANGE  ${number_of_items}
   \     Wait Scroll Click       xpath=//button[@ng-click='addItem()']
@@ -605,7 +606,14 @@ add feature
   \     Press Key               xpath=//unit[@id='unit_${i}']//input[@type="search"]                 \\13
   \     Sleep                   3
   \     Wait and Click          xpath=//div[contains(@ng-model,'unit.selected')]//span[@class="ui-select-highlight"]  10
-  \     ${delivery_date}=       Get From Dictionary         ${items[${i}].deliveryDate}      endDate
+  \     ${item_cpv}=            Get From Dictionary         ${items[${i}].classification}    id
+  \     Wait and Click          id=qa_itemCpvClassification${i}
+  \     Дочекатись зникнення blockUI
+  \     Wait and Input          id=classificationCode           ${item_cpv}
+  \     Sleep  5
+  \     Click element           xpath=//td[contains(.,'${item_cpv}')]
+  \     Click element           id=classification_choose
+  \     ${delivery_date}=       Get From Dictionary         ${items[${i}].deliveryDate}     endDate
   \     ${delivery_date}=       convert_date_to_etender_format  ${delivery_date}
   \     Wait and Input          id=deliveryDate${i}         ${delivery_date}
 
@@ -616,6 +624,7 @@ add feature
   Зберегти посилання
   Підписати план ЕЦП
   [Return]  ${plan_id}
+
 
 Заповнити інформацію про buyers при наявності  # Заполнение объекта при создании плана
   [Arguments]  ${buyers}
@@ -644,7 +653,7 @@ add feature
 
 Редагувати поле budget.amount
   [Arguments]  ${new_value}
-  Wait and Input  id=value  ${new_value}
+  Wait and Input  id=value  '${new_value}'
 
 Редагувати поле items[0].deliveryDate.endDate
   [Arguments]  ${new_value}
