@@ -1323,7 +1323,8 @@ add feature
 Скасувати цінову пропозицію
   [Arguments]  ${username}  ${TENDER_UAID}
   Перейти на сторінку тендера за потреби
-  Wait and Click    xpath=//button[contains(@class, 'btn-sm btn-danger')]
+  Reload Page
+  Wait and Click    xpath=//button[contains(@id, 'cancelBid_')]
   sleep  5
 
 Оновити сторінку з тендером
