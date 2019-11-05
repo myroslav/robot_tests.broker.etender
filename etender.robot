@@ -1224,6 +1224,7 @@ add feature
   ${return_value}=  Wait and Get Text  xpath=//*[contains(@id,'item_deliveryDate_0${n}')]
   Run Keyword And Return    convert_etender_date_to_iso_format   ${return_value.replace(u'по ','')}, 00:00
 
+
 Отримати інформацію із плану про items[${n}].unit.code
   ${return_value}=  Wait and Get Text  xpath=//*[contains(@id,'item_unit_0${n}')]
   Run Keyword And Return  convert_unit_name_to_unit_code  ${return_value}
@@ -1246,31 +1247,30 @@ add feature
   Run Keyword And Return  Wait and Get Text  xpath=//*[contains(@id,'classification_code_0${n}')]
 
 
-Отримати інформацію про agreements[${n}].agreementID
-
-
-
 Отримати інформацію про items[${n}].quantity
-  run keyword and return  Wait and Get Text  xpath=//td[@class='itemQuantity']//span[contains(@id, 'item_quantity_0${n}')]
+  Run Keyword And Return  Wait and Get Text  xpath=//td[@class='itemQuantity']//span[contains(@id, 'item_quantity_0${n}')]
 
 
 Отримати інформацію про lots[${n}].value.amount
-  run keyword and return  Wait and Get Attribute  xpath=//span[@id='lotValue_${n}' and @class='hidden-xs fwn pl15 ng-binding']  value
+  Run Keyword And Return  Wait and Get Attribute  xpath=//span[@id='lotValue_${n}' and @class='hidden-xs fwn pl15 ng-binding']  value
 
 
 Отримати інформацію про lots[${n}].minimalStep.amount
   ${result}=  Wait and Get Text  id=lotMinimalStep_${n}
-  run keyword and return  parse_currency_value_with_spaces  ${result}
+  Run Keyword And Return  parse_currency_value_with_spaces  ${result}
+
 
 Отримати інформацію про features[${n}].title
-  run keyword and return  wait and get text  xpath=//div[@id='item-futers-0-${n}']//span[@name='item']
+  Run Keyword And Ignore Error  Відкрити всі лоти
+  Run Keyword And Return  Wait And Get Text  xpath=//div[@id='item-futers-0-${n}']//span[@name='item']
 
 
 Отримати інформацію про features[${n}].description
-  run keyword and return  wait and get text  xpath=//div[@id='item-futers-0-${n}']//span[@ng-bind='::feature.description']
+  Run Keyword And Return  Wait And Get Text  xpath=//div[@id='item-futers-0-${n}']//span[@ng-bind='::feature.description']
+
 
 Отримати інформацію про features[${n}].featureOf
- #run keyword and return  wait and get text  xpath=//div[@id='item-futers-0-${n}']//span
+  Run Keyword And Return  Wait And Get Text  xpath=//div[@id='item-futers-0-${n}']//span
 
 
 Отримати інформацію із пропозиції
@@ -1281,14 +1281,17 @@ add feature
   Run Keyword And Return If  'value' in '${field}'  Отримати інформацію про value пропозиції
   Run Keyword And Return  Отримати інформацію про ${field} пропозиції
 
+
 Отримати інформацію про value пропозиції
   ${value}=     Get Text        id=bidAmount0
   ${value}=     parse_currency_value_with_spaces    ${value}
   Run Keyword And Return  Convert To Number  ${value}
 
+
 Отримати інформацію про status пропозиції
   ${value}=     Get Text        id=bidStatus0
   Run Keyword And Return  convert_etender_string_to_common_string  ${value}
+
 
 Змінити цінову пропозицію
   [Arguments]  ${username}  ${tender_uaid}  ${field}  ${value}
@@ -1298,15 +1301,18 @@ add feature
   Run Keyword If  'value' in '${field}'  Редагувати суму пропозиції  ${value}
   Дочекатись зникнення blockUI
 
+
 Редагувати суму пропозиції
   [Arguments]  ${value}
   Натиснути редагувати пропозицію
   Input String      id=amount0       ${value}
   Click Element     id=updateBid_0
 
+
 Отримати інформацію про maxAwardsCount
   ${maxAwardsCount}=  Wait and Get Text  //p[contains(text(), 'Кількість учасників, з якими буде укладено рамкову угоду:')]
   Run Keyword And Return  convert to integer  ${maxAwardsCount.split(' ')[-1]}
+
 
 Редагувати поле maxAwardsCount
   [Arguments]  ${maxAwardsCount}
@@ -1675,6 +1681,10 @@ Input String
   ${agreementDuration}=    Get Text     xpath=//p[contains(text(), 'Строк, на який укладається рамкова угода:')]
   ${year}  ${month}  ${day}=  get_numbers_from_string  ${agreementDuration}
   [Return]  'P${year}Y${month}M${day}D'
+
+
+Отримати інформацію про agreements[${n}].agreementID
+  Run Keyword And Return  Wait and Get Text  id=qa_agreementId${n}
 
 
 Отримати текст із поля і показати на сторінці
