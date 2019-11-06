@@ -297,7 +297,9 @@ def get_helper_dictionary():
         u'очікує розгляду органом оскарження': u'pending',
         u'Співфінансування з бюджетних коштів': u'budget',
         u'на розгляді': u'pending',
-        u'Пропозиція не активована': u'invalid'
+        u'Пропозиція не активована': u'invalid',
+        u'Укладена рамкова угода': u'active'
+
     }
 
 def get_feature_index(i):

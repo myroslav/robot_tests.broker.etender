@@ -197,6 +197,7 @@ Login
   Click Element         id=qa_myTenders  # Мої закупівлі
   Дочекатись зникнення blockUI
   Wait and Click        xpath=//a[@data-target='#procedureType']
+  set global variable  ${global_procedure_type}  ${methodType}
   ${procedure_type}=    get_procedure_type  ${methodType}
   Wait and Select By Label  id=chooseProcedureType  ${procedure_type}
   Wait and Click        id=goToCreate
@@ -352,7 +353,10 @@ Login
   Log  ${milestone}
   Run Keyword Unless  '${index}'=='0'  Wait Scroll Click     id=addMilestone
   ${status}=    Run Keyword And Return Status   Dictionary Should Not Contain Key   ${milestone}  relatedLot
-  ${target}=    Set Variable If     '${status}'=='True'     tender  lot_0  #wait a fix for Framework Agreement ( Milestone tied to the lot, not to the tender )
+  ${target}=    Set Variable If  #wait a fix for Framework Agreement ( Milestone tied to the lot, not to the tender )
+  ...          '${global_procedure_type}'=='closeFrameworkAgreementUA'  tender
+  ...          '${status}'=='True'  tender
+  ...          '${status}'=='False'  lot_0
   Wait and Input                id=milestonePercentage${index}${target}     ${milestone.percentage}
   Input String                  id=milestoneDays${index}${target}           ${milestone.duration.days}
   Select From List By Value     id=milestoneTitle${index}${target}          ${milestone.title}
@@ -1678,13 +1682,14 @@ Input String
 
 
 Отримати інформацію про agreementDuration
-  ${agreementDuration}=    Get Text     xpath=//p[contains(text(), 'Строк, на який укладається рамкова угода:')]
-  ${year}  ${month}  ${day}=  get_numbers_from_string  ${agreementDuration}
-  [Return]  'P${year}Y${month}M${day}D'
-
+  run keyword and return  Wait and Get Attribute  id=frameworkAgreementTerm  termvalue
 
 Отримати інформацію про agreements[${n}].agreementID
   Run Keyword And Return  Wait and Get Text  id=qa_agreementId${n}
+
+Отримати інформацію про agreements[${n}].status
+  ${agreements_status}=  Wait and Get Text  xpath=//div[@ng-bind= '::agreement.status.name']
+  Run Keyword And Return  get_helper_dictionary  ${agreements_status}
 
 
 Отримати текст із поля і показати на сторінці
