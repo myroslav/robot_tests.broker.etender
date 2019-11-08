@@ -433,7 +433,7 @@ Login
   Перейти на сторінку плану за потреби
   #Wait and Click  xpath=//a[contains(@href, '#/planDetails/')]
   Sleep  3
-  Wait Scroll Click  xpath=//a[contains(@ng-href, 'updatePlan')]
+  Wait Scroll Click  id=updatePlan
   ${items_index}=  Get Matching Xpath Count  //textarea[contains(@id, 'itemsDescription')]
   Wait and Click  xpath=//button[@ng-click= 'addItem()']
   Wait and Input  xpath=//textarea[@id ='itemsDescription${items_index}']  ${items_description}
@@ -445,16 +445,16 @@ Login
   Capture Page Screenshot
   Press Key  xpath=//div[@class="selectize-input focus"]/input  \\13
   Capture Page Screenshot
-  Wait and Click          xpath=//span[@ng-if = 'createPlanModel.apiId']  10
+  Wait and Click  id=qa_savePlan  10
   Reload Page
 
 Видалити предмет закупівлі плану
   [Arguments]  ${username}  ${tender_uaid}  ${item_id}
   Перейти на сторінку плану за потреби
-  Wait Scroll Click  xpath=//a[contains(@ng-href, 'updatePlan/')]  10
+  Wait Scroll Click  id=updatePlan  10
   Sleep  5
   Wait Scroll Click  xpath=//h4[contains(text(), '№ 2')]//button[@ng-click = 'removeItem($index)']
-  Wait and Click          xpath=//span[@ng-if = 'createPlanModel.apiId']  10
+  Wait and Click  id=qa_savePlan  10
   Reload Page
 
 
@@ -644,7 +644,7 @@ add feature
 Перейти до редагування плану
   Перейти на сторінку плану за потреби
   Дочекатись зникнення blockUI
-  Wait Scroll Click     xpath=//a[text()="Редагувати план"]
+  Wait Scroll Click     id=updatePlan
   Дочекатись зникнення blockUI
 
 Редагувати поле плану
