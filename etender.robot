@@ -1414,7 +1414,7 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}
   Перейти на сторінку тендера за потреби
   Відкрити розділ вимог і скарг
-  Click Element  xpath=//div[@id='${complaintID}']//*[@name='CancelComplaint']
+  Wait Scroll Click  xpath=//div[@id='${complaintID}']//*[@id='qa_CancelComplaint']
   Sleep  1  # wait for full input
   Wait and Input    id=cancellationReason      ${cancellation_data.data.cancellationReason}
   Click Element     id=btnCancelComplaint
