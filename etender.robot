@@ -1155,7 +1155,7 @@ add feature
   ${text}=  Get Element Attribute  //div[@class="infoPlanBlock"]//div[text()="Тип процедури:"]/following-sibling::div@outerText
   Run Keyword And Return  get_method_type  ${text.lower()}
 
-Отримати інформацію із плану про budget.amount
+Отримати інформацію про budget.amount
   ${return_value}=   Get Text  tenderBudget
   ${return_value}=   Set Variable  ${return_value.replace(u'\xa0','')}  # nbsp converting attempt
   ${return_value}=   Set Variable  ${return_value.replace(' ','')}
@@ -1594,11 +1594,10 @@ Input String
 
 
 Натиснути кнопку зберегти зміни у тендері
-  ${mutex_text}=  Set Variable  'Access to the path'
   :FOR  ${i}  IN RANGE  5
   \       Capture Page Screenshot
   \       Wait Scroll Click     id=SaveChanges
-  \       ${mutex_status}=  Run Keyword And Return Status  Wait Until Page Contains  ${mutex_text}  5
+  \       ${mutex_status}=  Run Keyword And Return Status  Wait Until Page Contains  Access to the path  3
   \       Return From Keyword If  '${mutex_status}'=='False'
   \       Sleep  20
 
@@ -2535,7 +2534,7 @@ Wait for upload before signing
 
   Wait and Select By Label      id=docType  Підписаний договір
   ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
-  Завантажити док  ${username}  ${file_path}  xpath=//button[@ng-model="documentsToAdd"]
+  Завантажити док  ${username}  ${file_path}  id=qa_contractDocAdd
   Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
   ${methodType}=  Get From Dictionary  ${USERS.users['${username}']}  method_type
@@ -2740,9 +2739,11 @@ temporary keyword for title update
 
 Підтвердити переможця
   Wait and Click    id=qa_accept_award
+  Sleep  10
 
 Відхилити переможця
   Wait and Click    id=qa_disqualify_award
+  Sleep  10
 
 Перейти до оцінки кандидата
   Sleep  20
