@@ -2576,27 +2576,60 @@ Wait for upload before signing
 
 Редагувати поле договору value.amount
   [Arguments]  ${value}
+  Reload Page
   Input String  id=qa_valueAmount   ${value}
   Зберегти інформацію про контракт
 
 
 Редагувати поле договору value.amountNet
   [Arguments]  ${value}
+  Reload Page
   Input String  id=qa_valueAmountNet    ${value}
   # TODO ↓
   Wait and Input    id=contractNumber  contractnumber
   ${time_now_tmp}=     get_time_now
   ${date_now_tmp}=     get_date_now
   ${date_future_tmp}=  get_date_10d_future
-  Input text  name=dateSigned  ${date_now_tmp}
-  Input text  name=timeSigned  ${time_now_tmp}
-  Input text  name=endDate     ${date_future_tmp}
+  Wait and Input  name=dateSigned  ${date_now_tmp}
+  Wait and Input  name=timeSigned  ${time_now_tmp}
+  Wait and Input  name=endDate     ${date_future_tmp}
   Зберегти інформацію про контракт
+
+
+Встановити дату підписання угоди
+  [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${dateSigned}
+  Reload Page
+  ${date}=    convert_date_to_etender_format  ${dateSigned}
+  ${time}=    convert_time_to_etender_format  ${dateSigned}
+  Wait and Input  id=qa_datSignedDate  ${date}
+  Wait and Input  id=qa_datSignedTime  ${time}
+  Зберегти інформацію про контракт
+
+
+Вказати період дії угоди
+  [Arguments]  ${username}  ${tender_uaid}  ${contract_index}  ${startDate}  ${endDate}
+  Reload Page
+  ${startDate}=    convert_date_to_etender_format  ${startDate}
+  ${endDate}=    convert_date_to_etender_format  ${endDate}
+  Log  ${startDate}
+  Wait and Input  id=qa_contractPeriodStart  ${startDate}
+  Wait and Input  id=qa_contractPeriodEnd  ${endDate}
+  Зберегти інформацію про контракт
+
+
+Завантажити документ в угоду
+  [Arguments]  ${username}  ${file}  ${tender_uaid}  ${contract_id}
+  Reload Page
+  Дочекатись зникнення blockUI
+  Wait and Select By Label  id=docType  Підписаний договір
+  Завантажити док  ${username}  ${file}  id=qa_contractDocAdd
+
 
 Зберегти інформацію про контракт
   Wait Scroll Click     id=qa_saveContractInfo
   Wait and Click    id=qa_saveData
-  Sleep  2
+  Дочекатись зникнення blockUI
+
 
 Відповісти на вимогу про виправлення умов закупівлі
   [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}
