@@ -30,7 +30,6 @@ ${locator.enquiryPeriod.startDate}                             id=enquiryStart
 ${locator.enquiryPeriod.endDate}                               id=enquiryEnd
 ${locator.causeDescription}                                    id=causeDescription
 ${locator.cause}                                               id=cause
-${locator.qualificationPeriod.endDate}                         id=qualificationPeriod_endDate
 ${locator.qualifications[0].status}                            xpath=(//div[@ng-controller="qualificationsCtrl"]//div[@class = "row"]/div[contains(.,"Статус:")]/following-sibling::div)[1]
 ${locator.qualifications[1].status}                            xpath=(//div[@ng-controller="qualificationsCtrl"]//div[@class = "row"]/div[contains(.,"Статус:")]/following-sibling::div)[2]
 ${locator.items[0].description}                                id=item_description_00
@@ -1711,8 +1710,9 @@ Input String
 
 Отримати інформацію про qualificationPeriod.endDate
   Reload Page
-  ${datetime}=      Отримати текст із поля і показати на сторінці  qualificationPeriod.endDate
-  Run Keyword And Return  convert_etender_date_to_iso_format  ${datetime}
+  Sleep  300  # поле появляется на UI, когда заканчивается период. Тест ожидает сразу
+  ${return_value}=   Get Text  id=qualificationPeriod_endDate
+  Run Keyword And Return  convert_etender_date_to_iso_format  ${return_value}
 
 Отримати інформацію про qualifications[0].status
   Reload Page
@@ -2826,10 +2826,12 @@ Wait for doc upload in qualification
 Перевести тендер у блокування перед аукціоном
   Reload Page
   Sleep  10
-  Wait Scroll Click     id=qa_startStandStillPeriod
+  Run Keyword And Ignore Error  Wait Scroll Click     id=qa_startStandStillPeriod
   Sleep  5
   Reload Page
-  Wait Until Page Contains   Блокування перед аукціоном
+  ${procedureType}=  Set Variable  ${USERS.users['${tender_owner}'].method_type}
+  Run Keyword If  '${procedureType}' in ('competitiveDialogueUA', 'competitiveDialogueEU')  Wait Until Page Contains   Проведення переговорів
+  ...  ELSE  Wait Until Page Contains   Блокування перед аукціоном
 
 
 Затвердити остаточне рішення кваліфікації
