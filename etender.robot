@@ -1710,7 +1710,11 @@ Input String
 
 Отримати інформацію про qualificationPeriod.endDate
   Reload Page
-  Sleep  300  # поле появляется на UI, когда заканчивается период. Тест ожидает сразу
+  ${procedureType}=  Set Variable  ${USERS.users['${tender_owner}'].method_type}
+  Run Keyword If  '${procedureType}' in ('closeFrameworkAgreementUA')  Sleep  300
+  ...  ELSE  Sleep  300
+    # поле появляется на UI, когда заканчивается период. Тест ожидает сразу
+
   ${return_value}=   Get Text  id=qualificationPeriod_endDate
   Run Keyword And Return  convert_etender_date_to_iso_format  ${return_value}
 
