@@ -2581,13 +2581,20 @@ Wait for upload before signing
 Редагувати поле договору value.amount
   [Arguments]  ${value}
   Reload Page
+  Дочекатись зникнення blockUI
   Input String  id=qa_valueAmount   ${value}
+#  отловить ошибки валидации на UI:
+#  ${error1}=  Run Keyword And Return Status  Element Should Be Visible  id=Amount should be less or equal to awarded amount
+#  ${error2}=  Run Keyword And Return Status  Element Should Be Visible  id=Amount should be greater than amountNet and differ by no more than 20.0%
+#  ${status}=  Set Variable  ${error1} or  ${error2}
+#  Run Keyword And Return If  ${status}==True  Зберегти інформацію про контракт
   Зберегти інформацію про контракт
 
 
 Редагувати поле договору value.amountNet
   [Arguments]  ${value}
   Reload Page
+  Дочекатись зникнення blockUI
   Input String  id=qa_valueAmountNet    ${value}
   # TODO ↓
   Wait and Input    id=contractNumber  contractnumber
