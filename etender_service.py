@@ -189,7 +189,7 @@ def get_date_10d_future():
 
 
 def get_time_offset(add_minutes=17):
-    _now = datetime.now() + timedelta(minutes=add_minutes)
+    _now = datetime.now() + timedelta(minutes=int(add_minutes))
     return _now.time().strftime('%H:%M')
 
 

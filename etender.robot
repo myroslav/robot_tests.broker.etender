@@ -790,6 +790,7 @@ add feature
   # Autotest cannot upload file directly, because there is no INPUT element on page. Need to click on button first,
   # but this will open OS file selection dialog. So we close and reopen browser to get rid of this dialog
   ${tmp_location}=  Get Location
+  Дочекатись зникнення blockUI
   Wait Scroll Click     ${locator}
   Choose File     xpath=//input[@type="file"]  ${file}
   Run Keyword Unless  '${locator2}'=='-1'  Wait and Click    ${locator2}   #  if need to press key to upload like in awards
@@ -2507,12 +2508,7 @@ Wait for upload before signing
   Reload Page
   Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
 
-  #сделал чтобы не сломать остальную логику на контрактах
-  #TODO: вынести переход на стр. контракта в кейворд, почистить код от ненужных действий и ожиданий.
-
-#  ${tmp_location_tender}=  Get Location
-
-# ==================  1 - enter values into fields, save
+# ==================  1 - enter FAKE values into fields, save
   Run Keyword And Ignore Error  Відкрити всі лоти
   Run Keyword And Ignore Error  Click Element     xpath=//a[.="Внести інформацію про договір"]
   Wait and Input    id=contractNumber  ${contract_index}
@@ -2523,27 +2519,19 @@ Wait for upload before signing
   Input text  name=timeSigned  ${time_now_tmp}
   Input text  name=endDate     ${date_future_tmp}
   Зберегти інформацію про контракт
-#  Wait Scroll Click     id=qa_saveContractInfo  # button - Опублікувати документи та завершити пізніше
-#  Wait and Input        xpath=//div[@id="saveData"]//button[@ng-click="save(documentsToAdd)"]  10
-
-# ==================  2 - wait for upload
-#  Sleep  60  # wait for upload
-#  Go To  ${tmp_location_tender}
   Reload Page
-#  Capture Page Screenshot
-#  Відкрити розділ Деталі Закупівлі
-#  Wait Scroll Click     xpath=//a[.="Редагувати інформацію про договір "]
 
-# ==================  3 - upload doc
-
+# ==================  2 - upload doc
   Wait and Select By Label      id=docType  Підписаний договір
   ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
   Завантажити док  ${username}  ${file_path}  id=qa_contractDocAdd
   Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
-  ${methodType}=  Get From Dictionary  ${USERS.users['${username}']}  method_type
-  Run Keyword If  '${methodType}' in ('aboveThresholdEU', 'aboveThresholdUA', 'negotiation', 'reporting')  Підтвердити контракт додаванням ЕЦП
-  Wait Scroll Click  xpath=//button[@click-and-block="sign()"]  # button - Завершити закупівлю
+#  ${procedureType}=  Set Variable  ${USERS.users['${tender_owner}'].method_type}
+#  Run Keyword If  '${procedureType}' in ('aboveThresholdEU', 'aboveThresholdUA', 'aboveThresholdUA.defense',  'negotiation', 'reporting')  Підтвердити контракт додаванням ЕЦП
+  Run Keyword And Ignore Error  Підтвердити контракт додаванням ЕЦП
+  Sleep  10  # ждем автопроверки ЕЦП
+  Wait Scroll Click  id=qa_finishTender
   Capture Page Screenshot
   Wait Until Page Contains  Підтверджено!  60
 
@@ -2582,6 +2570,7 @@ Wait for upload before signing
   [Arguments]  ${value}
   Reload Page
   Дочекатись зникнення blockUI
+  Capture Page Screenshot
   Input String  id=qa_valueAmount   ${value}
 #  отловить ошибки валидации на UI:
 #  ${error1}=  Run Keyword And Return Status  Element Should Be Visible  id=Amount should be less or equal to awarded amount
@@ -2595,6 +2584,7 @@ Wait for upload before signing
   [Arguments]  ${value}
   Reload Page
   Дочекатись зникнення blockUI
+  Capture Page Screenshot
   Input String  id=qa_valueAmountNet    ${value}
   # TODO ↓
   Wait and Input    id=contractNumber  contractnumber
@@ -2918,7 +2908,8 @@ Wait for doc upload in qualification
   Дочекатись зникнення blockUI
   Click Element  id=update_tender_btn
   Дочекатись зникнення blockUI
-  ${new_time_value}=  Run Keyword  get_time_offset
+  ${new_time_value}=  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}'=='competitiveDialogueEU'  Run Keyword  get_time_offset  35
+  ...             ELSE  Run Keyword  get_time_offset
   Input String  xpath=//input[@ng-model="updateTenderModel.tenderPeriod.endDate" and @placeholder="час"]  ${new_time_value}
   Click Element  xpath=//button[@click-and-block="submit()"]
   Дочекатись зникнення blockUI
