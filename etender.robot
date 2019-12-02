@@ -225,7 +225,7 @@ Login
   Додати донора при наявності  ${tender_data}
   Додати дати при наявності    ${tender_data}  ${methodType}
   Додати нецінові показники при наявності       ${tender_data}
-  Sleep   10
+  Sleep   15
   Wait Scroll Click     id=createTender
   Sleep   60
   Reload Page
@@ -291,7 +291,6 @@ Login
   ${valueTax}=           Get From Dictionary         ${tender_data.value}  valueAddedTaxIncluded
 
   Input text    xpath=//input[@ng-model = 'data.maxAwardsCount']  ${AwardsCountToStr}
-
   ${status}  ${lots}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  lots
   Log  ${lots[0]}
   log to console  presence of lots: ${status}
@@ -619,7 +618,7 @@ add feature
   \     ${delivery_date}=       Get From Dictionary         ${items[${i}].deliveryDate}     endDate
   \     ${delivery_date}=       convert_date_to_etender_format  ${delivery_date}
   \     Wait and Input          id=deliveryDate${i}         ${delivery_date}
-
+  Sleep  20
   Wait Scroll Click     id=qa_createPlan
   Дочекатись зникнення blockUI
   Wait Until Keyword Succeeds   2x  10 sec  Дочекатися завершення обробки плану
@@ -1641,8 +1640,7 @@ Input String
   Reload Page
   Дочекатись зникнення blockUI
   ${return_value}=   Отримати текст із поля і показати на сторінці   status
-  ${return_value}=   convert_etender_string_to_common_string  ${return_value.lower()}
-  [Return]  ${return_value}
+  Run Keyword And Return   convert_etender_string_to_common_string  ${return_value.lower()}
 
 Отримати інформацію із тендера
   [Arguments]  ${username}  ${tender_uaid}  ${field}
@@ -1688,14 +1686,13 @@ Input String
 
 Отримати інформацію про agreements[${n}].status
   ${agreements_status}=  Wait and Get Text  xpath=//div[@ng-bind= '::agreement.status.name']
-  Run Keyword And Return  get_helper_dictionary  ${agreements_status}
+  Run Keyword And Return  convert_etender_string_to_common_string  ${agreements_status}
 
 
 Отримати текст із поля і показати на сторінці
   [Arguments]   ${fieldname}  # TODO remove
   Wait Until Element Is Visible    ${locator.${fieldname}}    30
-  ${return_value}=   Get Text  ${locator.${fieldname}}
-  [return]  ${return_value}
+  Run Keyword And Return  Get Text  ${locator.${fieldname}}
 
 Отримати інформацію про procurementMethodType
   ${methodType}=    Get Text   id=procedureType
@@ -1706,8 +1703,8 @@ Input String
   Run Keyword And Return    convert_etender_date_to_iso_format    ${complaintperiod}
 
 Отримати інформацію про title
-  ${return_value}=   Отримати текст із поля і показати на сторінці   title
-  [return]  ${return_value}
+  Run Keyword And Return   Отримати текст із поля і показати на сторінці   title
+
 
 Отримати інформацію про qualificationPeriod.endDate
   Reload Page
@@ -1723,25 +1720,22 @@ Input String
   Reload Page
   Відкрити розділ Деталі Закупівлі
   ${return_value}=  Отримати текст із поля і показати на сторінці  qualifications[0].status
-  ${return_value}=  convert_etender_string_to_common_string  ${return_value}
-  [return]  ${return_value}
+  Run Keyword And Return  convert_etender_string_to_common_string  ${return_value}
 
 Отримати інформацію про qualifications[1].status
   Reload Page
   Відкрити розділ Деталі Закупівлі
   ${return_value}=  Отримати текст із поля і показати на сторінці  qualifications[1].status
-  ${return_value}=  convert_etender_string_to_common_string  ${return_value}
-  [return]  ${return_value}
+  Run Keyword And Return  convert_etender_string_to_common_string  ${return_value}
 
 Отримати інформацію про description
-  ${return_value}=   Отримати текст із поля і показати на сторінці   description
-  [return]  ${return_value}
+  Run Keyword And Return   Отримати текст із поля і показати на сторінці   description
+
 
 Отримати інформацію про minimalStep.amount
   ${return_value}=   Отримати текст із поля і показати на сторінці   minimalStep.amount
   ${return_value}=   parse_currency_value_with_spaces   ${return_value}
-  ${return_value}=   Convert To Number   ${return_value}
-  [return]  ${return_value}
+  Run Keyword And Return   Convert To Number   ${return_value}
 
 Отримати інформацію про minimalStepPercentage
   ${return_value}=   Wait and Get Attribute  //span[contains(@id, 'minimalStepPercentage')]  value
@@ -1783,12 +1777,10 @@ Input String
   ${return_value}=   Отримати текст із поля і показати на сторінці  value.amount
   ${return_value}=   Set Variable  ${return_value.replace(u'\xa0','')}  # nbsp converting attempt
   ${return_value}=   Set Variable  ${return_value.replace(' ','')}
-  ${return_value}=   Convert To Number   ${return_value.replace(',','.')}
-  [return]  ${return_value}
+  Run Keyword And Return   Convert To Number   ${return_value.replace(',','.')}
 
 Отримати інформацію про value.currency
-  ${return_value}=   Отримати текст із поля і показати на сторінці   value.currency
-  [return]  ${return_value}
+  Run Keyword And Return   Отримати текст із поля і показати на сторінці   value.currency
 
 Отримати інформацію про value.valueAddedTaxIncluded
   ${return_value}=   Отримати текст із поля і показати на сторінці   value.valueAddedTaxIncluded
@@ -1797,14 +1789,11 @@ Input String
   Run Keyword And Return  Convert To Boolean   ${return_value}
 
 Отримати інформацію про causeDescription
-  ${return_value}=  Отримати текст із поля і показати на сторінці  causeDescription
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці  causeDescription
 
 Отримати інформацію про cause
   ${return_value}=  Отримати текст із поля і показати на сторінці  cause
-  ${return_value}=  convert_etender_string_to_common_string  ${return_value}
-  [return]  ${return_value}
-
+  Run Keyword And Return  convert_etender_string_to_common_string  ${return_value}
 
 Отримати інформацію про contracts[${n}].value.amountNet
   Перейти на сторінку тендера за потреби
@@ -1815,8 +1804,7 @@ Input String
   ${return_value}=  Set Variable  ${return_value.strip()}
   ${return_value}=  Set Variable  ${return_value.replace(' ','')}
   ${return_value}=  Set Variable  ${return_value.replace(',','.')}
-  ${return_value}=  Convert To Number  ${return_value}
-  [return]  ${return_value}
+  Run Keyword And Return  Convert To Number  ${return_value}
 
 
 Отримати інформацію про contracts[${n}].value.amount
@@ -1828,8 +1816,7 @@ Input String
   ${return_value}=  Set Variable  ${return_value.strip()}
   ${return_value}=  Set Variable  ${return_value.replace(' ','')}
   ${return_value}=  Set Variable  ${return_value.replace(',','.')}
-  ${return_value}=  Convert To Number  ${return_value}
-  [return]  ${return_value}
+  Run Keyword And Return  Convert To Number  ${return_value}
 
 
 Отримати інформацію про contracts[${n}].dateSigned
@@ -1874,12 +1861,10 @@ Input String
   Remove element   ${last_note_id}
 
 Отримати інформацію про tenderId
-  ${return_value}=   Отримати текст із поля і показати на сторінці   tenderId
-  [return]  ${return_value}
+  Run Keyword And Return   Отримати текст із поля і показати на сторінці   tenderId
 
 Отримати інформацію про procuringEntity.name
-  ${return_value}=   Отримати текст із поля і показати на сторінці   procuringEntity.name
-  [return]  ${return_value}
+  Run Keyword And Return   Отримати текст із поля і показати на сторінці   procuringEntity.name
 
 Отримати інформацію про procuringEntity.address.countryName
   ${return_value}=  Отримати текст із поля і показати на сторінці   procuringEntity.address.countryName
@@ -1902,24 +1887,19 @@ Input String
   [return]  ${return_value}
 
 Отримати інформацію про procuringEntity.address.streetAddress
-  ${return_value}=  Отримати текст із поля і показати на сторінці   procuringEntity.address.streetAddress
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці   procuringEntity.address.streetAddress
 
 Отримати інформацію про procuringEntity.contactPoint.name
-  ${return_value}=  Отримати текст із поля і показати на сторінці   procuringEntity.contactPoint.name
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці   procuringEntity.contactPoint.name
 
 Отримати інформацію про procuringEntity.contactPoint.telephone
-  ${return_value}=  Отримати текст із поля і показати на сторінці   procuringEntity.contactPoint.telephone
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці   procuringEntity.contactPoint.telephone
 
 Отримати інформацію про procuringEntity.contactPoint.url
-  ${return_value}=  Отримати текст із поля і показати на сторінці   procuringEntity.contactPoint.url
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці   procuringEntity.contactPoint.url
 
 Отримати інформацію про procuringEntity.identifier.legalName
-  ${return_value}=  Отримати текст із поля і показати на сторінці   procuringEntity.identifier.legalName
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці   procuringEntity.identifier.legalName
 
 Отримати інформацію про procuringEntity.identifier.scheme
   ${return_value}=  Отримати текст із поля і показати на сторінці   procuringEntity.identifier.scheme
@@ -1929,32 +1909,27 @@ Input String
   [return]  ${return_value}
 
 Отримати інформацію про procuringEntity.identifier.id
-  ${return_value}=  Отримати текст із поля і показати на сторінці   procuringEntity.identifier.id
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці   procuringEntity.identifier.id
 
 Отримати інформацію про tenderPeriod.startDate
   ${return_value}=   Отримати текст із поля і показати на сторінці  tenderPeriod.startDate
   ${return_value}=   Set Variable  ${return_value.replace(u'з ','')}
-  ${return_value}=   convert_etender_date_to_iso_format   ${return_value}
-  [return]  ${return_value}
+  Run Keyword And Return   convert_etender_date_to_iso_format   ${return_value}
 
 Отримати інформацію про tenderPeriod.endDate
   ${return_value}=   Отримати текст із поля і показати на сторінці  tenderPeriod.endDate
   ${return_value}=   Set Variable  ${return_value.replace(u'по ','')}
-  ${return_value}=   convert_etender_date_to_iso_format   ${return_value}
-  [return]  ${return_value}
+  Run Keyword And Return   convert_etender_date_to_iso_format   ${return_value}
 
 Отримати інформацію про enquiryPeriod.startDate
   ${return_value}=   Отримати текст із поля і показати на сторінці  enquiryPeriod.startDate
   ${return_value}=   Set Variable  ${return_value.replace(u'з ','')}
-  ${return_value}=   convert_etender_date_to_iso_format   ${return_value}
-  [return]  ${return_value}
+  Run Keyword And Return   convert_etender_date_to_iso_format   ${return_value}
 
 Отримати інформацію про enquiryPeriod.endDate
   ${return_value}=   Отримати текст із поля і показати на сторінці  enquiryPeriod.endDate
   ${return_value}=   Set Variable  ${return_value.replace(u'по ','')}
-  ${return_value}=   convert_etender_date_to_iso_format   ${return_value}
-  [return]  ${return_value}
+  Run Keyword And Return   convert_etender_date_to_iso_format   ${return_value}
 
 
 Отримати дані про clarificationsUntil
@@ -1969,8 +1944,7 @@ Input String
   Log  ${return_value}
   ${return_value}=  add_minutes_to_etender_date  ${return_value}
   Log  ${return_value}
-  ${return_value}=   convert_etender_date_to_iso_format   ${return_value}
-  [return]  ${return_value}
+  Run Keyword And Return   convert_etender_date_to_iso_format   ${return_value}
 
 
 Отримати інформацію про items[0].additionalClassifications[0].id
@@ -1978,8 +1952,7 @@ Input String
   [return]  ${return_value.split(' ')[0]}
 
 Отримати інформацію про items[0].additionalClassifications[0].scheme
-  ${return_value}=   Отримати текст із поля і показати на сторінці  items[0].additionalClassifications[0].scheme
-  [return]  ${return_value}
+  Run Keyword And Return   Отримати текст із поля і показати на сторінці  items[0].additionalClassifications[0].scheme
 
 Отримати інформацію про items[0].additionalClassifications[0].description
   Run Keyword And Return    Отримати текст із поля і показати на сторінці  items[0].additionalClassifications[0].description
@@ -2029,24 +2002,19 @@ Input String
   Run Keyword And Return    Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.countryName
 
 Отримати інформацію про awards[0].suppliers[0].address.locality
-  ${return_value}=  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.locality
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.locality
 
 Отримати інформацію про awards[0].suppliers[0].address.postalCode
-  ${return_value}=  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.postalCode
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.postalCode
 
 Отримати інформацію про awards[0].suppliers[0].address.region
-  ${return_value}=  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.region
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.region
 
 Отримати інформацію про awards[0].suppliers[0].address.streetAddress
-  ${return_value}=  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.streetAddress
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.streetAddress}
 
 Отримати інформацію про awards[0].suppliers[0].name
-  ${return_value}=  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].name
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].name
 
 Отримати інформацію про awards[0].value.valueAddedTaxIncluded
   ${return_value}=  Отримати текст із поля і показати на сторінці     awards[0].value.valueAddedTaxIncluded
@@ -2071,8 +2039,7 @@ Input String
   ${part_one}=  Set Variable  ${part_one.replace(u'\xa0','')}
   ${part_one}=  Set Variable  ${part_one.replace(' ','')}
   ${return_value}=  Set Variable  ${part_one}.${part_two}
-  ${return_value}=  Convert To Number  ${return_value}
-  [return]  ${return_value}
+  Run Keyword And Return  Convert To Number  ${return_value}
 
 
 Отримати інформацію про awards[0].suppliers[0].contactPoint.telephone
@@ -2110,8 +2077,7 @@ Input String
   [return]  ${return_value}
 
 Отримати інформацію про awards[0].suppliers[0].identifier.legalName
-  ${return_value}=  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].identifier.legalName
-  [return]  ${return_value}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].identifier.legalName
 
 Отримати інформацію про awards[0].suppliers[0].identifier.id
   ${return_value}=  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].identifier.id
@@ -2741,6 +2707,7 @@ temporary keyword for title update
   Підтвердити переможця
 
 Затвердити постачальників
+  [Arguments]  ${username}  ${tender_uaid}
   Wait and Click  id=submitPreQualification  10
 
 Дискваліфікувати постачальника
