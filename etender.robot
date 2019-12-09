@@ -62,7 +62,7 @@ ${locator.awards[0].suppliers[0].identifier.id}                xpath=//span[@id=
 ${locator_document_title}                                      xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]
 ${locator_document_href}                                       xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]//ancestor::td[contains(@class,"doc-name")]//preceding-sibling::td//a@href
 ${locator_document_description}                                xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]/following-sibling::p
-${locator_document_of}                                         xpath=//td[contains(@class,"doc-name")]//a[contains(.,"d-XX_doc_id_XX")]/parent::td@data-document-of
+${locator_document_documentOf}                                 xpath=//td[contains(@class,"doc-name")]//a[contains(.,"XX_doc_id_XX")]/parent::td[@data-document-of]
 ${locator.value.currency}                                      id=tenderCurrency
 ${locator.value.valueAddedTaxIncluded}                         id=includeVat
 ${locator.bids}                                                id=ParticipiantInfo_0
@@ -164,11 +164,18 @@ Wait and Get Attribute
   Log  ${username_2}
   [Return]  ${tender_data}
 
+
 Відкрити всі лоти
   ${clicked}=  Wait and Get Attribute  xpath=//*[@id="openAllLots"]     class
   Return From Keyword If  'clicked' in '${clicked}'
   Wait Scroll Click     id=openAllLots
   Дочекатись зникнення blockUI
+
+
+Отримати інформацію про procurementMethodType
+  Дочекатись зникнення blockUI
+  ${methodType}=    Get Text   id=procedureType
+  Run Keyword And Return  get_method_type  ${methodType.lower()}
 
 
 Login
@@ -1694,9 +1701,6 @@ Input String
   Wait Until Element Is Visible    ${locator.${fieldname}}    30
   Run Keyword And Return  Get Text  ${locator.${fieldname}}
 
-Отримати інформацію про procurementMethodType
-  ${methodType}=    Get Text   id=procedureType
-  Run Keyword And Return  get_method_type  ${methodType.lower()}
 
 Отримати інформацію про complaintPeriod.endDate
   ${complaintperiod}=       Get Text    id=complaintPeriod
@@ -1708,8 +1712,8 @@ Input String
 
 Отримати інформацію про qualificationPeriod.endDate
   Reload Page
-  ${procedureType}=  Set Variable  ${USERS.users['${tender_owner}'].method_type}
-  Run Keyword If  '${procedureType}' in ('closeFrameworkAgreementUA')  Sleep  300
+  ${procedureType}=  Run Keyword  Отримати інформацію про procurementMethodType
+  Run Keyword If  '${procedureType}' in ('closeFrameworkAgreementUA')  Sleep  600
   ...  ELSE  Sleep  300
     # поле появляется на UI, когда заканчивается период. Тест ожидает сразу
 
@@ -1822,6 +1826,7 @@ Input String
 Отримати інформацію про contracts[${n}].dateSigned
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
+  ${n}=  Evaluate  ${n}+1
   ${n}=  Convert To String  ${n}
   ${return_value}=  Get Text  xpath=(//div[@id="qa_dateSigned"][${n}])
   Run Keyword And Return  parse_etender_date  ${return_value}  True
@@ -2251,31 +2256,52 @@ Input String
   Wait Until Element Is Visible  ${question_locator}  10
   Run Keyword And Return   Get Text  ${question_locator}//*[@name="question_${field}"]
 
+
+#Розкрити інформацію про документ контракту
+#  ${is_expanded}=  Get Element Attribute  xpath=//*[contains(@id, "qa_contractBlock")]//input[contains(@id, "contractDocuments")]@class
+#  Run Keyword If  'ng-empty' in '${is_expanded}'  JavascriptClick  xpath=//*[contains(@id, "qa_contractBlock")]//*[contains(@id, "contractDocuments")]//following-sibling::label/i
+#  Дочекатись зникнення blockUI
+
+
 Отримати інформацію із документа
 # TODO: refactor
   [Arguments]  ${username}  ${tender_uaid}  ${doc_id}  ${field}
+  Log  ${field}
+#  Run Keyword If  ${field}=='documentOf'  Розкрити інформацію про документ контракту
+#  ${doc_id}=  Set Variable  d-0b4ce49
   ${prepared_locator}=  Set Variable  ${locator_document_${field}.replace('XX_doc_id_XX','${doc_id}')}
+#  ${prepared_locator}=  Set Variable  xpath=//td[contains(@class,"doc-name")]//a[contains(.,"${doc_id}")]/parent::td[@data-document-of]
   log  ${prepared_locator}
   Run Keyword And Ignore Error  Розгорнути документи договору
   Wait Until Page Contains Element  ${prepared_locator}  10
 #  ${raw_value}=   Get Text  ${prepared_locator}
   scrollIntoView by script  ${prepared_locator}
-  ${raw_value}=  Get Element Attribute    ${prepared_locator}@innerText
   Capture Page Screenshot
+  ${raw_value}=  Run Keyword If  '${field}'=='documentOf'  Get Element Attribute  ${prepared_locator}@data-document-of
+  ...  ELSE  Get Element Attribute    ${prepared_locator}@innerText
   Run Keyword And Return  Конвертувати інформацію із документа про ${field}  ${raw_value}
+
 
 Розгорнути документи договору
   JavascriptClick  '//input[contains(@id, "contractDocuments")]'  # костыль для открытия доков когтракта
+
 
 Конвертувати інформацію із документа про title
   [Arguments]  ${raw_value}
   ${return_value}=  Set Variable  ${raw_value.split(',')[0]}
   [return]  ${return_value}
 
+
 Конвертувати інформацію із документа про description
   [Arguments]  ${raw_value}
   ${return_value}=  Set Variable  ${raw_value.split('(')[1].replace(')','')}
   [return]  ${return_value}
+
+
+Конвертувати інформацію із документа про documentOf
+  [Arguments]  ${raw_value}
+#  ${return_value}=  Set Variable  ${raw_value.split('(')[1].replace(')','')}
+  [return]  ${raw_value}
 
 Отримати документ
   [Arguments]  ${username}  ${tender_uaid}  ${doc_id}
@@ -2493,8 +2519,6 @@ Wait for upload before signing
   Завантажити док  ${username}  ${file_path}  id=qa_contractDocAdd
   Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
-#  ${procedureType}=  Set Variable  ${USERS.users['${tender_owner}'].method_type}
-#  Run Keyword If  '${procedureType}' in ('aboveThresholdEU', 'aboveThresholdUA', 'aboveThresholdUA.defense',  'negotiation', 'reporting')  Підтвердити контракт додаванням ЕЦП
   Run Keyword And Ignore Error  Підтвердити контракт додаванням ЕЦП
   Sleep  10  # ждем автопроверки ЕЦП
   Wait Scroll Click  id=qa_finishTender
@@ -2691,35 +2715,44 @@ temporary keyword for title update
   Дочекатись зникнення blockUI
 
 
-Підтвердити постачальника
-  [Arguments]  ${username}  ${tender_uaid}  ${award_num}
-  # TODO: rework duplicated code - see "Створити постачальника, додати документацію і підтвердити його"
-  Перейти на сторінку тендера за потреби
-  Перейти до оцінки кандидата
-  Wait Scroll Click     id=qa_NextStep       # button - Наступний крок
-  ${passed}=  Run Keyword And Return Status     Підтвердити переможця
-  Return From Keyword If  ${passed}  # Выходим если допорог и успешно подтвердили. если нет такой кнопки - идём дальше
-  Підписати авард
-  Wait Scroll Click     id=qa_NextStep
-  ${status}=  Run Keyword And Return Status  Element Should Be Visible  id=qa_selfEligible
-  RUN KEYWORD IF  '${status}'=='True'  Wait and Click         id=qa_selfEligible  10
-  RUN KEYWORD IF  '${status}'=='True'  Wait and Click         id=qa_selfQualified  10
-  Підтвердити переможця
-
-Затвердити постачальників
-  [Arguments]  ${username}  ${tender_uaid}
-  Wait and Click  id=submitPreQualification  10
-
-Дискваліфікувати постачальника
-  [Arguments]  ${username}  ${tender_uaid}  ${award_num}
-  Перейти на сторінку тендера за потреби
-  Перейти до оцінки кандидата
+Завантажити документ в award
+  [Arguments]  ${username}
   Select From List By Label  xpath=//div[@id="modalGetAwards"]//select[@id="docType"]  Повідомлення про рішення
   ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
   Завантажити док  ${username}  ${file_path}  xpath=//div[@id="modalGetAwards"]//button[@id="qa_uploadAwardDocument"]  xpath=//div[@id="modalGetAwards"]//button[@id="downloadAwardDocs"]
   Wait Until Keyword Succeeds   10 min  20 x  Wait for upload  # there: button - Оцінка документів Кандидата
   Reload Page
   Перейти до оцінки кандидата
+
+
+Підтвердити постачальника
+  [Arguments]  ${username}  ${tender_uaid}  ${award_num}
+  # TODO: rework duplicated code - see "Створити постачальника, додати документацію і підтвердити його"
+  Перейти на сторінку тендера за потреби
+  ${procedureType}=  Run Keyword  Отримати інформацію про procurementMethodType
+  Перейти до оцінки кандидата
+  Run Keyword If  '${procedureType}' in ('competitiveDialogueUA', 'competitiveDialogueEU', 'competitiveDialogueEU.stage2')  Завантажити документ в award  ${username}
+  Wait Scroll Click     id=qa_NextStep       # button - Наступний крок
+  ${passed}=  Run Keyword And Return Status     Підтвердити переможця
+  Return From Keyword If  ${passed}  # Выходим если допорог и успешно подтвердили. если нет такой кнопки - идём дальше
+  Підписати авард
+  Wait Scroll Click     id=qa_NextStep
+  ${status}=  Run Keyword And Return Status  Element Should Be Visible  id=qa_selfEligible
+  Run Keyword If  '${status}'=='True'  Wait and Click         id=qa_selfEligible  10
+  Run Keyword If  '${status}'=='True'  Wait and Click         id=qa_selfQualified  10
+  Підтвердити переможця
+
+
+Затвердити постачальників
+  [Arguments]  ${username}  ${tender_uaid}
+  Wait and Click  id=submitPreQualification  10
+
+
+Дискваліфікувати постачальника
+  [Arguments]  ${username}  ${tender_uaid}  ${award_num}
+  Перейти на сторінку тендера за потреби
+  Перейти до оцінки кандидата
+  Завантажити документ в award  ${username}
   Wait Scroll Click     id=qa_NextStep
   Підписати авард
   Reload Page
@@ -2830,9 +2863,9 @@ Wait for doc upload in qualification
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_startStandStillPeriod
   Sleep  5
   Reload Page
-  ${procedureType}=  Set Variable  ${USERS.users['${tender_owner}'].method_type}
-  Run Keyword If  '${procedureType}' in ('competitiveDialogueUA', 'competitiveDialogueEU')  Wait Until Page Contains   Проведення переговорів
-  ...  ELSE  Wait Until Page Contains   Блокування перед аукціоном
+  Дочекатись зникнення blockUI
+  ${status}=  Get Text  id=tenderStatus
+  Should Be True  '${status}'  in ('Проведення переговорів', 'Блокування перед аукціоном')
 
 
 Затвердити остаточне рішення кваліфікації
@@ -2885,3 +2918,38 @@ Wait for doc upload in qualification
   Click Element  xpath=//a[@ng-click="vm.activeTendering()"]
   Дочекатись зникнення blockUI
   Sleep  30
+
+
+#  ------------------------Contract Management------------------------
+Пошук договору по ідентифікатору
+
+
+Отримати доступ до договору
+
+
+Внести зміну в договір
+
+
+Додати документацію до зміни в договорі
+
+
+Редагувати поле договору
+
+
+Редагувати зміну
+
+
+Застосувати зміну
+
+
+Внести зміни в договір
+
+
+Отримати інформацію із договору
+
+
+Завантажити документацію до договору
+
+
+#  ------------------------Contract Management------------------------
+
