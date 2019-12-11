@@ -1799,11 +1799,10 @@ Input String
   ${return_value}=  Отримати текст із поля і показати на сторінці  cause
   Run Keyword And Return  convert_etender_string_to_common_string  ${return_value}
 
+
 Отримати інформацію про contracts[${n}].value.amountNet
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
-  ${n}=  Convert To String  ${n}
-  ${n}=  Run Keyword If  '${n}'=='0'  Evaluate  ${n}+1  # ELSE  Set Variable  0
   ${return_value}=  Get Text  xpath=(//span[@id="qa_contractAmountNet"][${n}])
   ${return_value}=  Set Variable  ${return_value.strip()}
   ${return_value}=  Set Variable  ${return_value.replace(' ','')}
@@ -1814,8 +1813,6 @@ Input String
 Отримати інформацію про contracts[${n}].value.amount
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
-  ${n}=  Convert To String  ${n}
-  ${n}=  Run Keyword If  '${n}'=='0'  Evaluate  ${n}+1  # ELSE  Set Variable  0
   ${return_value}=  Get Text  xpath=(//span[@id="qa_contractAmount"][${n}])
   ${return_value}=  Set Variable  ${return_value.strip()}
   ${return_value}=  Set Variable  ${return_value.replace(' ','')}
@@ -1826,8 +1823,6 @@ Input String
 Отримати інформацію про contracts[${n}].dateSigned
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
-  ${n}=  Evaluate  ${n}+1
-  ${n}=  Convert To String  ${n}
   ${return_value}=  Get Text  xpath=(//div[@id="qa_dateSigned"][${n}])
   Run Keyword And Return  parse_etender_date  ${return_value}  True
 
@@ -1835,7 +1830,6 @@ Input String
 Отримати інформацію про Contracts[${n}].period.startDate
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
-  ${n}=  Convert To String  ${n}
   ${return_value}=  Get Text  xpath=(//span[@id="qa_contractPeriodStartDate"][${n}])
   Run Keyword And Return  cut_letters_and_parse_etender_date  ${return_value}
 
@@ -1843,18 +1837,14 @@ Input String
 Отримати інформацію про contracts[${n}].period.endDate
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
-  ${i}=  Convert To String  ${n}
-  ${return_value}=  Get Text  xpath=(//span[@id="qa_contractPeriodEndDate"][${i}])
+  ${return_value}=  Get Text  xpath=(//span[@id="qa_contractPeriodEndDate"][${n}])
   Run Keyword And Return  cut_letters_and_parse_etender_date  ${return_value}
 
 
 Отримати інформацію про Contracts[${n}].status
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
-  log  ${n}
-  ${n}=  Run Keyword If  '${n}'=='0'  Evaluate  ${n}+1  ELSE  Set Variable  0
-  ${i}=  Convert To String  ${n}
-  ${return_value}=  Get Text  xpath=(//div[@id="qa_contractStatus"][${i}])
+  ${return_value}=  Get Text  xpath=(//div[@id="qa_contractStatus"][${n}])
   Run Keyword And Return  convert_etender_string_to_common_string  ${return_value}
 
 
