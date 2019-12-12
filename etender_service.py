@@ -393,3 +393,11 @@ def get_breakdown_title_value(value):
         'fund': u'Бюджет цільових фондів(що не входять до складу Державного або місцевого бюджетів)',
         'loan': u'Кредити та позики міжнародних валютно - кредитних організацій',
         'other': u'Інше'}[value]
+
+
+def index_adapter(index):
+    if index == 0 or index == '0':
+        return 1
+    else:
+        return index
+

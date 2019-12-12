@@ -588,7 +588,7 @@ add feature
   ${plan_tender_type}=       Get From Dictionary     ${plan.tender}  procurementMethodType
   ${tender_type_value}=             get_procedure_type      ${plan_tender_type}
   Wait and Select By Label  xpath=//select[@name="procedureType"]          ${tender_type_value}
-
+  Sleep  2
   Wait and Input        id=description          ${description}
   Input text            id=value                ${amount}
 
@@ -660,9 +660,11 @@ add feature
   [Arguments]  ${new_value}
   Wait and Input  id=description  ${new_value}
 
+
 Редагувати поле budget.amount
   [Arguments]  ${new_value}
-  Wait and Input  id=value  '${new_value}'
+  JavascriptInput  'value'  '${new_value}'  # маска мешает корректному заполнению поля
+
 
 Редагувати поле items[0].deliveryDate.endDate
   [Arguments]  ${new_value}
@@ -1561,6 +1563,10 @@ JavascriptClick
   #${element_xpath}=       Replace String      ${element_xpath}        \"  \\\"
   Execute JavaScript  document.evaluate(${element_xpath}, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotItem(0).click();
 
+JavascriptInput
+  [Arguments]  ${locator_id}  ${value}
+  Execute JavaScript  document.getElementById(${locator_id}).value=${value}
+
 Input String
   [Arguments]  ${locator}  ${value}
   [Documentation]  Converts value to string and inputs to locator field
@@ -1803,6 +1809,7 @@ Input String
 Отримати інформацію про contracts[${n}].value.amountNet
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
+  ${n}=  Run Keyword  index_adapter  ${n}
   ${return_value}=  Get Text  xpath=(//span[@id="qa_contractAmountNet"][${n}])
   ${return_value}=  Set Variable  ${return_value.strip()}
   ${return_value}=  Set Variable  ${return_value.replace(' ','')}
@@ -1813,6 +1820,7 @@ Input String
 Отримати інформацію про contracts[${n}].value.amount
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
+  ${n}=  Run Keyword  index_adapter  ${n}
   ${return_value}=  Get Text  xpath=(//span[@id="qa_contractAmount"][${n}])
   ${return_value}=  Set Variable  ${return_value.strip()}
   ${return_value}=  Set Variable  ${return_value.replace(' ','')}
@@ -1823,6 +1831,7 @@ Input String
 Отримати інформацію про contracts[${n}].dateSigned
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
+  ${n}=  Run Keyword  index_adapter  ${n}
   ${return_value}=  Get Text  xpath=(//div[@id="qa_dateSigned"][${n}])
   Run Keyword And Return  parse_etender_date  ${return_value}  True
 
@@ -1830,6 +1839,7 @@ Input String
 Отримати інформацію про Contracts[${n}].period.startDate
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
+  ${n}=  Run Keyword  index_adapter  ${n}
   ${return_value}=  Get Text  xpath=(//span[@id="qa_contractPeriodStartDate"][${n}])
   Run Keyword And Return  cut_letters_and_parse_etender_date  ${return_value}
 
@@ -1837,6 +1847,7 @@ Input String
 Отримати інформацію про contracts[${n}].period.endDate
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
+  ${n}=  Run Keyword  index_adapter  ${n}
   ${return_value}=  Get Text  xpath=(//span[@id="qa_contractPeriodEndDate"][${n}])
   Run Keyword And Return  cut_letters_and_parse_etender_date  ${return_value}
 
@@ -1844,6 +1855,7 @@ Input String
 Отримати інформацію про Contracts[${n}].status
   Перейти на сторінку тендера за потреби
   Відкрити всі лоти
+  ${n}=  Run Keyword  index_adapter  ${n}
   ${return_value}=  Get Text  xpath=(//div[@id="qa_contractStatus"][${n}])
   Run Keyword And Return  convert_etender_string_to_common_string  ${return_value}
 
@@ -2006,7 +2018,7 @@ Input String
   Run Keyword And Return  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.region
 
 Отримати інформацію про awards[0].suppliers[0].address.streetAddress
-  Run Keyword And Return  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.streetAddress}
+  Run Keyword And Return  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].address.streetAddress
 
 Отримати інформацію про awards[0].suppliers[0].name
   Run Keyword And Return  Отримати текст із поля і показати на сторінці     awards[0].suppliers[0].name
