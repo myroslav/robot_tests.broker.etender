@@ -142,6 +142,16 @@ Wait and Get Attribute
   Wait Until Keyword Succeeds  15x  0s  Wait Until Page Does Not Contain Element  xpath=//div[@class='blockUI blockOverlay']  2
 
 
+Click One Of Button
+  [Documentation]  Use this keyword when you have 2 buttons for one logic
+        ...        [Arguments] locator_1 - frequent case, locator_2 - other cases
+  [Arguments]  ${locator_1}  ${locator_2}
+  ${present}=  Run Keyword And Return Status  Element Should Be Visible  ${locator_1}
+  Run Keyword If  ${present}=='True'  Wait Scroll Click  ${locator_1}
+  ...   ELSE  Wait Scroll Click  ${locator_2}
+  Дочекатись зникнення blockui
+
+
 Підготувати дані для оголошення тендера
   [Arguments]  ${username}  ${tender_data}  ${username_2}
   Log  ${tender_data}
@@ -2523,9 +2533,10 @@ Wait for upload before signing
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
   Run Keyword And Ignore Error  Підтвердити контракт додаванням ЕЦП
   Sleep  10  # ждем автопроверки ЕЦП
-  Wait Scroll Click  id=qa_finishTender
+  Click One Of Button  id=qa_finishTender  id=qa_finishTenderReporting
   Capture Page Screenshot
-  Wait Until Page Contains  Підтверджено!  60
+#  Wait Until Page Contains  Підтверджено!  60
+
 
 Підписати ЕЦП
   [Arguments]
@@ -2562,13 +2573,12 @@ Wait for upload before signing
   [Arguments]  ${value}
   Reload Page
   Дочекатись зникнення blockUI
+  # Input Text не работает из за маски ввода
+  Execute JavaScript  document.querySelector("decimal-mask-input[data='contract.value.amount'] input[id='qa_valueAmount']").value=${value}
+  Execute JavaScript  $("decimal-mask-input[data='contract.value.amount'] input[id='qa_valueAmount']").trigger('change')
+  Execute JavaScript  document.querySelector("decimal-mask-input[data='contract.value.amount'] input[name='value']").value=${value}
+  Execute JavaScript  $("decimal-mask-input[data='contract.value.amount'] input[name='value']").trigger('change')
   Capture Page Screenshot
-  Input String  id=qa_valueAmount   ${value}
-#  отловить ошибки валидации на UI:
-#  ${error1}=  Run Keyword And Return Status  Element Should Be Visible  id=Amount should be less or equal to awarded amount
-#  ${error2}=  Run Keyword And Return Status  Element Should Be Visible  id=Amount should be greater than amountNet and differ by no more than 20.0%
-#  ${status}=  Set Variable  ${error1} or  ${error2}
-#  Run Keyword And Return If  ${status}==True  Зберегти інформацію про контракт
   Зберегти інформацію про контракт
 
 
@@ -2576,8 +2586,12 @@ Wait for upload before signing
   [Arguments]  ${value}
   Reload Page
   Дочекатись зникнення blockUI
+  # Input Text не работает из за маски ввода
+  Execute JavaScript  document.querySelector("decimal-mask-input[data='contract.value.amountNet'] input[id='qa_valueAmountNet']").value=${value}
+  Execute JavaScript  $("decimal-mask-input[data='contract.value.amountNet'] input[id='qa_valueAmountNet']").trigger('change')
+  Execute JavaScript  document.querySelector("decimal-mask-input[data='contract.value.amountNet'] input[name='valueNet']").value=${value}
+  Execute JavaScript  $("decimal-mask-input[data='contract.value.amountNet'] input[name='valueNet']").trigger('change')
   Capture Page Screenshot
-  Input String  id=qa_valueAmountNet    ${value}
   # TODO ↓
   Wait and Input    id=contractNumber  contractnumber
   ${time_now_tmp}=     get_time_now
