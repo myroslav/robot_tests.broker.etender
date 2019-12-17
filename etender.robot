@@ -147,9 +147,9 @@ Click One Of Button
         ...        [Arguments] locator_1 - frequent case, locator_2 - other cases
   [Arguments]  ${locator_1}  ${locator_2}
   ${present}=  Run Keyword And Return Status  Element Should Be Visible  ${locator_1}
-  Run Keyword If  ${present}=='True'  Wait Scroll Click  ${locator_1}
+  Run Keyword If  '${present}'=='True'  Wait Scroll Click  ${locator_1}
   ...   ELSE  Wait Scroll Click  ${locator_2}
-  Дочекатись зникнення blockui
+  Дочекатись зникнення blockUI
 
 
 Підготувати дані для оголошення тендера
@@ -243,6 +243,7 @@ Login
   Додати дати при наявності    ${tender_data}  ${methodType}
   Додати нецінові показники при наявності       ${tender_data}
   Sleep   15
+
   Wait Scroll Click     id=createTender
   Sleep   60
   Reload Page
@@ -392,6 +393,15 @@ Login
 Натиснути додати лот
   Wait and Click    id=addLot_
 
+
+Заповнити мінімальний крок JavaScript
+  [Arguments]  ${index}  ${value}
+  Execute JavaScript  document.querySelector("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_${index}']").value=${value}
+  Execute JavaScript  $("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_${index}']").trigger('change')
+#  Execute JavaScript  document.querySelector("decimal-mask-input[data='lot.minimalStep.amount'] input[type='number']").value=${value}
+#  Execute JavaScript  $("decimal-mask-input[data='lot.minimalStep.amount'] input[type='number']").trigger('change')
+
+
 Заповнити інформацію про лот
   [Arguments]  ${lot}  ${index}
   Wait and Input    id=lotTitle_${index}        ${lot['title']}
@@ -399,7 +409,7 @@ Login
   Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' in ('aboveThresholdEU', 'aboveThresholdUA.defense', 'closeFrameworkAgreementUA','competitiveDialogueEU')  Input Text   id=lotTitleEn_${index}        ${lot['title_en']}
   Input Text        id=lotDescription_${index}  ${lot['description']}
   Input String      id=lotValue_${index}        ${lot['value']['amount']}
-  Run Keyword Unless  '${USERS.users['Etender_Owner']['method_type']}' in ('negotiation')  Input String      id=minimalStep_${index}     ${lot['minimalStep']['amount']}
+  Run Keyword Unless  '${USERS.users['Etender_Owner']['method_type']}' in ('negotiation')  Заповнити мінімальний крок JavaScript  ${index}  ${lot['minimalStep']['amount']}
 
 
 Заповнити інформацію про лот ESCO
@@ -482,13 +492,18 @@ Login
   :FOR  ${i}  IN RANGE  ${features_count}
   \     add feature  ${features[${i}]}  0
 
+
 Додати мінімальний крок при наявності
   [Arguments]  ${data}
   ${status}  ${step_rate}=  Run Keyword And Ignore Error  Get From Dictionary  ${data.minimalStep}  amount
   log to console  check presence of minimalStep.amount in dictionary: ${status}
   Return From Keyword If  '${status}' != 'PASS'
   ${step_rateToStr}=  float_to_string_2f  ${step_rate}   # at least 2 fractional point precision, avoid rounding
-  Input text  id=minimalStep_0  ${step_rateToStr}
+#  Input text  id=minimalStep_0  ${step_rateToStr}
+  Заповнити мінімальний крок JavaScript  0  ${step_rateToStr}
+  # маска мешает корректному заполнению поля
+  Capture Page Screenshot
+
 
 Додати причину з описом при наявності
   [Arguments]  ${data}
@@ -2516,7 +2531,7 @@ Wait for upload before signing
   Run Keyword And Ignore Error  Відкрити всі лоти
   Run Keyword And Ignore Error  Click Element     xpath=//a[.="Внести інформацію про договір"]
   Wait and Input    id=contractNumber  ${contract_index}
-  ${time_now_tmp}=     get_time_now
+  ${time_now_tmp}=     get_time_offset  -1
   ${date_now_tmp}=     get_date_now
   ${date_future_tmp}=  get_date_10d_future
   Input text  name=dateSigned  ${date_now_tmp}
@@ -2593,8 +2608,9 @@ Wait for upload before signing
   Execute JavaScript  $("decimal-mask-input[data='contract.value.amountNet'] input[name='valueNet']").trigger('change')
   Capture Page Screenshot
   # TODO ↓
+  Sleep  120  # time to compensate dateSigned
   Wait and Input    id=contractNumber  contractnumber
-  ${time_now_tmp}=     get_time_now
+  ${time_now_tmp}=     get_time_offset  -1
   ${date_now_tmp}=     get_date_now
   ${date_future_tmp}=  get_date_10d_future
   Wait and Input  name=dateSigned  ${date_now_tmp}
