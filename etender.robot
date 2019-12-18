@@ -200,9 +200,12 @@ Login
   Go To  ${USERS.users['${username}'].homepage}
   Дочекатись зникнення blockUI
 
+
 Створити тендер
-  [Arguments]  ${username}  ${tender_data}
+  [Arguments]  ${username}  ${tender_data}  ${arg1}  ${arg2}
   #Set To Dictionary  ${USERS.users['${username}']}  tender_data=${tender_data}
+  Log  ${arg1}
+  Log  ${arg2}
   ${tender_data}=       Get From Dictionary     ${tender_data}              data
   Log  ${tender_data}
   ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
@@ -824,6 +827,7 @@ add feature
   # but this will open OS file selection dialog. So we close and reopen browser to get rid of this dialog
   ${tmp_location}=  Get Location
   Дочекатись зникнення blockUI
+  Log  ${locator}
   Wait Scroll Click     ${locator}
   Choose File     xpath=//input[@type="file"]  ${file}
   Run Keyword Unless  '${locator2}'=='-1'  Wait and Click    ${locator2}   #  if need to press key to upload like in awards
@@ -1409,6 +1413,7 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}  ${complaint}  ${target}  ${file}  ${award_index}=0
   Перейти на сторінку тендера за потреби
   ${complaintID}=  Створити чернетку вимоги  ${username}  ${tender_uaid}  ${complaint}  ${target}  ${award_index}
+  Log  ${complaintID}
   Завантажити док  ${username}  ${file}  xpath=//div[contains(@id,"${complaintID}")]//button[@id="addClaimDoc"]
   Відкрити розділ вимог і скарг
   Wait Scroll Click     id=qa_escalateClaimToComplaint
@@ -1429,7 +1434,9 @@ add feature
   Wait and Click     id=btnAddComplaint
   Sleep  10
   Дочекатись зникнення blockUI
-  Run Keyword And Return  Get text  xpath=//complaint[contains(.,"${claim.data.description}")]//div[@id='complaintid']
+#  Run Keyword And Return  Get text  xpath=//complaint[contains(.,"${claim.data.description}")]//div[@id='complaintid']
+  Run Keyword And Return  Get text  xpath=//*[@name="title" and contains(., "${claim.data.title}")]//ancestor::*[@uib-accordion-group]//div[@id="complaintid"]
+
 
 Створити чернетку вимоги про виправлення умов лоту
   [Arguments]  ${username}  ${tender_uaid}   ${claim}  ${target}
@@ -1447,6 +1454,8 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}
   Перейти на сторінку тендера за потреби
   Відкрити розділ вимог і скарг
+  ${status}=  Run Keyword And Return Status  Розкрити інформацію про скаргу  ${complaintID}
+  Run Keyword If  '${status}'=='FAIL'  Run Keywords  Reload Page  AND  Відкрити розділ вимог і скарг  AND  Розкрити інформацію про скаргу  ${complaintID}
   Wait Scroll Click  xpath=//div[@id='${complaintID}']//*[@id='qa_CancelComplaint']
   Sleep  1  # wait for full input
   Wait and Input    id=cancellationReason      ${cancellation_data.data.cancellationReason}
@@ -1457,6 +1466,8 @@ add feature
   [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${cancellation_data}
   Перейти на сторінку тендера за потреби
   Відкрити розділ вимог і скарг
+  ${status}=  Run Keyword And Return Status  Розкрити інформацію про скаргу  ${complaintID}
+  Run Keyword If  '${status}'=='FAIL'  Run Keywords  Reload Page  AND  Відкрити розділ вимог і скарг  AND  Розкрити інформацію про скаргу  ${complaintID}
   Click Element  xpath=//div[@id='${complaintID}']//*[@id='qa_SetStoppingComplaint']
   Sleep  1  # wait for full input
   Wait and Input    xpath=//form[@name='setStoppingComplaint']//textarea[@placeholder='Причини відхилення']      ${cancellation_data.data.cancellationReason}
@@ -1495,10 +1506,14 @@ Select From List By Partial Label
   Run Keyword If  '${status}'=='FAIL'  Run Keywords  Reload Page  AND  Відкрити розділ вимог і скарг  AND  Розкрити інформацію про скаргу  ${complaintID}
   Run Keyword And Return  Отримати інформацію із скарги про ${field}  ${complaintID}
 
+
 Розкрити інформацію про скаргу
   [Arguments]  ${complaintID}
   ${is_expanded}=  Get Element Attribute  xpath=//div[@id='${complaintID}']/div@aria-selected
-  Run Keyword If  '${is_expanded}'=='false'  Click Element  xpath=//div[@id='${complaintID}']/div
+  Run Keyword If  '${is_expanded}'=='false'
+  ...  Run Keywords  Wait Scroll Click  xpath=//div[@id='${complaintID}']/div
+  ...  AND  Sleep  2  # UI can be freezed
+
 
 Отримати інформацію із скарги про title
   [Arguments]  ${complaintID}
@@ -1510,6 +1525,7 @@ Select From List By Partial Label
 
 Отримати інформацію із скарги про resolutionType
   [Arguments]  ${complaintID}
+  Дочекатись зникнення blockUI
   ${resolutionType}=      Wait and Get Text  xpath=//div[@id='${complaintID}']//*[@name='resolutionType']
   Run Keyword And Return  convert_etender_string_to_common_string  ${resolutionType.lower()}
 
@@ -1554,7 +1570,10 @@ Select From List By Partial Label
   ${satisfied}=  Get From Dictionary  ${data}  data
   ${satisfied}=  Get From Dictionary  ${satisfied}  satisfied
   ${satisfied}=  Convert To String    ${satisfied}
-  Click Element  xpath=//div[@id='${complaintID}']//button[contains(@click-and-disable,'${satisfied.lower()}')]
+  ${status}=  Run Keyword And Return Status  Розкрити інформацію про скаргу  ${complaintID}
+  Run Keyword If  '${status}'=='FAIL'  Run Keywords  Reload Page  AND  Відкрити розділ вимог і скарг  AND  Розкрити інформацію про скаргу  ${complaintID}
+  Wait Scroll Click  xpath=//div[@id='${complaintID}']//button[contains(@click-and-disable,'${satisfied.lower()}')]
+
 
 Відповісти на запитання
   [Arguments]  ${username}  ${tender_uaid}  ${answer_data}  ${question_id}
@@ -1658,11 +1677,19 @@ Input String
   [Arguments]  ${lot_id}  ${new_value}
   ${new_value}=  float_to_string_2f  ${new_value}  # at least 2 fractional point precision, avoid rounding
   Input text  id=lotValue_0  ${new_value}
+  Execute JavaScript  document.querySelector("decimal-mask-input[data='lot.value.amount'] input[id='lotValue_0']").value=${new_value}
+  Execute JavaScript  $("decimal-mask-input[data='lot.value.amount'] input[id='lotValue_0']").trigger('change')
+  Execute JavaScript  document.querySelector("decimal-mask-input[data='lot.value.amount'] input[name='lotValue_0']").value=${new_value}
+  Execute JavaScript  $("decimal-mask-input[data='lot.value.amount'] input[name='lotValue_0']").trigger('change')
+  Capture Page Screenshot
 
 Редагувати поле лота minimalStep.amount
   [Arguments]  ${lot_id}  ${new_value}
   ${new_value}=  float_to_string_2f  ${new_value}  # at least 2 fractional point precision, avoid rounding
-  Input text  id=minimalStep_0  ${new_value}
+  Execute JavaScript  document.querySelector("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_0']").value=${new_value}
+  Execute JavaScript  $("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_0']").trigger('change')
+  Capture Page Screenshot
+
 
 Редагувати поле лота description
   [Arguments]  ${lot_id}  ${new_value}
