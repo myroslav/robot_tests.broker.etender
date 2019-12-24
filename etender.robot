@@ -2651,6 +2651,7 @@ Wait for upload before signing
   Reload Page
   ${date}=    convert_date_to_etender_format  ${dateSigned}
   ${time}=    convert_time_to_etender_format  ${dateSigned}
+  Sleep  60  # sometimes robot wanna input dateSigned in future minute
   Wait and Input  id=qa_datSignedDate  ${date}
   Wait and Input  id=qa_datSignedTime  ${time}
   Зберегти інформацію про контракт
@@ -2679,6 +2680,7 @@ Wait for upload before signing
   Wait Scroll Click     id=qa_saveContractInfo
   Wait and Click    id=qa_saveData
   Дочекатись зникнення blockUI
+  Sleep  10  # wait data to export
 
 
 Відповісти на вимогу про виправлення умов закупівлі
