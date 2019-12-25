@@ -1249,7 +1249,8 @@ add feature
 
 
 Отримати інформацію із плану про status
-  Run Keyword And Return  Wait and Get Text  id=qa_planStatus
+  ${return}=  Wait and Get Text  id=qa_planStatus
+  Run Keyword And Return  convert_etender_string_to_common_string  ${return}
 
 
 Отримати інформацію із плану про items[${n}].description
@@ -2921,7 +2922,7 @@ Wait for doc upload in qualification
 Перевести тендер у блокування перед аукціоном
   Reload Page
   Sleep  10
-  Run Keyword And Ignore Error  Wait Scroll Click     id=qa_startStandStillPeriod
+  Run Keyword  JavascriptClick  '//button[@id="qa_startStandStillPeriod"]'
   Sleep  5
   Reload Page
   Дочекатись зникнення blockUI
