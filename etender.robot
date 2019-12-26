@@ -1052,19 +1052,22 @@ add feature
   Wait Scroll Click     id=naviTitle1
   Дочекатись зникнення blockUI
 
+
+Дочекатися завершення імпорту плану
+  [Arguments]  ${plan_id}
+  Reload Page
+  Wait Until Page Contains  ${plan_id}
+  ${plan_id}=                        Get Text  id=planId  #id=planId_0
+  Log  ${plan_id}
+  Should Match Regexp                ${plan_id}  UA-P-\\d{4}-.*
+
+
 Пошук плану по ідентифікатору
-  [Arguments]  ${username}  ${TENDER_UAID}
-  Log  ${username}
-  Go To  ${USERS.users['${username}'].homepage}
+  [Arguments]  ${username}  ${plan_id}
   Sleep  30
-  Wait and Click    xpath=//li[@id = 'naviTitle2']//span[@class = 'w100 ng-binding']  20
+  Go To  ${USERS.users['${username}'].homepage.split('#')[0]}plan?planid=${plan_id}
   Дочекатись зникнення blockUI
-  Wait and Input    xpath=//input[@type='text' and @placeholder='Пошук за номером плану']   ${TENDER_UAID}
-  Wait and Click    xpath=//span[@class = 'icon search']
-  Дочекатись зникнення blockUI
-  Wait Until Page Contains  ${TENDER_UAID}  10
-  Wait And Click  xpath=//td[contains(@data-title, "Конкретна Назва")]/a
-  Дочекатись зникнення blockUI
+  Дочекатися завершення імпорту плану  ${plan_id}
 
 
 Завантажити документ в ставку
@@ -2808,6 +2811,7 @@ temporary keyword for title update
 Затвердити постачальників
   [Arguments]  ${username}  ${tender_uaid}
   Wait and Click  id=submitPreQualification  10
+  Дочекатись зникнення blockUI
 
 
 Дискваліфікувати постачальника
@@ -3015,3 +3019,19 @@ Wait for doc upload in qualification
 
 #  ------------------------Contract Management------------------------
 
+Встановити ціну за одиницю для контракту
+  [Arguments]  ${username}  ${tender_uaid}  ${contract_data}
+  Log  ${contract_data}
+  Wait and Click  id=qa_agreementEdit
+  Дочекатись зникнення blockUI
+  ${contract}=  Get From Dictionary  ${contract_data}  data
+  ${organization}=  Get From Dictionary  ${contract.suppliers[0].identifier}  legalName
+  ${value}=  Get From Dictionary  ${contract.unitPrices[0].value}  amount
+  Log  ${value}
+
+
+
+
+Зареєструвати угоду
+  [Arguments]  ${username}  ${tender_uaid}  ${period}
+  Log many
