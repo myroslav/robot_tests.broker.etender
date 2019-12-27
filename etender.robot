@@ -3022,16 +3022,33 @@ Wait for doc upload in qualification
 Встановити ціну за одиницю для контракту
   [Arguments]  ${username}  ${tender_uaid}  ${contract_data}
   Log  ${contract_data}
-  Wait and Click  id=qa_agreementEdit
+  Run Keyword And Ignore Error  Wait and Click  id=qa_agreementEdit
   Дочекатись зникнення blockUI
   ${contract}=  Get From Dictionary  ${contract_data}  data
   ${organization}=  Get From Dictionary  ${contract.suppliers[0].identifier}  legalName
   ${value}=  Get From Dictionary  ${contract.unitPrices[0].value}  amount
   Log  ${value}
-
-
+  Wait and Input  xpath=//*[contains(@id, "qa_supplierName") and text()="${organization}"]//ancestor::form[contains(@name, "unitForms")]//input[@type="number"]  ${value}
+  Wait Scroll Click  id=qa_updateUnitPrice
+  Capture Page Screenshot
+  Reload Page
 
 
 Зареєструвати угоду
   [Arguments]  ${username}  ${tender_uaid}  ${period}
-  Log many
+  Log  ${period}
+  ${start}=  Get From Dictionary  ${period}  startDate
+  ${end}=    Get From Dictionary  ${period}  endDate
+  ${start}=  convert_date_to_etender_format  ${start}
+  ${end}=    convert_date_to_etender_format  ${end}
+
+  Wait and Input    id=agreementNumber  agreementnumber
+  ${time_now_tmp}=     get_time_offset  -1
+  ${date_now_tmp}=     get_date_now
+  Wait and Input  name=dateSigned  ${date_now_tmp}
+  Wait and Input  name=timeSigned  ${time_now_tmp}
+  Wait and Input  startDate        ${start}
+  Wait and Input  endDate          ${end}
+  Дочекатись зникнення blockUI
+  Wait Scroll Click  id=qa_saveAgreement
+  Дочекатись зникнення blockUI
