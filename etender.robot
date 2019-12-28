@@ -3030,6 +3030,8 @@ Wait for doc upload in qualification
   Log  ${value}
   Wait and Input  xpath=//*[contains(@id, "qa_supplierName") and text()="${organization}"]//ancestor::form[contains(@name, "unitForms")]//input[@type="number"]  ${value}
   Wait Scroll Click  id=qa_updateUnitPrice
+  Дочекатись зникнення blockUI
+  Sleep  10
   Capture Page Screenshot
   Reload Page
 
@@ -3051,4 +3053,6 @@ Wait for doc upload in qualification
   Wait and Input  endDate          ${end}
   Дочекатись зникнення blockUI
   Wait Scroll Click  id=qa_saveAgreement
+  Дочекатись зникнення blockUI
+  Wait And Click  id=qa_activateAgreement
   Дочекатись зникнення blockUI
