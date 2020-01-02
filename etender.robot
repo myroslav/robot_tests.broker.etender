@@ -2845,10 +2845,16 @@ temporary keyword for title update
   Wait and Click    id=qa_disqualify_award
   Sleep  10
 
+
 Перейти до оцінки кандидата
-  Sleep  20
+  Wait Until Keyword Succeeds   10 s  6 x  Відкрити модальне вікно award
+
+
+Відкрити модальне вікно award
+  Reload Page
   Wait Scroll Click    xpath=//a[@data-target="#modalGetAwards"]
   Дочекатись зникнення blockUI
+
 
 Скасування рішення кваліфікаційної комісії
   [Arguments]  ${username}  ${tender_uaid}  ${award_num}
