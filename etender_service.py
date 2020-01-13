@@ -56,7 +56,8 @@ def get_method_type(procedure_name):
         u'відкриті торги для закупівлі енергосервісу': 'esco',
         u'конкурентний діалог з публікацією англійською мовою 1-ий етап': 'competitiveDialogueEU',
         u'конкурентний діалог з публікацією англійською мовою 2-ий етап': 'competitiveDialogueEU.stage2',
-        u'відкриті торги для укладання рамкової угоди': 'closeFrameworkAgreementUA'
+        u'відкриті торги для укладання рамкової угоди': 'closeFrameworkAgreementUA',
+        u'відбір для закупівлі за рамковою угодою': 'closeFrameworkAgreementSelectionUA'
 
     }[procedure_name]
 
@@ -139,22 +140,23 @@ def change_data(initial_data):
     # initial_data['data']['procuringEntity']['identifier']['id'] =        u"88008800"
     # initial_data['data']['procuringEntity']['name'] = u"TenderOwner#"
     initial_data['data']['items'][0]['deliveryAddress']['locality'] = u"м. Київ"
-    initial_data['data']['items'][0]['deliveryAddress']['region'] =  u"Київська область"
-    initial_data['data']['procuringEntity']['address']['locality']       = u"Алупка"
-    initial_data['data']['procuringEntity']['address']['postalCode']     = u"13531"
-    initial_data['data']['procuringEntity']['address']['region']         = u"АР Крим"
-    initial_data['data']['procuringEntity']['address']['streetAddress']  = u"Фрунзе, 666"
-    initial_data['data']['procuringEntity']['contactPoint']['name']      = u"Владелец Этого Тендера"
+    initial_data['data']['items'][0]['deliveryAddress']['region'] = u"Київська область"
+    initial_data['data']['procuringEntity']['address']['locality'] = u"Липовець"
+    initial_data['data']['procuringEntity']['address']['postalCode'] = u"13531"
+    initial_data['data']['procuringEntity']['address']['region'] = u"Вінницька область"
+    initial_data['data']['procuringEntity']['address']['streetAddress'] = u"Фрунзе, 666"
+    initial_data['data']['procuringEntity']['contactPoint']['name'] = u"Владелец Этого Тендера"
     initial_data['data']['procuringEntity']['contactPoint']['telephone'] = u"613371488228"
-    initial_data['data']['procuringEntity']['contactPoint']['url']       = u"http://e-tender.ua/"
+    initial_data['data']['procuringEntity']['contactPoint']['url'] = u"http://e-tender.ua/"
     return initial_data
 
 
 def change_data_for_tender_owner(initial_data):
     initial_data['data']['procuringEntity']['identifier']['legalName'] = u"TenderOwner#"
-    initial_data['data']['procuringEntity']['identifier']['id'] =        u"88008800"
+    initial_data['data']['procuringEntity']['identifier']['id'] = u"88008800"
     initial_data['data']['procuringEntity']['name'] = u"TenderOwner#"
     return initial_data
+
 
 def change_buyers_data(initial_data):
     initial_data['data']['buyers'][0]['name'] = u"TenderOwner#"
@@ -394,6 +396,16 @@ def get_breakdown_title_value(value):
         'fund': u'Бюджет цільових фондів(що не входять до складу Державного або місцевого бюджетів)',
         'loan': u'Кредити та позики міжнародних валютно - кредитних організацій',
         'other': u'Інше'}[value]
+
+
+def get_rationale_types(string):
+    """agreement module"""
+    return {
+        u'Зміна ціни за одиницю товару': 'itemPriceVariation',
+        u'Зміна сторонніх показників (курсу, тарифів...)': 'thirdParty',
+        u'Зміна ціни у зв’язку із зміною ставок податків і зборів': 'taxRate',
+        u'Припинення участі у рамковій угоді учасника': 'partyWithdrawal'
+    }.get(string, string)
 
 
 def index_adapter(index):

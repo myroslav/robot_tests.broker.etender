@@ -624,7 +624,8 @@ add feature
 
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
-  Select From List By Index     xpath=//select[@name="startDateMonth"]          6
+  Wait and Input  xpath=//input[@name="tenderPeriodStartDate"]  12-2020
+
   Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
   Wait and Click        id=qa_mainPlanClassification
   Wait and Input        id=classificationCode                            ${cpv_id}
@@ -1031,6 +1032,7 @@ add feature
 
 Перейти на сторінку контракту
   Перейти на сторінку тендера за потреби
+  Reload Page
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_FillContractInfo
   Дочекатись зникнення blockUI
@@ -1135,7 +1137,7 @@ add feature
   Select Checkbox  id=selfQualified
 
 Подати цінову пропозицію
-  [Arguments]  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}
+  [Arguments]  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}=0
   Перейти на сторінку тендера за потреби
   sleep  5
   Відкрити розділ Деталі Закупівлі
@@ -1150,7 +1152,7 @@ add feature
 
   ${x}=  Run Keyword  Отримати інформацію про procurementMethodType
   Set Global Variable  ${global_procedure_type}  ${x}
-  Run Keyword And Return If  '${global_procedure_type}' in ('competitiveDialogueUA', 'competitiveDialogueEU')  Пропустити заповнення нецінових показників
+  Run Keyword And Return If  '${global_procedure_type}' in ('competitiveDialogueUA', 'competitiveDialogueEU', 'closeFrameworkAgreementSelectionUA')  Пропустити заповнення нецінових показників
   Run Keyword Unless  ${features_ids} is None  Заповнити нецінові критерії  ${features_ids}  ${bid_data.data.parameters}
   Click Element     id=createBid_0
   Дочекатись зникнення blockUI
@@ -1864,6 +1866,7 @@ Input String
 
 Отримати інформацію про contracts[${n}].value.amountNet
   Перейти на сторінку тендера за потреби
+  Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
   Відкрити всі лоти
   ${n}=  Run Keyword  index_adapter  ${n}
   ${return_value}=  Get Text  xpath=(//span[@id="qa_contractAmountNet"][${n}])
@@ -2560,6 +2563,7 @@ Wait for upload before signing
 
 # ==================  1 - enter FAKE values into fields, save
   Run Keyword And Ignore Error  Відкрити всі лоти
+  Run Keyword And Ignore Error  Відкрити сторінку контракту
   Run Keyword And Ignore Error  Click Element     xpath=//a[.="Внести інформацію про договір"]
   Wait and Input    id=contractNumber  ${contract_index}
   ${time_now_tmp}=     get_time_offset  -1
@@ -2615,10 +2619,25 @@ Wait for upload before signing
   Run Keyword And Return  Редагувати поле договору ${field}  ${value}
 
 
-Редагувати поле договору value.amount
-  [Arguments]  ${value}
+Відкрити сторінку контракту
+  # костыль для complaints сьюта, не переходит на стр.
+  Run Keyword And Ignore Error  Wait Scroll Click  id=naviTitle0
+  Capture Page Screenshot
+  Sleep  15
+  Click One Of Button  id=qa_EditContractInfo  id=qa_FillContractInfo
+  Дочекатись зникнення blockUI
+  Capture Page Screenshot
   Reload Page
   Дочекатись зникнення blockUI
+
+
+Редагувати поле договору value.amount
+  [Arguments]  ${value}
+#  Run Keyword And Ignore Error  Wait Scroll Click  id=naviTitle0
+  Reload Page
+  Перейти на сторінку контракту за потреби
+  Дочекатись зникнення blockUI
+  Run Keyword And Ignore Error  Відкрити сторінку контракту
   # Input Text не работает из за маски ввода
   Execute JavaScript  document.querySelector("decimal-mask-input[data='contract.value.amount'] input[id='qa_valueAmount']").value=${value}
   Execute JavaScript  $("decimal-mask-input[data='contract.value.amount'] input[id='qa_valueAmount']").trigger('change')
@@ -2630,9 +2649,11 @@ Wait for upload before signing
 
 Редагувати поле договору value.amountNet
   [Arguments]  ${value}
+  Run Keyword And Ignore Error  Відкрити сторінку контракту
   Reload Page
   Дочекатись зникнення blockUI
   # Input Text не работает из за маски ввода
+  Capture Page Screenshot
   Execute JavaScript  document.querySelector("decimal-mask-input[data='contract.value.amountNet'] input[id='qa_valueAmountNet']").value=${value}
   Execute JavaScript  $("decimal-mask-input[data='contract.value.amountNet'] input[id='qa_valueAmountNet']").trigger('change')
   Execute JavaScript  document.querySelector("decimal-mask-input[data='contract.value.amountNet'] input[name='valueNet']").value=${value}
@@ -3062,3 +3083,42 @@ Wait for doc upload in qualification
   Дочекатись зникнення blockUI
   Wait And Click  id=qa_activateAgreement
   Дочекатись зникнення blockUI
+
+
+Пошук угоди по ідентифікатору
+  [Arguments]  ${arg1}  ${arg2}
+  Wait Scroll Click  id=qa_agreementDetailesComplete  # переход на стр. изменений соглашений
+  Дочекатись зникнення blockUI
+
+Отримати інформацію із угоди
+  [Arguments]  ${username}  ${agreement_id}  ${field}
+  Run Keyword And Return  Отримати інформацію із угоди про ${field}
+  Дочекатись зникнення blockUI
+
+
+Отримати інформацію із угоди про changes[${n}].rationaleType
+  [Documentation]  Причина зміни
+#  get_rationale_types
+
+
+Отримати інформацію із угоди про changes[${n}].rationale
+  [Documentation]  Опис причини внесення змін
+
+
+Отримати інформацію із угоди про changes[${n}].status
+
+
+
+Отримати інформацію із угоди про changes[${n}].modifications[${n}].itemId
+  [Documentation]  Позиція
+
+
+Отримати інформацію із угоди про changes[${n}].modifications[${n}].addend
+  [Documentation]  Абсолютне значения
+
+
+Отримати інформацію із угоди про changes[${n}].modifications[${n}].factor
+  [Documentation]  Зазначення % зміни ціни
+
+
+Отримати інформацію із угоди про changes[${n}].modifications[${n}].contractId
