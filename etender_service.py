@@ -401,10 +401,10 @@ def get_breakdown_title_value(value):
 def get_rationale_types(string):
     """agreement module"""
     return {
-        u'Зміна ціни за одиницю товару': 'itemPriceVariation',
-        u'Зміна сторонніх показників (курсу, тарифів...)': 'thirdParty',
-        u'Зміна ціни у зв’язку із зміною ставок податків і зборів': 'taxRate',
-        u'Припинення участі у рамковій угоді учасника': 'partyWithdrawal'
+        'itemPriceVariation': u'Зміна ціни за одиницю товару',
+        'thirdParty': u'Зміна сторонніх показників (курсу, тарифів...)',
+        'taxRate': u'Зміна ціни у зв’язку із зміною ставок податків і зборів',
+        'partyWithdrawal': u'Припинення участі у рамковій угоді учасника'
     }.get(string, string)
 
 

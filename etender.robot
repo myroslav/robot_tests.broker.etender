@@ -624,7 +624,7 @@ add feature
 
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
-  Wait and Input  xpath=//input[@name="tenderPeriodStartDate"]  12-2020
+  Wait and Input  xpath=//input[@name="tenderPeriodStartDate"]  01-12-2020
 
   Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
   Wait and Click        id=qa_mainPlanClassification
@@ -3056,7 +3056,7 @@ Wait for doc upload in qualification
   ${value}=  Get From Dictionary  ${contract.unitPrices[0].value}  amount
   Log  ${value}
   Wait and Input  xpath=//*[contains(@id, "qa_supplierName") and text()="${organization}"]//ancestor::form[contains(@name, "unitForms")]//input[@type="number"]  ${value}
-  Wait Scroll Click  id=qa_updateUnitPrice
+  Wait Scroll Click  xpath=//*[contains(@id, 'qa_updateUnitPrice')]
   Дочекатись зникнення blockUI
   Sleep  10
   Capture Page Screenshot
@@ -3090,9 +3090,66 @@ Wait for doc upload in qualification
   Wait Scroll Click  id=qa_agreementDetailesComplete  # переход на стр. изменений соглашений
   Дочекатись зникнення blockUI
 
+
 Отримати інформацію із угоди
   [Arguments]  ${username}  ${agreement_id}  ${field}
   Run Keyword And Return  Отримати інформацію із угоди про ${field}
+  Дочекатись зникнення blockUI
+
+
+Створити зміну до угоди
+  Дочекатись зникнення blockUI
+  Location Should Contain  agreementDetailes
+  Wait Scroll Click    xpath=//button[@name="changeForm"]
+  Дочекатись зникнення blockUI
+
+
+Отримати доступ до угоди
+  [Arguments]  ${username}  ${agreement_uaid}
+  Створити зміну до угоди
+
+
+Завантажити документ в рамкову угоду
+  [Arguments]  ${username}  ${filepath}  ${agreement_uaid}
+  Дочекатись зникнення blockUI
+
+
+Внести зміну в угоду
+  [Arguments]  ${username}  ${agreement_uaid}  ${change_data}
+  # page reloaded here, must click create btn again
+  Створити зміну до угоди
+  ${rationalType}=  Get From Dictionary  ${change_data.data}  rationaleType
+  ${rationalType}=  get_rationale_types  ${rationalType}
+  ${rationale}=  Get From Dictionary  ${change_data.data}  rationale
+
+  Wait and Select By Label  xpath=//div/select[@id="cousechangeAgreement"]  ${rationalType}
+  Wait and Input  id=rationale  ${rationale}
+  Wait and Input  id=addend_0  1  # fill value to create change
+  Wait Scroll Click  xpath=//*[@ng-click="changeAgreementApply(changingData)"]
+  Дочекатись зникнення blockUI
+  Sleep  10
+
+
+#Редагувати поле угоди rationaleType
+#  [Arguments]
+#  Select From List By Partial Label
+
+
+#Редагувати поле угоди rationale
+#  [Arguments]
+
+
+Оновити властивості угоди  # 3
+  [Arguments]  ${username}  ${agreement_uaid}  ${data}
+  ${addend}=  Get From Dictionary  ${data}  addend
+  Дочекатись зникнення blockUI
+  Wait and Input  addend_0  ${addend}
+  Capture Page Screenshot
+
+
+
+Застосувати зміну для угоди
+  [Arguments]  ${username}  ${agreement_uaid}  ${dateSigned}  ${status}
   Дочекатись зникнення blockUI
 
 
