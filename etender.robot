@@ -2867,7 +2867,15 @@ temporary keyword for title update
   Sleep  10
 
 
+Дочекатись імпорту угоди
+  [Documentation]  Компенсує затримку генерації та імпорту угоди на майданчику
+  ${status}=  Get Text  id=tenderStatus
+  Run Keyword If  '${status.lower()}' == 'кваліфікація переможців (період оскарження)'  Sleep  130
+  Reload Page
+
+
 Перейти до оцінки кандидата
+  Run Keyword And Ignore Error  Дочекатись імпорту угоди
   Wait Until Keyword Succeeds   10 s  6 x  Відкрити модальне вікно award
 
 
@@ -3139,13 +3147,18 @@ Wait for doc upload in qualification
 #  [Arguments]
 
 
-Оновити властивості угоди  # 3
+Оновити властивості угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${data}
-  ${addend}=  Get From Dictionary  ${data}  addend
-  Дочекатись зникнення blockUI
-  Wait and Input  addend_0  ${addend}
-  Capture Page Screenshot
+  log  ${username}
+  log  ${agreement_uaid}
+  log  ${data.data}
 
+  ${modifications}=  Get From Dictionary  ${data.data}  modifications
+  ${mods}=  Set Variable  ${modifications[0]}
+  ${addend}=  Get From Dictionary  ${mods}  addend
+  Дочекатись зникнення blockUI
+  Wait and Input  addend_0  '${addend}'
+  Capture Page Screenshot
 
 
 Застосувати зміну для угоди
