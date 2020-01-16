@@ -2870,7 +2870,7 @@ temporary keyword for title update
 Дочекатись імпорту угоди
   [Documentation]  Компенсує затримку генерації та імпорту угоди на майданчику
   ${status}=  Get Text  id=tenderStatus
-  Run Keyword If  '${status.lower()}' == 'кваліфікація переможців (період оскарження)'  Sleep  130
+  Run Keyword If  '${status.lower()}' == 'кваліфікація переможців (період оскарження)'  Sleep  200
   Reload Page
 
 
@@ -3161,8 +3161,10 @@ Wait for doc upload in qualification
   Capture Page Screenshot
 
 
+
 Застосувати зміну для угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${dateSigned}  ${status}
+  Wait and Click  xpath=//button[@click-and-block="updateAgreementChange(change)"]
   Дочекатись зникнення blockUI
 
 
