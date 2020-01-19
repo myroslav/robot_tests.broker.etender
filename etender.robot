@@ -1136,7 +1136,7 @@ add feature
   Select Checkbox  id=selfQualified
 
 Подати цінову пропозицію
-  [Arguments]  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}=0
+  [Arguments]  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}=None
   Перейти на сторінку тендера за потреби
   sleep  5
   Відкрити розділ Деталі Закупівлі
