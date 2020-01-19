@@ -202,10 +202,10 @@ Login
 
 
 Створити тендер
-  [Arguments]  ${username}  ${tender_data}  ${arg1}  ${arg2}
+  [Arguments]  ${username}  ${tender_data}  ${tender_uaid}
   #Set To Dictionary  ${USERS.users['${username}']}  tender_data=${tender_data}
-  Log  ${arg1}
-  Log  ${arg2}
+  Log  ${tender_uaid}
+#  Log  ${arg2}
   ${tender_data}=       Get From Dictionary     ${tender_data}              data
   Log  ${tender_data}
   ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
@@ -246,7 +246,6 @@ Login
   Додати дати при наявності    ${tender_data}  ${methodType}
   Додати нецінові показники при наявності       ${tender_data}
   Sleep   15
-
   Wait Scroll Click     id=createTender
   Sleep   60
   Reload Page
@@ -624,7 +623,7 @@ add feature
 
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
-  Wait and Input  xpath=//input[@name="tenderPeriodStartDate"]  01-12-2020
+  Select From List By Index     xpath=//select[@name="startDateMonth"]          6
 
   Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
   Wait and Click        id=qa_mainPlanClassification
