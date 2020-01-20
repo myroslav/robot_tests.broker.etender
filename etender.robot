@@ -202,7 +202,7 @@ Login
 
 
 Створити тендер
-  [Arguments]  ${username}  ${tender_data}  ${tender_uaid}
+  [Arguments]  ${username}  ${tender_data}  ${tender_uaid}  ${arg_1}=None
   #Set To Dictionary  ${USERS.users['${username}']}  tender_data=${tender_data}
   Log  ${tender_uaid}
 #  Log  ${arg2}
@@ -285,7 +285,7 @@ Login
   ${items}=             Get From Dictionary     ${tender_data}              items
   Log  ${items[0]}
   ${methodType}=  Get From Dictionary  ${tender_data}  procurementMethodType
-  set global variable  ${global_procedure_t}  ${methodType}
+  set global variable  ${global_procedure_type}  ${methodType}
   Sleep  15
   Wait and Select By Label  xpath=//select[@id='guarantee_0']  Відсутнє
   Wait and Click  xpath=//input[@type= 'checkbox']
@@ -1654,7 +1654,7 @@ Input String
 Внести зміни в тендер
   [Arguments]  ${username}  ${tender_uaid}  ${field}  ${new_value}
   Перейти до редагування тендера    ${username}  ${tender_uaid}
-  Run Keyword If  '${global_procedure_t}'=='closeFrameworkAgreementSelectionUA'  Редагувати поле minimalStep для Selection
+  Run Keyword If  '${global_procedure_type}'=='closeFrameworkAgreementSelectionUA'  Редагувати поле minimalStep для Selection
   Редагувати поле тендера  ${field}  ${new_value}
   Sleep  10
   Зберегти зміни в тендері
