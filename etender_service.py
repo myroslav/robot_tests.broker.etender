@@ -58,7 +58,7 @@ def get_method_type(procedure_name):
         u'конкурентний діалог з публікацією англійською мовою 1-ий етап': 'competitiveDialogueEU',
         u'конкурентний діалог з публікацією англійською мовою 2-ий етап': 'competitiveDialogueEU.stage2',
         u'відкриті торги для укладання рамкової угоди': 'closeFrameworkAgreementUA',
-        u'відбір для закупівлі за рамковою угодою': 'framework_selection'
+        u'відбір для закупівлі за рамковою угодою': 'closeFrameworkAgreementSelectionUA'
 
     }[procedure_name]
 
