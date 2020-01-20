@@ -290,6 +290,7 @@ Login
   Wait and Select By Label  xpath=//select[@id='guarantee_0']  Відсутнє
   Wait and Click  xpath=//input[@type= 'checkbox']
   Sleep  5
+  Додати дати при наявності    ${tender_data}  ${methodType}
   Wait Scroll Click  id=createTender
   Sleep   10
   Reload Page
