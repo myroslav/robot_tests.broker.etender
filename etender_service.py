@@ -40,7 +40,8 @@ def get_procedure_type(methodType):
         'open_esco': 'Відкриті торги для закупівлі енергосервісу',
         'esco': 'Відкриті торги для закупівлі енергосервісу',
         'closeFrameworkAgreementUA': 'Відкриті торги для укладання рамкової угоди',
-        'open_framework': 'Відкриті торги для укладання рамкової угоди'
+        'open_framework': 'Відкриті торги для укладання рамкової угоди',
+        'framework_selection': 'Відбір для закупівлі за рамковою угодою'
     }[methodType].decode('utf-8')
 
 def get_method_type(procedure_name):
@@ -57,7 +58,7 @@ def get_method_type(procedure_name):
         u'конкурентний діалог з публікацією англійською мовою 1-ий етап': 'competitiveDialogueEU',
         u'конкурентний діалог з публікацією англійською мовою 2-ий етап': 'competitiveDialogueEU.stage2',
         u'відкриті торги для укладання рамкової угоди': 'closeFrameworkAgreementUA',
-        u'відбір для закупівлі за рамковою угодою': 'closeFrameworkAgreementSelectionUA'
+        u'відбір для закупівлі за рамковою угодою': 'framework_selection'
 
     }[procedure_name]
 
@@ -263,6 +264,7 @@ def get_helper_dictionary():
         #tender statuses
         u'період уточнень': u'active.enquiries',
         u'очікування пропозицій': u'active.tendering',
+        u'період запрошення': u'active.enquiries',
         u'прекваліфікація': u'active.pre-qualification',
         u'оцінка пропозицій': u'active.pre-qualification',
         u'блокування перед аукціоном': u'active.pre-qualification.stand-still',

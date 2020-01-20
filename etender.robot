@@ -270,11 +270,33 @@ Login
 
 Створити тендер другого етапу
   [Arguments]  ${username}  ${tender_data}
+  Log  ${tender_data}
   ${file_path}=  Get Variable Value  ${ARTIFACT_FILE}  artifact.yaml
   ${ARTIFACT}=  load_data_from  ${file_path}
   Set Global Variable  ${global_tender_id}    ${ARTIFACT.tender_uaid}
-
+  Wait and Click  id=qa_tenders
   Wait and Input  xpath=//input[@placeholder= 'Пошук закупівлі']   ${global_tender_id}
+  Wait and Click  xpath=//a[@ng-click= 'search()']
+  Sleep  10
+  Wait and Click  xpath=//a[contains(@href, 'tender/')]
+  Wait Scroll Click  id=qa_createAgrSelect
+  ${tender_data}=       Get From Dictionary     ${tender_data}              data
+  Log  ${tender_data}
+  ${items}=             Get From Dictionary     ${tender_data}              items
+  Log  ${items[0]}
+  ${methodType}=  Get From Dictionary  ${tender_data}  procurementMethodType
+  set global variable  ${global_procedure_t}  ${methodType}
+  Sleep  15
+  Wait and Select By Label  xpath=//select[@id='guarantee_0']  Відсутнє
+  Wait and Click  xpath=//input[@type= 'checkbox']
+  Sleep  5
+  Wait Scroll Click  id=createTender
+  Sleep   10
+  Reload Page
+  Wait Until Keyword Succeeds        10 min  30 sec  Дочекатися завершення обробки тендера
+  Зберегти посилання
+  Run Keyword And Return  Get Text  ${locator.tenderId}
+
 
 
 Заповнити поля ESCO
@@ -701,7 +723,12 @@ add feature
 
 Редагувати поле items[0].quantity
   [Arguments]  ${new_value}
-  Wait and Input  id=itemsQuantity0  ${new_value}
+  ${is_prm_visible}=  Run Keyword And Return Status  Element Should Be Visible  id=itemsQuantity0
+  Sleep  10
+  run keyword if  '${is_prm_visible}'=='False'  Wait and Click  id=treeTitle-0
+  Sleep  5
+  Wait and Input  id=itemsQuantity00  '${new_value}'
+
 
 Редагувати поле budget.period
   [Arguments]  ${new_value}
@@ -1128,6 +1155,7 @@ add feature
 Вибрати неціновий критерій
   [Arguments]  ${feature_id}  ${value}
   ${index}=  get_feature_index  ${value}
+  Sleep  5
   Select From List By Index  xpath=//span[contains(.,'${feature_id}')]/../..//select  ${index}
   Sleep  1
 
@@ -1626,8 +1654,15 @@ Input String
 Внести зміни в тендер
   [Arguments]  ${username}  ${tender_uaid}  ${field}  ${new_value}
   Перейти до редагування тендера    ${username}  ${tender_uaid}
+  Run Keyword If  '${global_procedure_t}'=='closeFrameworkAgreementSelectionUA'  Редагувати поле minimalStep для Selection
   Редагувати поле тендера  ${field}  ${new_value}
+  Sleep  10
   Зберегти зміни в тендері
+
+Редагувати поле minimalStep для Selection
+  Clear Element Text  id=minimalStepPer
+  Wait and Input  id=minimalStepPer  0.5
+
 
 Редагувати поле тендера
   [Arguments]  ${field}  ${new_value}
@@ -1752,7 +1787,7 @@ Input String
   run keyword and return  Wait and Get Attribute  id=frameworkAgreementTerm  termvalue
 
 Отримати інформацію про agreements[${n}].agreementID
-  Run Keyword And Return  Wait and Get Text  id=qa_agreementId${n}
+  Run Keyword And Return  Wait and Get Text  id=qa_agreementId
 
 Отримати інформацію про agreements[${n}].status
   ${agreements_status}=  Wait and Get Text  xpath=//div[@ng-bind= '::agreement.status.name']
@@ -2049,8 +2084,7 @@ Input String
   Дочекатись зникнення blockUI
   Run Keyword And Ignore Error  Відкрити всі лоти
   Відкрити розділ Деталі Закупівлі
-  ${i}=  Evaluate  ${n}+1
-  ${i}=  Convert To String  ${i}
+  ${i}=  Run Keyword  index_adapter  ${i}
   ${return_value}=  Get Text  xpath=//div[@ng-if="award.complaintPeriod.endDate"]/div[2]/span
   ${return_value}=  Set Variable  ${return_value.replace(u'по ','')}
   Run Keyword And Return     convert_etender_date_to_iso_format_and_add_timezone   ${return_value}
@@ -2831,6 +2865,7 @@ temporary keyword for title update
 
 Затвердити постачальників
   [Arguments]  ${username}  ${tender_uaid}
+  Sleep  10
   Wait and Click  id=submitPreQualification  10
   Дочекатись зникнення blockUI
 
@@ -2881,6 +2916,7 @@ temporary keyword for title update
 
 Відкрити модальне вікно award
   Reload Page
+  Sleep  5
   Wait Scroll Click    xpath=//a[@data-target="#modalGetAwards"]
   Дочекатись зникнення blockUI
 
@@ -3035,6 +3071,16 @@ Wait for doc upload in qualification
 
 
 Редагувати поле договору
+  [Arguments]  ${username}  ${i}  ${field}  ${value}
+  ${status}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//a[contains(@data-target, '#collapseUpdate')]
+  Run Keyword If  '${status}'='True'  Wait and Click  xpath=//a[contains(@data-target, '#collapseUpdate')]
+  Run Keyword If  '${status}'='True'  Wait and Click  xpath=//a[contains(@href, '/contracting/')]
+  Run Keyword And Return  Редагувати поле договору ${field}  ${value}
+
+Редагувати поле договору description
+  [Arguments]  ${value}
+  ${status}=  Run Keyword And Return Status  Element Should Be Visible
+  //div[@data-target='#contractingInfo']
 
 
 Редагувати зміну
@@ -3064,9 +3110,9 @@ Wait for doc upload in qualification
   ${value}=  Get From Dictionary  ${contract.unitPrices[0].value}  amount
   Log  ${value}
   Wait and Input  xpath=//*[contains(@id, "qa_supplierName") and text()="${organization}"]//ancestor::form[contains(@name, "unitForms")]//input[@type="number"]  ${value}
-  Wait Scroll Click  xpath=//*[contains(@id, 'qa_updateUnitPrice')]
-  Дочекатись зникнення blockUI
   Sleep  10
+  Wait Scroll Click  id=qa_updateUnitPrice
+  Дочекатись зникнення blockUI
   Capture Page Screenshot
   Reload Page
 
@@ -3080,13 +3126,15 @@ Wait for doc upload in qualification
   ${end}=    convert_date_to_etender_format  ${end}
 
   Wait and Input    id=agreementNumber  agreementnumber
-  ${time_now_tmp}=     get_time_offset  -1
+  Sleep  20
+  #${time_now_tmp}=     get_time_offset  -1
   ${date_now_tmp}=     get_date_now
   Wait and Input  name=dateSigned  ${date_now_tmp}
-  Wait and Input  name=timeSigned  ${time_now_tmp}
+  #Wait and Input  name=timeSigned  ${time_now_tmp}
   Wait and Input  startDate        ${start}
   Wait and Input  endDate          ${end}
-  Дочекатись зникнення blockUI
+  Sleep  20
+  #Дочекатись зникнення blockUI
   Wait Scroll Click  id=qa_saveAgreement
   Дочекатись зникнення blockUI
   Wait And Click  id=qa_activateAgreement
@@ -3149,15 +3197,11 @@ Wait for doc upload in qualification
 
 Оновити властивості угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${data}
-  log  ${username}
-  log  ${agreement_uaid}
-  log  ${data.data}
-
-  ${modifications}=  Get From Dictionary  ${data.data}  modifications
-  ${mods}=  Set Variable  ${modifications[0]}
-  ${addend}=  Get From Dictionary  ${mods}  addend
+  Log  ${data}
+  ${addend}=  Get From Dictionary  ${data.data.modifications[0]}  addend
   Дочекатись зникнення blockUI
-  Wait and Input  addend_0  '${addend}'
+  ${addend}=  float_to_string_2f  ${addend}
+  Wait and Input  id=addend_0  ${addend}
   Capture Page Screenshot
 
 
