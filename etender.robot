@@ -157,9 +157,9 @@ Click One Of Button
   Log  ${tender_data}
 
   # Достаем айдишник плана для создания тендера
-  ${file_path}=  Get Variable Value  ${ARTIFACT_FILE}  artifact_plan.yaml
-  ${ARTIFACT}=  load_data_from  ${file_path}
-  Set Global Variable  ${global_plan_id}    ${ARTIFACT.tender_uaid}
+#  ${file_path}=  Get Variable Value  ${ARTIFACT_FILE}  artifact_plan.yaml
+#  ${ARTIFACT}=  load_data_from  ${file_path}
+#  Set Global Variable  ${global_plan_id}    ${ARTIFACT.tender_uaid}
 
   # Если есть объект закупівельника (buyers) - то это план, из за особенностей площадки меняем данные
   ${status}=  Run Keyword And Return Status     Dictionary Should Contain Key   ${tender_data.data}  buyers
@@ -221,7 +221,8 @@ Login
   Wait and Select By Label  id=chooseProcedureType  ${procedure_type}
   Wait and Click        id=goToCreate
   Дочекатись зникнення blockUI
-  Wait and Input        xpath=//input[@name="planExternalId"]          ${global_plan_id}
+#  Wait and Input        xpath=//input[@name="planExternalId"]          ${global_plan_id}
+  Wait and Input  xpath=//input[@name="planExternalId"]  ${tender_uaid}
   Wait and Click  id=searchPlan
   Sleep  10
   Wait and Input    id=title    ${tender_data.title}
@@ -650,6 +651,7 @@ add feature
 
   Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
   Wait and Click        id=qa_mainPlanClassification
+  Sleep  5
   Wait and Input        id=classificationCode                            ${cpv_id}
   Sleep  5
   Click element         xpath=//td[contains(.,'${cpv_id}')]
