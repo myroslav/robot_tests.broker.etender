@@ -726,7 +726,7 @@ add feature
 
 Редагувати поле items[0].quantity
   [Arguments]  ${new_value}
-  ${is_prm_visible}=  Run Keyword And Return Status  Element Should Be Visible  id=itemsQuantity0
+  ${is_prm_visible}=  Run Keyword And Return Status  Element Should Be Visible  id=itemsQuantity00
   Sleep  10
   run keyword if  '${is_prm_visible}'=='False'  Wait and Click  id=treeTitle-0
   Sleep  5
