@@ -2085,7 +2085,7 @@ Input String
   Дочекатись зникнення blockUI
   Run Keyword And Ignore Error  Відкрити всі лоти
   Відкрити розділ Деталі Закупівлі
-  ${i}=  Run Keyword  index_adapter  ${i}
+  ${n}=  Run Keyword  index_adapter  ${n}
   ${return_value}=  Get Text  xpath=//div[@ng-if="award.complaintPeriod.endDate"]/div[2]/span
   ${return_value}=  Set Variable  ${return_value.replace(u'по ','')}
   Run Keyword And Return     convert_etender_date_to_iso_format_and_add_timezone   ${return_value}
@@ -2682,9 +2682,17 @@ Wait for upload before signing
   Зберегти інформацію про контракт
 
 
+Почекати stand still для переговорної процедури
+# костыль, пока не добавили Дочекатися закічення stand still періоду в negotiation.robot
+  ${present}=  Run Keyword And Return Status  Element Should Be Visible  xpath=$x('//span[contains(., "Період звернень ще не завершено")]
+  Run Keyword If  '${present}'=='True'  Sleep  605
+  Reload Page
+  Дочекатись зникнення blockUI
+
 Редагувати поле договору value.amountNet
   [Arguments]  ${value}
   Run Keyword And Ignore Error  Відкрити сторінку контракту
+  Почекати stand still для переговорної процедури
   Reload Page
   Дочекатись зникнення blockUI
   # Input Text не работает из за маски ввода
