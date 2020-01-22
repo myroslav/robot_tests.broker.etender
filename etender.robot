@@ -726,7 +726,7 @@ add feature
 
 Редагувати поле items[0].quantity
   [Arguments]  ${new_value}
-  ${is_prm_visible}=  Run Keyword And Return Status  Element Should Be Visible  id=itemsQuantity0
+  ${is_prm_visible}=  Run Keyword And Return Status  Element Should Be Visible  id=itemsQuantity00
   Sleep  10
   run keyword if  '${is_prm_visible}'=='False'  Wait and Click  id=treeTitle-0
   Sleep  5
@@ -1948,8 +1948,18 @@ Input String
   Run Keyword And Return  cut_letters_and_parse_etender_date  ${return_value}
 
 
+Дочекатись закінчення періоду оскарження для negotiation
+  # налог для viewer Почекати stand still для переговорної процедури. Причина костыля та же
+  ${procedureType}=  Run Keyword  Отримати інформацію про procurementMethodType
+  Run Keyword If  '${procedureType}' in ('negotiation')  Sleep  600
+  ...  ELSE  Return From Keyword
+  Reload Page
+  Дочекатись зникнення blockUI
+
+
 Отримати інформацію про Contracts[${n}].status
   Перейти на сторінку тендера за потреби
+  Run Keyword and Ignore Error  Дочекатись закінчення періоду оскарження для negotiation
   Відкрити всі лоти
   ${n}=  Run Keyword  index_adapter  ${n}
   ${return_value}=  Get Text  xpath=(//div[@id="qa_contractStatus"][${n}])
