@@ -728,7 +728,7 @@ add feature
   [Arguments]  ${new_value}
   ${is_prm_visible}=  Run Keyword And Return Status  Element Should Be Visible  id=itemsQuantity00
   Sleep  10
-  run keyword if  '${is_prm_visible}'=='False'  Wait and Click  id=treeTitle-0
+  run keyword and ignore error  run keyword if  '${is_prm_visible}'=='False'  Wait and Click  id=treeTitle-0
   Sleep  5
   Wait and Input  id=itemsQuantity00  '${new_value}'
 
@@ -2696,7 +2696,7 @@ Wait for upload before signing
 
 Почекати stand still для переговорної процедури
 # костыль, пока не добавили Дочекатися закічення stand still періоду в negotiation.robot
-  ${present}=  Run Keyword And Return Status  Element Should Be Visible  xpath=$x('//span[contains(., "Період звернень ще не завершено")]
+  ${present}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//span[contains(., "Період звернень ще не завершено")]
   Run Keyword If  '${present}'=='True'  Sleep  605
   Reload Page
   Дочекатись зникнення blockUI
