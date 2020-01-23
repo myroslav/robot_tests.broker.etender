@@ -1905,6 +1905,7 @@ Input String
   Перейти на сторінку тендера за потреби
   Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
   Відкрити всі лоти
+  Run Keyword and Ignore Error  Дочекатись закінчення періоду оскарження для negotiation
   ${n}=  Run Keyword  index_adapter  ${n}
   ${return_value}=  Get Text  xpath=(//span[@id="qa_contractAmountNet"][${n}])
   ${return_value}=  Set Variable  ${return_value.strip()}
@@ -1951,7 +1952,7 @@ Input String
 Дочекатись закінчення періоду оскарження для negotiation
   # налог для viewer Почекати stand still для переговорної процедури. Причина костыля та же
   ${procedureType}=  Run Keyword  Отримати інформацію про procurementMethodType
-  Run Keyword If  '${procedureType}' in ('negotiation')  Sleep  600
+  Run Keyword If  '${procedureType}' in ('negotiation')  Sleep  660
   ...  ELSE  Return From Keyword
   Reload Page
   Дочекатись зникнення blockUI
@@ -1959,7 +1960,6 @@ Input String
 
 Отримати інформацію про Contracts[${n}].status
   Перейти на сторінку тендера за потреби
-  Run Keyword and Ignore Error  Дочекатись закінчення періоду оскарження для negotiation
   Відкрити всі лоти
   ${n}=  Run Keyword  index_adapter  ${n}
   ${return_value}=  Get Text  xpath=(//div[@id="qa_contractStatus"][${n}])
@@ -2628,7 +2628,7 @@ Wait for upload before signing
   Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
   Run Keyword And Ignore Error  Підтвердити контракт додаванням ЕЦП
-  Sleep  10  # ждем автопроверки ЕЦП
+  Sleep  20  # ждем автопроверки ЕЦП
   Click One Of Button  id=qa_finishTender  id=qa_finishTenderReporting
   Capture Page Screenshot
 #  Wait Until Page Contains  Підтверджено!  60
@@ -2697,7 +2697,7 @@ Wait for upload before signing
 Почекати stand still для переговорної процедури
 # костыль, пока не добавили Дочекатися закічення stand still періоду в negotiation.robot
   ${present}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//span[contains(., "Період звернень ще не завершено")]
-  Run Keyword If  '${present}'=='True'  Sleep  605
+  Run Keyword If  '${present}'=='True'  Sleep  660
   Reload Page
   Дочекатись зникнення blockUI
 
