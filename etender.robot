@@ -725,11 +725,15 @@ add feature
 
 Редагувати поле items[0].quantity
   [Arguments]  ${new_value}
+  # TODO: rework
   ${is_prm_visible}=  Run Keyword And Return Status  Element Should Be Visible  id=itemsQuantity00
   Sleep  10
   run keyword and ignore error  run keyword if  '${is_prm_visible}'=='False'  Wait and Click  id=treeTitle-0
   Sleep  5
-  Wait and Input  id=itemsQuantity00  '${new_value}'
+
+  ${present}=  Run Keyword And Return Status  Element Should Be Visible  id=itemsQuantity00
+  Run Keyword If  '${present}'=='True'  Wait and Input  id=itemsQuantity00  '${new_value}'
+  ...  ELSE  Wait and Input  id=itemsQuantity0  '${new_value}'
 
 
 Редагувати поле budget.period
