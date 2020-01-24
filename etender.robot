@@ -291,7 +291,6 @@ Login
   Wait and Select By Label  xpath=//select[@id='guarantee_0']  Відсутнє
   Wait and Click  xpath=//input[@type= 'checkbox']
   Sleep  5
-  Додати дати при наявності    ${tender_data}  ${methodType}
   Wait Scroll Click  id=createTender
   Sleep   10
   Reload Page
@@ -1790,7 +1789,7 @@ Input String
   run keyword and return  Wait and Get Attribute  id=frameworkAgreementTerm  termvalue
 
 Отримати інформацію про agreements[${n}].agreementID
-  Run Keyword And Return  Wait and Get Text  id=qa_agreementId
+  Run Keyword And Return  Wait and Get Text  id=qa_agreementId0
 
 Отримати інформацію про agreements[${n}].status
   ${agreements_status}=  Wait and Get Text  xpath=//div[@ng-bind= '::agreement.status.name']
@@ -3132,7 +3131,7 @@ Wait for doc upload in qualification
   Log  ${value}
   Wait and Input  xpath=//*[contains(@id, "qa_supplierName") and text()="${organization}"]//ancestor::form[contains(@name, "unitForms")]//input[@type="number"]  ${value}
   Sleep  10
-  Wait Scroll Click  id=qa_updateUnitPrice
+  Wait Scroll Click  xpath=//*[contains(@id, "qa_supplierName") and text()="${organization}"]//ancestor::form[contains(@name, "unitForms")]//*[contains(@id, "qa_updateUnitPrice")]
   Дочекатись зникнення blockUI
   Capture Page Screenshot
   Reload Page
