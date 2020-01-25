@@ -1793,7 +1793,7 @@ Input String
   run keyword and return  Wait and Get Attribute  id=frameworkAgreementTerm  termvalue
 
 Отримати інформацію про agreements[${n}].agreementID
-  Run Keyword And Return  Wait and Get Text  id=qa_agreementId0
+  Run Keyword And Return  Wait and Get Text  id=qa_agreementId
 
 Отримати інформацію про agreements[${n}].status
   ${agreements_status}=  Wait and Get Text  xpath=//div[@ng-bind= '::agreement.status.name']
@@ -3238,27 +3238,34 @@ Wait for doc upload in qualification
 
 Отримати інформацію із угоди про changes[${n}].rationaleType
   [Documentation]  Причина зміни
-#  get_rationale_types
+  ${rationaleType}=  Wait and Get Text  id=qa_rationaleType${n}
+  run keyword and return  get_rationale_types  ${rationaleType}
 
 
 Отримати інформацію із угоди про changes[${n}].rationale
   [Documentation]  Опис причини внесення змін
+  Run Keyword And Return  Wait and Get Text  id=qa_rationale${n}
 
 
 Отримати інформацію із угоди про changes[${n}].status
-
+  Run Keyword And Return  Wait and Get Text  id=qa_changeStatus${n}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].itemId
   [Documentation]  Позиція
-
+  ${item_descr}=  Wait and Get Text  id=qa_modifiItemDescr${n}
+  Run Keyword And Return  ${item_descr.split[':'][0]}
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].addend
   [Documentation]  Абсолютне значения
+  ${item_descr}=  Wait and Get Text  id=qa_modifiItemDescr${n}
+  Run Keyword And Return  ${item_descr.split[':'][0]}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].factor
   [Documentation]  Зазначення % зміни ціни
+  ${item_factor}=  Wait and Get Text  id=qa_modifiItemFactor${n}
+  Run Keyword And Return  ${item_factor.split[':'][0]}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].contractId
