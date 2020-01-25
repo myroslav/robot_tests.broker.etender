@@ -3254,18 +3254,19 @@ Wait for doc upload in qualification
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].itemId
   [Documentation]  Позиція
   ${item_descr}=  Wait and Get Text  id=qa_modifiItemDescr${n}
-  Run Keyword And Return  ${item_descr.split[':'][0]}
+  Run Keyword And Return  ${item_descr.split(':')[0]}
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].addend
   [Documentation]  Абсолютне значения
   ${item_descr}=  Wait and Get Text  id=qa_modifiItemDescr${n}
-  Run Keyword And Return  ${item_descr.split[':'][0]}
+  [Return]  ${item_descr.split(':')[0]}
+
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].factor
   [Documentation]  Зазначення % зміни ціни
   ${item_factor}=  Wait and Get Text  id=qa_modifiItemFactor${n}
-  Run Keyword And Return  ${item_factor.split[':'][0]}
+  [Return]  ${item_factor.split(':')[0]}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].contractId
