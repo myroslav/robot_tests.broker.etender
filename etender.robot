@@ -3248,13 +3248,14 @@ Wait for doc upload in qualification
 
 
 Отримати інформацію із угоди про changes[${n}].status
-  Run Keyword And Return  Wait and Get Text  id=qa_changeStatus${n}
+  ${status}=  Wait and Get Text  id=qa_changeStatus${n}
+  Run Keyword And Return  get_rationale_types  ${status}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].itemId
   [Documentation]  Позиція
   ${item_descr}=  Wait and Get Text  id=qa_modifiItemDescr${n}
-  Run Keyword And Return  ${item_descr.split(':')[0]}
+  [Return]  ${item_descr.split(':')[0]}
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].addend
   [Documentation]  Абсолютне значения
