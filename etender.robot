@@ -184,6 +184,8 @@ Click One Of Button
 
 Отримати інформацію про procurementMethodType
   Дочекатись зникнення blockUI
+  ${url}=   Get Location
+  Log  ${url}
   ${methodType}=    Get Text   id=procedureType
   Run Keyword And Return  get_method_type  ${methodType.lower()}
 
@@ -1793,7 +1795,7 @@ Input String
   run keyword and return  Wait and Get Attribute  id=frameworkAgreementTerm  termvalue
 
 Отримати інформацію про agreements[${n}].agreementID
-  Run Keyword And Return  Wait and Get Text  id=qa_agreementId
+  Run Keyword And Return  Wait and Get Text  id=qa_agreementId0
 
 Отримати інформацію про agreements[${n}].status
   ${agreements_status}=  Wait and Get Text  xpath=//div[@ng-bind= '::agreement.status.name']
@@ -1814,15 +1816,27 @@ Input String
   Run Keyword And Return   Отримати текст із поля і показати на сторінці   title
 
 
-Отримати інформацію про qualificationPeriod.endDate
+Отримати qualificationPeriod_endDate
   Reload Page
+  Перейти на сторінку тендера за потреби
+  Відкрити всі лоти
+  Run Keyword And Return  Get Text  id=qualificationPeriod_endDate
+
+
+Отримати інформацію про qualificationPeriod.endDate
+
+  Capture Page Screenshot
+  Reload Page
+  Дочекатись зникнення blockUI
+
   ${procedureType}=  Run Keyword  Отримати інформацію про procurementMethodType
   Run Keyword If  '${procedureType}' in ('closeFrameworkAgreementUA')  Sleep  600
   ...  ELSE  Sleep  300
     # поле появляется на UI, когда заканчивается период. Тест ожидает сразу
 
-  ${return_value}=   Get Text  id=qualificationPeriod_endDate
+  ${return_value}=  Wait Until Keyword Succeeds  20 s  6 x  Отримати qualificationPeriod_endDate
   Run Keyword And Return  convert_etender_date_to_iso_format  ${return_value}
+
 
 Отримати інформацію про qualifications[0].status
   Reload Page
@@ -3238,12 +3252,14 @@ Wait for doc upload in qualification
 
 Отримати інформацію із угоди про changes[${n}].rationaleType
   [Documentation]  Причина зміни
+  # TODO: assert agreementDetailes in get location if no - click btn
   ${rationaleType}=  Wait and Get Text  id=qa_rationaleType${n}
-  run keyword and return  get_rationale_types  ${rationaleType}
+  Run Keyword And Return  get_rationale_types  ${rationaleType}
 
 
 Отримати інформацію із угоди про changes[${n}].rationale
   [Documentation]  Опис причини внесення змін
+  Дочекатись зникнення blockUI
   Run Keyword And Return  Wait and Get Text  id=qa_rationale${n}
 
 
@@ -3259,9 +3275,8 @@ Wait for doc upload in qualification
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].addend
   [Documentation]  Абсолютне значения
-  ${item_descr}=  Wait and Get Text  id=qa_modifiItemDescr${n}
+  ${item_descr}=  Wait and Get Text  id=qa_modifiItemAddend${n}
   [Return]  ${item_descr.split(':')[0]}
-
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].factor
