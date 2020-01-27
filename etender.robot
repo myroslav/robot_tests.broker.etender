@@ -283,6 +283,7 @@ Login
   Sleep  10
   Wait and Click  xpath=//a[contains(@href, 'tender/')]
   Wait Scroll Click  id=qa_createAgrSelect
+  Дочекатись зникнення blockUI
   ${tender_data}=       Get From Dictionary     ${tender_data}              data
   Log  ${tender_data}
   ${items}=             Get From Dictionary     ${tender_data}              items
@@ -2819,7 +2820,7 @@ Wait for upload before signing
   Wait and Click  xpath=//div[@role="tab" and contains(.,"${tmp_hacked_title.split(':')[0]}")]
   Дочекатись зникнення blockUI
   Capture Page Screenshot
-  JavascriptClick  id=qa_AnswerComplaint
+  JavascriptClick  '//*[contains(@id, "qa_AnswerComplaint")]'
   Дочекатись зникнення blockUI
   Capture Page Screenshot
   ${modal_opened}=  Run Keyword And Return Status  Element Should Be Visible  id=descriptionEl
