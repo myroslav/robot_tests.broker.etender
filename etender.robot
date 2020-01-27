@@ -1338,6 +1338,7 @@ add feature
 
 
 Мінімальний степ для рамкових
+  [Arguments]  ${n}
   ${result}=  Wait and Get Text  id=lotMinimalStep_${n}
   ${x}=  parse_currency_value_with_spaces  ${result}
   [Return]  convert to number  ${x}
@@ -1345,7 +1346,7 @@ add feature
 
 Отримати інформацію про lots[${n}].minimalStep.amount
   ${procedureType}=  Run Keyword  Отримати інформацію про procurementMethodType
-  ${min_sel}=  Мінімальний степ для рамкових
+  ${min_sel}=  Мінімальний степ для рамкових  ${n}
   Return From Keyword If  '${procedureType}'=='closeFrameworkAgreementSelectionUA'  ${min_sel}
   ${result}=  Wait and Get Text  id=lotMinimalStep_${n}
   Run Keyword And Return  parse_currency_value_with_spaces  ${result}
