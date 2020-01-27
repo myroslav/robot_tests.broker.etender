@@ -1341,7 +1341,7 @@ add feature
   [Arguments]  ${n}
   ${result}=  Wait and Get Text  id=lotMinimalStep_${n}
   ${x}=  parse_currency_value_with_spaces  ${result}
-  [Return]  convert to number  ${x}
+  run keyword and return  convert to number  ${x}
 
 
 Отримати інформацію про lots[${n}].minimalStep.amount
