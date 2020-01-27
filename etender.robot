@@ -2796,6 +2796,14 @@ Wait for upload before signing
   Run Keyword And Ignore Error  Wait Until Page Contains  Підтверджено!  7
 
 
+Відкрити молальне вікно AnswerComplaint
+  Wait Scroll Click  id=qa_AnswerComplaint
+  Дочекатись зникнення blockUI
+  Capture Page Screenshot
+  ${modal_opened}=  Run Keyword And Return Status  Element Should Be Visible  id=descriptionEl
+  Run Keyword If  '${modal_opened}'== 'False'  JavascriptClick  '//*[@id="qa_AnswerComplaint"]'
+  Дочекатись зникнення blockUI
+
 Відповісти на вимогу про виправлення умов закупівлі
   [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${answer_data}
   # TODO: remove workaround and open complaint using given complaintID
@@ -2804,15 +2812,21 @@ Wait for upload before signing
   log  ${tmp_hacked_id}
   ${tmp_hacked_title}=  Run Keyword If  '${tmp_hacked_id}' != '${complaintID}'  temporary keyword for title update  ${USERS.users['Tender_User'].lot_claim_data}  ${complaintID}
   ...   ELSE  Set Variable  ${tmp_hacked_title}
-  Reload Page
+  # TODO убрать костыли (не работает для дженкинса, локально ОК)
   Sleep   25
+  Reload Page
   Дочекатись зникнення blockUI
   Відкрити розділ вимог і скарг
+  Дочекатись зникнення blockUI
+  Sleep  5
+  Capture Page Screenshot
+  JavaScript scrollBy  0  -150
   Wait and Click  xpath=//div[@role="tab" and contains(.,"${tmp_hacked_title.split(':')[0]}")]
   Дочекатись зникнення blockUI
-#  Wait Scroll Click  xpath=(//button[@ng-click="showAnswerComplaintModal(currentComplaint)"])[1]
-  Wait Scroll Click  id=qa_AnswerComplaint
+  Відкрити молальне вікно AnswerComplaint
+  Дочекатись зникнення blockUI
   Sleep  5
+
   ${resolution}=      Get From Dictionary  ${answer_data.data}  resolution
   ${resolutionType}=  Get From Dictionary  ${answer_data.data}  resolutionType
   ${tendererAction}=  Get From Dictionary  ${answer_data.data}  tendererAction
@@ -2827,14 +2841,22 @@ Wait for upload before signing
   # TODO: rework duplicated code - see "Відповісти на вимогу про виправлення умов закупівлі"
   # TODO: remove workaround and open complaint using given complaintID
   ${tmp_hacked_title}=  Get From Dictionary  ${USERS.users['Tender_User'].claim_data.claim.data}  title
+  Sleep  25
   Reload Page
   Дочекатись зникнення blockUI
   Відкрити розділ вимог і скарг
-  Wait and Click  xpath=//div[@role="tab" and contains(.,"${tmp_hacked_title.split(':')[0]}")]
   Дочекатись зникнення blockUI
-#  Wait Scroll Click  xpath=(//button[@ng-click="showAnswerComplaintModal(currentComplaint)"])[1]
-  Wait Scroll Click  id=qa_AnswerComplaint
   Sleep  5
+  Capture Page Screenshot
+  JavaScript scrollBy  0  -150
+  Wait and Click  xpath=//div[@role="tab" and contains(.,"${tmp_hacked_title.split(':')[0]}")]  15
+  Дочекатись зникнення blockUI
+  Capture Page Screenshot
+  Відкрити молальне вікно AnswerComplaint
+  Capture Page Screenshot
+  Дочекатись зникнення blockUI
+  Sleep  5
+
   ${resolution}=      Get From Dictionary  ${answer_data.data}  resolution
   ${resolutionType}=  Get From Dictionary  ${answer_data.data}  resolutionType
   ${tendererAction}=  Get From Dictionary  ${answer_data.data}  tendererAction
