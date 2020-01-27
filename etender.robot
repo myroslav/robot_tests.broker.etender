@@ -2796,12 +2796,24 @@ Wait for upload before signing
   Run Keyword And Ignore Error  Wait Until Page Contains  Підтверджено!  7
 
 
-Відкрити молальне вікно AnswerComplaint
-  Wait Scroll Click  id=qa_AnswerComplaint
+Відкрити модальне вікно AnswerComplaint
+  [Arguments]  ${tmp_hacked_title}
+  Reload Page
+  Дочекатись зникнення blockUI
+  Відкрити розділ вимог і скарг
+  Дочекатись зникнення blockUI
+  Sleep  5
+  Capture Page Screenshot
+  JavaScript scrollBy  0  -550
+  Capture Page Screenshot
+  Wait and Click  xpath=//div[@role="tab" and contains(.,"${tmp_hacked_title.split(':')[0]}")]
+  Дочекатись зникнення blockUI
+  Capture Page Screenshot
+  JavascriptClick  id=qa_AnswerComplaint
   Дочекатись зникнення blockUI
   Capture Page Screenshot
   ${modal_opened}=  Run Keyword And Return Status  Element Should Be Visible  id=descriptionEl
-  Run Keyword If  '${modal_opened}'== 'False'  JavascriptClick  '//*[@id="qa_AnswerComplaint"]'
+  Run Keyword If  '${modal_opened}'== 'False'  Fail
   Дочекатись зникнення blockUI
 
 Відповісти на вимогу про виправлення умов закупівлі
@@ -2814,16 +2826,7 @@ Wait for upload before signing
   ...   ELSE  Set Variable  ${tmp_hacked_title}
   # TODO убрать костыли (не работает для дженкинса, локально ОК)
   Sleep   25
-  Reload Page
-  Дочекатись зникнення blockUI
-  Відкрити розділ вимог і скарг
-  Дочекатись зникнення blockUI
-  Sleep  5
-  Capture Page Screenshot
-  JavaScript scrollBy  0  -150
-  Wait and Click  xpath=//div[@role="tab" and contains(.,"${tmp_hacked_title.split(':')[0]}")]
-  Дочекатись зникнення blockUI
-  Відкрити молальне вікно AnswerComplaint
+  Wait Until Keyword Succeeds  3 x  5 s  Відкрити модальне вікно AnswerComplaint  ${tmp_hacked_title}
   Дочекатись зникнення blockUI
   Sleep  5
 
@@ -2834,6 +2837,7 @@ Wait for upload before signing
   Input text        id=descriptionEl  ${resolution}
   Select From List By Value  id=resolutionTypeEl  ${resolutionType}
   Wait and Click    id=btnanswerComplaint
+
 
 # TODO  REFACTOR
 Відповісти на вимогу про виправлення визначення переможця
@@ -2852,7 +2856,7 @@ Wait for upload before signing
   Wait and Click  xpath=//div[@role="tab" and contains(.,"${tmp_hacked_title.split(':')[0]}")]  15
   Дочекатись зникнення blockUI
   Capture Page Screenshot
-  Відкрити молальне вікно AnswerComplaint
+  Wait Until Keyword Succeeds  3 x  5 s  Відкрити модальне вікно AnswerComplaint  ${tmp_hacked_title}
   Capture Page Screenshot
   Дочекатись зникнення blockUI
   Sleep  5
@@ -3316,18 +3320,21 @@ Wait for doc upload in qualification
 
 Отримати інформацію із угоди про changes[${n}].status
   ${status}=  Wait and Get Text  id=qa_changeStatus${n}
+  ${tax_status}=  set variable  'taxRate'
+  return from keyword if  '${status}'=='u'Зміна ціни у зв’язку із зміною ставок податків і зборів'  ${tax_status}
   Run Keyword And Return  get_rationale_types  ${status}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].itemId
   [Documentation]  Позиція
-  ${item_descr}=  Wait and Get Text  id=qa_modifiItemDescr${n}
+  ${item_descr}=  Wait and Get Text  id=qa_modifiItemApiid${n}
   [Return]  ${item_descr.split(':')[0]}
+
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].addend
   [Documentation]  Абсолютне значения
   ${item_descr}=  Wait and Get Text  id=qa_modifiItemAddend${n}
-  [Return]  ${item_descr.split(':')[0]}
+  Run Keyword And Return  Convert To Number   ${item_descr.replace(' грн.', '')}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].factor
