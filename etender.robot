@@ -3323,6 +3323,7 @@ Wait for doc upload in qualification
 Отримати інформацію із угоди про changes[${n}].status
   ${status}=  Wait and Get Text  id=qa_changeStatus${n}
   Run Keyword And Return  get_rationale_status  ${status}
+  return from keyword if  '${status}'=='u'Зміна ціни у зв’язку із зміною ставок податків і зборів'  ${tax_status}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].itemId
