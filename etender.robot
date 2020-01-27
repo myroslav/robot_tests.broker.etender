@@ -2809,7 +2809,9 @@ Wait for upload before signing
   Дочекатись зникнення blockUI
   Відкрити розділ вимог і скарг
   Wait and Click  xpath=//div[@role="tab" and contains(.,"${tmp_hacked_title.split(':')[0]}")]
-  Wait Scroll Click  xpath=(//button[@ng-click="showAnswerComplaintModal(currentComplaint)"])[1]
+  Дочекатись зникнення blockUI
+#  Wait Scroll Click  xpath=(//button[@ng-click="showAnswerComplaintModal(currentComplaint)"])[1]
+  Wait Scroll Click  id=qa_AnswerComplaint
   Sleep  5
   ${resolution}=      Get From Dictionary  ${answer_data.data}  resolution
   ${resolutionType}=  Get From Dictionary  ${answer_data.data}  resolutionType
@@ -2829,7 +2831,10 @@ Wait for upload before signing
   Дочекатись зникнення blockUI
   Відкрити розділ вимог і скарг
   Wait and Click  xpath=//div[@role="tab" and contains(.,"${tmp_hacked_title.split(':')[0]}")]
-  Wait Scroll Click  xpath=(//button[@ng-click="showAnswerComplaintModal(currentComplaint)"])[1]
+  Дочекатись зникнення blockUI
+#  Wait Scroll Click  xpath=(//button[@ng-click="showAnswerComplaintModal(currentComplaint)"])[1]
+  Wait Scroll Click  id=qa_AnswerComplaint
+  Sleep  5
   ${resolution}=      Get From Dictionary  ${answer_data.data}  resolution
   ${resolutionType}=  Get From Dictionary  ${answer_data.data}  resolutionType
   ${tendererAction}=  Get From Dictionary  ${answer_data.data}  tendererAction
