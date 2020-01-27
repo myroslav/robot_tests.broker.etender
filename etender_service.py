@@ -412,7 +412,7 @@ def get_rationale_types(string):
     }.get(string, string)
 
 
-def get_rationale_types(string):
+def get_rationale_status(string):
     """agreement change status"""
     return {
          u'Скасована зміна': 'cancelled',
