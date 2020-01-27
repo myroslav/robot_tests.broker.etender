@@ -1337,7 +1337,16 @@ add feature
   Run Keyword And Return  Wait and Get Attribute  xpath=//span[@id='lotValue_${n}' and @class='hidden-xs fwn pl15 ng-binding']  value
 
 
+Мінімальний степ для рамкових
+  ${result}=  Wait and Get Text  id=lotMinimalStep_${n}
+  ${x}=  parse_currency_value_with_spaces  ${result}
+  [Return]  convert to number  ${x}
+
+
 Отримати інформацію про lots[${n}].minimalStep.amount
+  ${procedureType}=  Run Keyword  Отримати інформацію про procurementMethodType
+  ${min_sel}=  Мінімальний степ для рамкових
+  Return From Keyword If  '${procedureType}'=='closeFrameworkAgreementSelectionUA'  ${min_sel}
   ${result}=  Wait and Get Text  id=lotMinimalStep_${n}
   Run Keyword And Return  parse_currency_value_with_spaces  ${result}
 
@@ -3344,7 +3353,7 @@ Wait for doc upload in qualification
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].factor
   [Documentation]  Зазначення % зміни ціни
   ${item_factor}=  Wait and Get Text  id=qa_modifiItemFactor${n}
-  [Return]  ${item_factor.split(':')[0]}
+  run keyword  and return  convert to number  ${item_factor.split(':')[0]}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].contractId
