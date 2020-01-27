@@ -3175,10 +3175,10 @@ Wait for doc upload in qualification
 
 Редагувати поле договору description
   [Arguments]  ${value}
-  ${status}=  Run Keyword And Return Status  Element Should Be Visible
-  //div[@data-target='#contractingInfo']
+  ${status}=  Run Keyword And Return Status  Element Should Be Visible  //div[@data-target='#contractingInfo']
 
 
+#  ------------------------Contract Management------------------------
 Редагувати зміну
 
 
@@ -3194,7 +3194,7 @@ Wait for doc upload in qualification
 Завантажити документацію до договору
 
 
-#  ------------------------Contract Management------------------------
+#  ------------------------agreement------------------------
 
 Встановити ціну за одиницю для контракту
   [Arguments]  ${username}  ${tender_uaid}  ${contract_data}
@@ -3240,6 +3240,7 @@ Wait for doc upload in qualification
 Пошук угоди по ідентифікатору
   [Arguments]  ${arg1}  ${arg2}
   Wait Scroll Click  id=qa_agreementDetailesComplete  # переход на стр. изменений соглашений
+  Sleep  5
   Дочекатись зникнення blockUI
 
 
@@ -3251,7 +3252,8 @@ Wait for doc upload in qualification
 
 Створити зміну до угоди
   Дочекатись зникнення blockUI
-  Location Should Contain  agreementDetailes
+  Sleep  5
+  Run Keyword And Ignore Error  Location Should Contain  agreementDetailes
   Wait Scroll Click    xpath=//button[@name="changeForm"]
   Дочекатись зникнення blockUI
 
@@ -3282,15 +3284,6 @@ Wait for doc upload in qualification
   Sleep  10
 
 
-#Редагувати поле угоди rationaleType
-#  [Arguments]
-#  Select From List By Partial Label
-
-
-#Редагувати поле угоди rationale
-#  [Arguments]
-
-
 Оновити властивості угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${data}
   Log  ${data}
@@ -3299,7 +3292,6 @@ Wait for doc upload in qualification
   ${addend}=  float_to_string_2f  ${addend}
   Wait and Input  id=addend_0  ${addend}
   Capture Page Screenshot
-
 
 
 Застосувати зміну для угоди
@@ -3320,8 +3312,8 @@ Wait for doc upload in qualification
   # TODO: assert agreementDetailes in get location if no - click btn
   Перейти на сторінку agreementDetails за потреби
   ${rationaleType}=  Wait and Get Text  id=qa_rationaleType${n}
-  ${tax_status}=  set variable  'taxRate'
-  return from keyword if  '${rationaleType}'==u'Зміна ціни у зв’язку із зміною ставок податків і зборів'  ${tax_status}
+  ${tax_status}=  Set Variable  'taxRate'
+  Return From Keyword If  '${rationaleType}'==u'Зміна ціни у зв’язку із зміною ставок податків і зборів'  ${tax_status}
   Run Keyword And Return  get_rationale_types  ${rationaleType}
 
 
@@ -3334,7 +3326,6 @@ Wait for doc upload in qualification
 Отримати інформацію із угоди про changes[${n}].status
   ${status}=  Wait and Get Text  id=qa_changeStatus${n}
   Run Keyword And Return  get_rationale_status  ${status}
-  return from keyword if  '${status}'=='u'Зміна ціни у зв’язку із зміною ставок податків і зборів'  ${tax_status}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].itemId
@@ -3355,7 +3346,8 @@ Wait for doc upload in qualification
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].factor
   [Documentation]  Зазначення % зміни ціни
   ${item_factor}=  Wait and Get Text  id=qa_modifiItemFactor${n}
-  run keyword  and return  convert to number  ${item_factor.split(':')[0]}
+  Run Keyword And Return  convert to number  ${item_factor.split(':')[0]}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].contractId
+  Run Keyword And Return  Wait and Get Text  id=qa_ContractId${n}
