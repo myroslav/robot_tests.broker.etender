@@ -3287,12 +3287,36 @@ Wait for doc upload in qualification
   ${rationalType}=  get_rationale_types  ${rationalType}
   ${rationale}=  Get From Dictionary  ${change_data.data}  rationale
 
-  Wait and Select By Label  xpath=//div/select[@id="cousechangeAgreement"]  ${rationalType}
-  Wait and Input  id=rationale  ${rationale}
-  Wait and Input  id=addend_0  1  # fill value to create change
+  run keyword if  '${rationalType}'=='taxRate'  Внести зміни taxRate  ${username}  ${agreement_uaid}  ${change_data}
+  run keyword if  '${rationalType}'=='itemPriceVariation'  Внести зміни itemPriceVariation  ${username}  ${agreement_uaid}  ${change_data}
+  run keyword if  '${rationalType}'=='thirdParty'  Внести зміни thirdParty  ${username}  ${agreement_uaid}  ${change_data}
+  Sleep  5
   Wait Scroll Click  xpath=//*[@ng-click="changeAgreementApply(changingData)"]
   Дочекатись зникнення blockUI
   Sleep  10
+
+Внести зміни taxRate
+  [Arguments]  ${username}  ${agreement_uaid}  ${change_data}
+  select from list by index  xpath=//div/select[@id="cousechangeAgreement"]  3
+  ${rationale}=  Get From Dictionary  ${change_data.data}  rationale
+  Wait and Input  id=rationale  ${rationale}
+  Wait and Input  id=addend_0  1  # fill value to create change
+
+
+Внести зміни itemPriceVariation
+  [Arguments]  ${username}  ${agreement_uaid}  ${change_data}
+  select from list by index  xpath=//div/select[@id="cousechangeAgreement"]  1
+  ${rationale}=  Get From Dictionary  ${change_data.data}  rationale
+  Wait and Input  id=rationale  ${rationale}
+  Wait and Input  id=factor_0   1
+
+
+Внести зміни thirdParty
+  [Arguments]  ${username}  ${agreement_uaid}  ${change_data}
+  select from list by index  xpath=//div/select[@id="cousechangeAgreement"]  2
+  ${rationale}=  Get From Dictionary  ${change_data.data}  rationale
+  Wait and Input  id=rationale  ${rationale}
+  Wait and Input  id=factor_0   1
 
 
 Оновити властивості угоди
