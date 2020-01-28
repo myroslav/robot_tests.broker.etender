@@ -1172,6 +1172,14 @@ add feature
   Select Checkbox  id=selfEligible
   Select Checkbox  id=selfQualified
 
+
+Скорегувати сумму пропозиції для рамок
+  [Arguments]  ${amount}
+  ${amount}=  convert to string  ${amount}
+  ${amount}=  Set Variable  ${amount[:4]}
+  Run Keyword And Return  convert to number  ${amount}
+
+
 Подати цінову пропозицію
   [Arguments]  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}=None
   Перейти на сторінку тендера за потреби
@@ -1180,14 +1188,17 @@ add feature
   ${methodType}=  Get Text  id=procedureType
   ${methodType}=  get_method_type   ${methodType.lower()}
   Run Keyword If  '${methodType}' == 'esco'  Run Keyword And Return  Подати цінову пропозицію ESCO  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}
-
   ${amount}=    Run Keyword If  ${lots_ids} is None  Set Variable  ${bid_data.data.value.amount}
   ...           ELSE  Set Variable  ${bid_data.data.lotValues[0].value.amount}
+  ${amountTmp}=  Set Variable  ${amount}
+  ${x}=  Run Keyword  Отримати інформацію про procurementMethodType
+  Set Global Variable  ${global_procedure_type}  ${x}
+
+  ${amount}=  Run Keyword If  '${global_procedure_type}' in ('closeFrameworkAgreementSelectionUA')  Скорегувати сумму пропозиції для рамок  ${amount}
+  ...  ELSE  Set Variable  ${amountTmp}
   Run Keyword And Ignore Error      Input String      id=amount0      ${amount}
   Run Keyword And Ignore Error      Пітдвердити чекбокси пропозиції
 
-  ${x}=  Run Keyword  Отримати інформацію про procurementMethodType
-  Set Global Variable  ${global_procedure_type}  ${x}
   Run Keyword And Return If  '${global_procedure_type}' in ('competitiveDialogueUA', 'competitiveDialogueEU', 'closeFrameworkAgreementSelectionUA')  Пропустити заповнення нецінових показників
   Run Keyword Unless  ${features_ids} is None  Заповнити нецінові критерії  ${features_ids}  ${bid_data.data.parameters}
   Click Element     id=createBid_0
