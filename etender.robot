@@ -3354,11 +3354,11 @@ Wait for doc upload in qualification
   Run Keyword And Return  Convert To Number   ${return_value}
 
 
-Отримати інформацію із угоди про changes[${n}].modifications[${n}].factor
+Отримати інформацію із угоди про changes[${n}].modifications[${i}].factor
   [Documentation]  Зазначення % зміни ціни
-  ${item_factor}=  Wait and Get Text  id=qa_modifiItemFactor${n}
+  ${item_factor}=  Wait and Get Text  xpath=(//*[contains(@id, "qa_modifiItemFactor")])[last()]
   Run Keyword And Return  convert to number  ${item_factor.split(':')[0]}
 
 
-Отримати інформацію із угоди про changes[${n}].modifications[${n}].contractId
-  Run Keyword And Return  Wait and Get Text  id=qa_ContractId${n}
+Отримати інформацію із угоди про changes[${n}].modifications[${i}].contractId
+  Run Keyword And Return  Wait and Get Text  xpath=(//*[contains(@id, "qa_ContractId")])[last()]
