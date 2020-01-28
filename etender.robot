@@ -2975,6 +2975,8 @@ temporary keyword for title update
   Sleep  10
   Wait and Click  id=submitPreQualification  10
   Дочекатись зникнення blockUI
+  Sleep  200
+  # компенсировать генерацию контракта на цбд
 
 
 Дискваліфікувати постачальника
