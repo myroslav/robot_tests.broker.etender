@@ -2975,7 +2975,10 @@ temporary keyword for title update
   Sleep  10
   Wait and Click  id=submitPreQualification  10
   Дочекатись зникнення blockUI
-  Sleep  200
+  Sleep  1000
+  Reload Page
+  Дочекатись зникнення blockUI
+  Capture Page Screenshot
   # компенсировать генерацию контракта на цбд
 
 
@@ -3235,18 +3238,20 @@ Wait for doc upload in qualification
   ${end}=    convert_date_to_etender_format  ${end}
 
   Wait and Input    id=agreementNumber  agreementnumber
-  Sleep  20
-  #${time_now_tmp}=     get_time_offset  -1
+  ${time_now_tmp}=     get_time_offset  -1
   ${date_now_tmp}=     get_date_now
   Wait and Input  name=dateSigned  ${date_now_tmp}
-  #Wait and Input  name=timeSigned  ${time_now_tmp}
+  Wait and Input  name=timeSigned  ${time_now_tmp}
   Wait and Input  startDate        ${start}
   Wait and Input  endDate          ${end}
+  Capture Page Screenshot
   Sleep  20
-  #Дочекатись зникнення blockUI
+  Дочекатись зникнення blockUI
   Wait Scroll Click  id=qa_saveAgreement
+  Capture Page Screenshot
   Дочекатись зникнення blockUI
   Wait And Click  id=qa_activateAgreement
+  Capture Page Screenshot
   Дочекатись зникнення blockUI
 
 
