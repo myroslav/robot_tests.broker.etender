@@ -3302,6 +3302,17 @@ Wait for doc upload in qualification
   Дочекатись зникнення blockUI
   Sleep  10
 
+Завантажити документ для зміни у рамковій угоді
+  [Arguments]  ${username}  ${file}  ${tender_uaid}  ${arg}
+  select from list by index  id=docType  2
+  Sleep  5
+  Завантажити док  ${username}  ${file}  xpath=//button[@ng-model="documentsToAdd"]
+  Sleep  30
+  Reload page
+  Sleep  10
+
+
+
 Внести зміни taxRate
   [Arguments]  ${username}  ${agreement_uaid}  ${change_data}
   select from list by index  xpath=//div/select[@id="cousechangeAgreement"]  3
@@ -3329,16 +3340,24 @@ Wait for doc upload in qualification
 Оновити властивості угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${data}
   Log  ${data}
-  ${addend}=  Get From Dictionary  ${data.data.modifications[0]}  addend
+  ${status}  ${addend}=  run keyword and ignore error  Get From Dictionary  ${data.data.modifications[0]}  addend
+  ${status}  ${factor}=  run keyword and ignore error  Get From Dictionary  ${data.data.modifications[0]}  factor
   Дочекатись зникнення blockUI
-  ${addend}=  float_to_string_2f  ${addend}
-  Wait and Input  id=addend_0  ${addend}
+  ${addend}=  run keyword and ignore error  float_to_string_2f  ${addend}
+  run keyword and ignore error  Wait and Input  id=addend_0  ${addend}
+  ${factor}=  run keyword and ignore error  float_to_string_2f  ${factor}
+  run keyword and ignore error  Wait and Input  id=factor_0  ${factor}
   Capture Page Screenshot
+  Sleep  10
+  Wait and Click  xpath=//button[@click-and-block="updateAgreementChange(change)"]
+  Дочекатись зникнення blockUI
+  Sleep  5
 
 
 Застосувати зміну для угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${dateSigned}  ${status}
-  Wait and Click  xpath=//button[@click-and-block="updateAgreementChange(change)"]
+  run keyword if  '${status}'=='active'  Wait and Click  xpath=//button[@ng-click="activePendingChange(change, pendingChangeForm)"]
+  run keyword if  '${status}'=='cancelled'  Wait and Click  xpath=//button[@ng-click="cancellePendingChange(change.id)"]
   Дочекатись зникнення blockUI
 
 
