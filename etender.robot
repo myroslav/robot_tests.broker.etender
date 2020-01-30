@@ -3344,16 +3344,24 @@ Wait for doc upload in qualification
   Wait and Input  id=rationale  ${rationale}
   select from list by index  id=provider  3
 
+Адаптувати відсотки для поля change_factor
+  [Arguments]  ${factor}
+  Run Keyword And Return  get_agreement_change_factor  ${factor}
+
 
 Оновити властивості угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${data}
   Log  ${data}
+  Дочекатись зникнення blockUI
   ${status}  ${addend}=  run keyword and ignore error  Get From Dictionary  ${data.data.modifications[0]}  addend
   ${status}  ${factor}=  run keyword and ignore error  Get From Dictionary  ${data.data.modifications[0]}  factor
-  Дочекатись зникнення blockUI
+
   ${status}  ${addend}=  run keyword and ignore error  float_to_string_2f  ${addend}
   run keyword and ignore error  Wait and Input  id=addend_0  ${addend}
-  ${status}  ${factor}=  run keyword and ignore error  float_to_string_2f  ${factor}
+
+#  ${status}  ${factor}=  run keyword and ignore error  float_to_string_2f  ${factor}
+
+  ${status}  ${factor}=  run keyword and ignore error  Адаптувати відсотки для поля change_factor  ${factor}
   run keyword and ignore error  Wait and Input  id=factor_0  ${factor}
   Capture Page Screenshot
   Sleep  10

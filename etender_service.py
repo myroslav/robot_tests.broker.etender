@@ -428,3 +428,7 @@ def index_adapter(index):
     else:
         return index
 
+
+def get_agreement_change_factor(float_value):
+    _factor = float_value - 1
+    return str(_factor * 100)
