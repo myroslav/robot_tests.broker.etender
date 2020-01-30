@@ -3297,6 +3297,7 @@ Wait for doc upload in qualification
   run keyword if  '${rationalType}'=='taxRate'  Внести зміни taxRate  ${username}  ${agreement_uaid}  ${change_data}
   run keyword if  '${rationalType}'=='itemPriceVariation'  Внести зміни itemPriceVariation  ${username}  ${agreement_uaid}  ${change_data}
   run keyword if  '${rationalType}'=='thirdParty'  Внести зміни thirdParty  ${username}  ${agreement_uaid}  ${change_data}
+  run keyword if  '${rationalType}'=='partyWithdrawal'  Внести зміни partyWithdrawal  ${username}  ${agreement_uaid}  ${change_data}
   Sleep  5
   Wait Scroll Click  xpath=//*[@ng-click="changeAgreementApply(changingData)"]
   Дочекатись зникнення blockUI
@@ -3336,6 +3337,13 @@ Wait for doc upload in qualification
   Wait and Input  id=rationale  ${rationale}
   Wait and Input  id=factor_0   1
 
+Внести зміни partyWithdrawal
+  [Arguments]  ${username}  ${agreement_uaid}  ${change_data}
+  select from list by index  xpath=//div/select[@id="cousechangeAgreement"]  4
+  ${rationale}=  Get From Dictionary  ${change_data.data}  rationale
+  Wait and Input  id=rationale  ${rationale}
+  select from list by index  id=provider  3
+
 
 Оновити властивості угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${data}
@@ -3343,9 +3351,9 @@ Wait for doc upload in qualification
   ${status}  ${addend}=  run keyword and ignore error  Get From Dictionary  ${data.data.modifications[0]}  addend
   ${status}  ${factor}=  run keyword and ignore error  Get From Dictionary  ${data.data.modifications[0]}  factor
   Дочекатись зникнення blockUI
-  ${addend}=  run keyword and ignore error  float_to_string_2f  ${addend}
+  ${status}  ${addend}=  run keyword and ignore error  float_to_string_2f  ${addend}
   run keyword and ignore error  Wait and Input  id=addend_0  ${addend}
-  ${factor}=  run keyword and ignore error  float_to_string_2f  ${factor}
+  ${status}  ${factor}=  run keyword and ignore error  float_to_string_2f  ${factor}
   run keyword and ignore error  Wait and Input  id=factor_0  ${factor}
   Capture Page Screenshot
   Sleep  10
