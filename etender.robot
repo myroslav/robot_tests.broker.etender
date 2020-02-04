@@ -224,7 +224,7 @@ Login
   Wait and Click        id=goToCreate
   Дочекатись зникнення blockUI
 #  Wait and Input        xpath=//input[@name="planExternalId"]          ${global_plan_id}
-  Wait and Input  xpath=//input[@name="planExternalId"]  ${tender_uaid}
+  Wait and Input  xpath=//input[@name="planUaId0"]  ${tender_uaid}
   Wait and Click  id=searchPlan
   Sleep  10
   Wait and Input    id=title    ${tender_data.title}
@@ -649,7 +649,8 @@ add feature
 
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
-  Select From List By Index     xpath=//select[@name="startDateMonth"]          6
+#  Select From List By Index     xpath=//select[@name="startDateMonth"]          6
+  Wait and Input   name=tenderPeriodStartDate  06-2020
 
   Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
   Wait and Click        id=qa_mainPlanClassification
@@ -746,8 +747,8 @@ add feature
 
   ${end_date}=    Get From Dictionary  ${new_value}  endDate
   ${end_year}=  get_year_from_full_date  ${end_date}
-  Wait and Select By Label  xpath=//*[@name="startProjectBudget"]  ${start_year}
-  Wait and Select By Label  xpath=//*[@name="endProjectBudget"]  ${end_year}
+  Wait and Select By Label  name=startProjectBudget  ${start_year}
+  Wait and Select By Label  name=endProjectBudget  ${end_year}
   Capture Page Screenshot
 
 Внести зміни в план
