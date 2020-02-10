@@ -920,7 +920,7 @@ add feature
   Run Keyword If    '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}  ${lot_index}
   run keyword if  '${procedureType}' != 'esco'  Заповнити дату за наявності  ${item}  ${index}  ${lot_index}
   Wait and Select By Label  id=region_${lot_index}${index}  ${item.deliveryAddress.region}
-  Run Keyword If  '${item.deliveryAddress.region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_${lot_index}${index}"]  ${locality}
+  Run Keyword If  '${item.deliveryAddress.region}' != 'м. Київ'  Input text  xpath=//input[@name="otherCity_${lot_index}${index}"]  ${locality}
   Wait and Input    id=street_${lot_index}${index}   ${item.deliveryAddress.streetAddress}
   Wait and Input    id=postIndex_${lot_index}${index}    ${item.deliveryAddress.postalCode}
 
@@ -2584,8 +2584,8 @@ Input String
   # TODO: use qualified from dict
   Run Keyword And Ignore Error  Wait Scroll Click  xpath=//div[@ng-if="!detailes.isLimitedReporting"]//input[1]  # Відповідність кваліфікаційним критеріям: Відповідає
   Select From List By Label  xpath=//select[@ng-model="data.country"]  ${countryName}
-  Run Keyword If  '${region}' == 'місто Київ'  Select From List By Label  xpath=//*[contains(@id,"_region")]  місто Київ
-  Run Keyword If  '${region}' != 'місто Київ'  Run Keywords
+  Run Keyword If  '${region}' == 'м. Київ'  Select From List By Label  xpath=//*[contains(@id,"_region")]  м. Київ
+  Run Keyword If  '${region}' != 'м. Київ'  Run Keywords
   ...  Select From List By Label  xpath=//*[contains(@id,"_region")]     ${region}
   ...  AND  Input text            xpath=//*[contains(@name,"_newCity")]  ${locality}
   Input text  xpath=//*[contains(@name,"_addressStr")]  ${streetAddress}
@@ -2654,6 +2654,14 @@ Wait for upload before signing
   Page Should Not Contain  Не всі документи экспортовано до Центральної бази.
   Wait Until Element Is Visible  id=CAsServersSelect
 
+
+Почекати автоперевірки підпису контракту
+  # ECP freezes screen to checkout signature. Time varies from 5..20 seconds. Diff btns, cause of procedure_type
+  Reload Page
+  Sleep  25  # ждем автопроверки ЕЦП
+  Click One Of Button  id=qa_finishTender  id=qa_finishTenderReporting
+
+
 Підтвердити підписання контракту
   [Arguments]  ${username}  ${tender_uaid}  ${contract_index}
   Перейти на сторінку контракту за потреби
@@ -2683,9 +2691,7 @@ Wait for upload before signing
   Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
   Run Keyword And Ignore Error  Підтвердити контракт додаванням ЕЦП
-  Sleep  20  # ждем автопроверки ЕЦП
-  Click One Of Button  id=qa_finishTender  id=qa_finishTenderReporting
-  Capture Page Screenshot
+  Wait Until Keyword Succeeds  3 x  10 s  Почекати автоперевірки підпису контракту
 #  Wait Until Page Contains  Підтверджено!  60
 
 
@@ -3408,8 +3414,7 @@ Wait for doc upload in qualification
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].itemId
   [Documentation]  Позиція
-  ${item_descr}=  Wait and Get Text  id=qa_modifiItemApiid${n}
-  [Return]  ${item_descr.split(':')[0]}
+  Run Keyword And Return  Wait and Get Attribute  xpath=(//*[@ng-bind="modifi.item.description"])[last()]  data-api-id
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].addend
@@ -3423,9 +3428,10 @@ Wait for doc upload in qualification
 
 Отримати інформацію із угоди про changes[${n}].modifications[${i}].factor
   [Documentation]  Зазначення % зміни ціни
-  ${item_factor}=  Wait and Get Text  xpath=(//*[contains(@id, "qa_modifiItemFactor")])[last()]
-  Run Keyword And Return  convert to number  ${item_factor.split(':')[0]}
+  ${item_factor}=  Wait and Get Text  xpath=(//*[contains(@id, "qa_modifiItemFactor")])[last()]/@data-factor
+  ${item_factor}=  get_numbers_from_string  ${item_factor}
+  Run Keyword And Return  convert to number  ${item_factor}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${i}].contractId
-  Run Keyword And Return  Wait and Get Text  xpath=(//*[contains(@id, "qa_ContractId")])[last()]
+  Run Keyword And Return  Wait and Get Attribute  xpath=//*[@ng-bind = "data.modifications[${i}].contract.suppliers[${i}].name"]  data-contract-id
