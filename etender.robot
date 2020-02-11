@@ -2658,7 +2658,7 @@ Wait for upload before signing
 Почекати автоперевірки підпису контракту
   # ECP freezes screen to checkout signature. Time varies from 5..20 seconds. Diff btns, cause of procedure_type
   Reload Page
-  Sleep  25  # ждем автопроверки ЕЦП
+  Sleep  30  # ждем автопроверки ЕЦП
   Click One Of Button  id=qa_finishTender  id=qa_finishTenderReporting
 
 
@@ -2691,7 +2691,7 @@ Wait for upload before signing
   Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
   Run Keyword And Ignore Error  Підтвердити контракт додаванням ЕЦП
-  Wait Until Keyword Succeeds  3 x  10 s  Почекати автоперевірки підпису контракту
+  Wait Until Keyword Succeeds  5 x  10 s  Почекати автоперевірки підпису контракту
 #  Wait Until Page Contains  Підтверджено!  60
 
 
