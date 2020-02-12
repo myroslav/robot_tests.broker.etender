@@ -3428,7 +3428,8 @@ Wait for doc upload in qualification
 
 Отримати інформацію із угоди про changes[${n}].modifications[${i}].factor
   [Documentation]  Зазначення % зміни ціни
-  ${item_factor}=  Wait and Get Text  xpath=(//*[contains(@id, "qa_modifiItemFactor")])[last()]/@data-factor
+#  ${item_factor}=  Wait and Get Text  xpath=(//*[contains(@id, "qa_modifiItemFactor")])[last()]/@data-factor
+  Run Keyword And Return  Wait and Get Attribute  xpath=(//*[contains(@id, "qa_modifiItemFactor")])[last()]  data-factor
   ${item_factor}=  get_numbers_from_string  ${item_factor}
   Run Keyword And Return  convert to number  ${item_factor}
 
