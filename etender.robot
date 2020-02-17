@@ -1350,6 +1350,10 @@ add feature
   Run Keyword And Return  Wait and Get Attribute  xpath=//span[@id='lotValue_${n}' and @class='hidden-xs fwn pl15 ng-binding']  value
 
 
+Отримати інформацію про lots[${n}].title
+  Run Keyword And Return  Wait and Get Text  xpath=//span[.="Назва окремої частини предмета закупівлі (лота):"]/parent::div//following-sibling::div/*[@id="lotTitle_${n}"]
+
+
 Мінімальний степ для рамкових
   [Arguments]  ${n}
   ${result}=  Wait and Get Text  id=lotMinimalStep_${n}
@@ -3275,12 +3279,17 @@ Wait for doc upload in qualification
   Дочекатись зникнення blockUI
 
 
-Створити зміну до угоди
+Почекати автоперевірки підпису угоди
+  # ECP freezes screen to checkout signature. Time varies from 5..20 seconds.
   Дочекатись зникнення blockUI
-  Sleep  5
-  Run Keyword And Ignore Error  Location Should Contain  agreementDetailes
+  Reload Page
+  Sleep  30  # ждем автопроверки ЕЦП
   Wait Scroll Click    xpath=//button[@name="changeForm"]
   Дочекатись зникнення blockUI
+
+
+Створити зміну до угоди
+  Wait Until Keyword Succeeds  5 x  10 s  Почекати автоперевірки підпису угоди
 
 
 Отримати доступ до угоди
@@ -3306,7 +3315,7 @@ Wait for doc upload in qualification
   run keyword if  '${rationalType}'=='thirdParty'  Внести зміни thirdParty  ${username}  ${agreement_uaid}  ${change_data}
   run keyword if  '${rationalType}'=='partyWithdrawal'  Внести зміни partyWithdrawal  ${username}  ${agreement_uaid}  ${change_data}
   Sleep  5
-  Wait Scroll Click  xpath=//*[@ng-click="changeAgreementApply(changingData)"]
+  Wait Scroll Click  id=qa_createChange
   Дочекатись зникнення blockUI
   Sleep  10
 
@@ -3318,7 +3327,6 @@ Wait for doc upload in qualification
   Sleep  30
   Reload page
   Sleep  10
-
 
 
 Внести зміни taxRate
@@ -3351,6 +3359,7 @@ Wait for doc upload in qualification
   Wait and Input  id=rationale  ${rationale}
   select from list by index  id=provider  3
 
+
 Адаптувати відсотки для поля change_factor
   [Arguments]  ${factor}
   Run Keyword And Return  get_agreement_change_factor  ${factor}
@@ -3359,6 +3368,7 @@ Wait for doc upload in qualification
 Оновити властивості угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${data}
   Log  ${data}
+  Wait Until Keyword Succeeds  5 x  10 s  Почекати автоперевірки підпису угоди
   Дочекатись зникнення blockUI
   ${status}  ${addend}=  run keyword and ignore error  Get From Dictionary  ${data.data.modifications[0]}  addend
   ${status}  ${factor}=  run keyword and ignore error  Get From Dictionary  ${data.data.modifications[0]}  factor
@@ -3372,14 +3382,21 @@ Wait for doc upload in qualification
   run keyword and ignore error  Wait and Input  id=factor_0  ${factor}
   Capture Page Screenshot
   Sleep  10
-  Wait and Click  xpath=//button[@click-and-block="updateAgreementChange(change)"]
+  # click Зберегти зміну
+  Run Keyword And Ignore Error  Wait and Click  xpath=//button[@click-and-block="updateAgreementChange(change)"]
   Дочекатись зникнення blockUI
-  Sleep  5
+  Wait Until Keyword Succeeds  5 x  10 s  Почекати автоперевірки підпису угоди
+
+
+Активувати зміну за допомогою ЕЦП
+  Wait and Click  xpath=//button[@ng-click="activePendingChange(change, pendingChangeForm)"]
+  Run Keyword And Ignore Error  Підписати ЕЦП
+  Wait Until Keyword Succeeds  5 x  10 s  Почекати автоперевірки підпису угоди
 
 
 Застосувати зміну для угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${dateSigned}  ${status}
-  run keyword if  '${status}'=='active'  Wait and Click  xpath=//button[@ng-click="activePendingChange(change, pendingChangeForm)"]
+  run keyword if  '${status}'=='active'  Активувати зміну за допомогою ЕЦП
   run keyword if  '${status}'=='cancelled'  Wait and Click  xpath=//button[@ng-click="cancellePendingChange(change.id)"]
   Дочекатись зникнення blockUI
 
