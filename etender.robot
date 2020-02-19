@@ -426,8 +426,6 @@ Login
   [Arguments]  ${index}  ${value}
   Execute JavaScript  document.querySelector("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_${index}']").value=${value}
   Execute JavaScript  $("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_${index}']").trigger('change')
-#  Execute JavaScript  document.querySelector("decimal-mask-input[data='lot.minimalStep.amount'] input[type='number']").value=${value}
-#  Execute JavaScript  $("decimal-mask-input[data='lot.minimalStep.amount'] input[type='number']").trigger('change')
 
 
 Заповнити інформацію про лот
@@ -1758,13 +1756,22 @@ Input String
   Execute JavaScript  $("decimal-mask-input[data='lot.value.amount'] input[name='lotValue_0']").trigger('change')
   Capture Page Screenshot
 
+
 Редагувати поле лота minimalStep.amount
   [Arguments]  ${lot_id}  ${new_value}
   ${new_value}=  float_to_string_2f  ${new_value}  # at least 2 fractional point precision, avoid rounding
+  Log  ${global_procedure_type}
+  Run Keyword And Return If  '${global_procedure_type}'=='closeFrameworkAgreementSelectionUA'  Редагувати поле лота minimalStep.amount для selection процедури  ${new_value}
   Execute JavaScript  document.querySelector("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_0']").value=${new_value}
   Execute JavaScript  $("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_0']").trigger('change')
   Capture Page Screenshot
 
+
+Редагувати поле лота minimalStep.amount для selection процедури
+  [Arguments]  ${value}
+  Execute JavaScript  document.querySelector("decimal-mask-input[data='data.lots[0].minimalStep.amount'] input[id='minimalStep']").value=${value}
+  Execute JavaScript  $("decimal-mask-input[data='data.lots[0].minimalStep.amount'] input[id='minimalStep']").trigger('change')
+  Capture Page Screenshot
 
 Редагувати поле лота description
   [Arguments]  ${lot_id}  ${new_value}
