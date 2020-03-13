@@ -1103,7 +1103,7 @@ add feature
   Sleep  30
   Go To  ${USERS.users['${username}'].homepage.split('#')[0]}plan?planid=${plan_id}
   Дочекатись зникнення blockUI
-  Дочекатися завершення імпорту плану  ${plan_id}
+  Wait Until Keyword Succeeds  20 s  6 x  Дочекатися завершення імпорту плану  ${plan_id}
 
 
 Завантажити документ в ставку
