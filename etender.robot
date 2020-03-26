@@ -388,19 +388,19 @@ Login
 Додати умови оплати
   [Arguments]  ${milestones}
   ${count}=   Get Length  ${milestones}
-  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' == 'reporting'  Wait Scroll Click     id=addMilestone
+  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' == 'reporting'  Wait Scroll Click     id=addMilestonetender
   :FOR  ${i}  IN RANGE  ${count}
   \     Додати умову оплати  ${milestones[${i}]}  ${i}
 
 Додати умову оплати
   [Arguments]  ${milestone}  ${index}
   Log  ${milestone}
-  Run Keyword Unless  '${index}'=='0'  Wait Scroll Click     id=addMilestone
   ${status}=    Run Keyword And Return Status   Dictionary Should Not Contain Key   ${milestone}  relatedLot
   ${target}=    Set Variable If  #wait a fix for Framework Agreement ( Milestone tied to the lot, not to the tender )
   ...          '${global_procedure_type}'=='closeFrameworkAgreementUA'  tender
   ...          '${status}'=='True'  tender
   ...          '${status}'=='False'  lot_0
+  Run Keyword Unless  '${index}'=='0'  Wait Scroll Click     id=addMilestone${target}
   Wait and Input                id=milestonePercentage${index}${target}     ${milestone.percentage}
   Input String                  id=milestoneDays${index}${target}           ${milestone.duration.days}
   Select From List By Value     id=milestoneTitle${index}${target}          ${milestone.title}
@@ -3102,6 +3102,8 @@ Wait for doc upload in qualification
 
 Підтвердити кваліфікацію
   [Arguments]  ${username}  ${tender_uaid}  ${qualification_num_p}
+  Reload Page
+  Sleep  5
   ${qualification_num}=  Set Variable  ${qualification_num_p}
   ${qualification_num}=     get_modulus_from_number   ${qualification_num}
 # Upload document to qualification object
