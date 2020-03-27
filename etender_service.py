@@ -242,6 +242,7 @@ def parse_currency_value_with_spaces_percentage_NBU(raw):
     result = float(result)
     return result
 
+
 def get_numbers_from_string(raw):
    x = []
    for i in raw:

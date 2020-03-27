@@ -388,19 +388,19 @@ Login
 Додати умови оплати
   [Arguments]  ${milestones}
   ${count}=   Get Length  ${milestones}
-  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' == 'reporting'  Wait Scroll Click     id=addMilestone
+  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' == 'reporting'  Wait Scroll Click     id=addMilestonetender
   :FOR  ${i}  IN RANGE  ${count}
   \     Додати умову оплати  ${milestones[${i}]}  ${i}
 
 Додати умову оплати
   [Arguments]  ${milestone}  ${index}
   Log  ${milestone}
-  Run Keyword Unless  '${index}'=='0'  Wait Scroll Click     id=addMilestone
   ${status}=    Run Keyword And Return Status   Dictionary Should Not Contain Key   ${milestone}  relatedLot
   ${target}=    Set Variable If  #wait a fix for Framework Agreement ( Milestone tied to the lot, not to the tender )
   ...          '${global_procedure_type}'=='closeFrameworkAgreementUA'  tender
   ...          '${status}'=='True'  tender
   ...          '${status}'=='False'  lot_0
+  Run Keyword Unless  '${index}'=='0'  Wait Scroll Click     id=addMilestone${target}
   Wait and Input                id=milestonePercentage${index}${target}     ${milestone.percentage}
   Input String                  id=milestoneDays${index}${target}           ${milestone.duration.days}
   Select From List By Value     id=milestoneTitle${index}${target}          ${milestone.title}
@@ -426,8 +426,6 @@ Login
   [Arguments]  ${index}  ${value}
   Execute JavaScript  document.querySelector("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_${index}']").value=${value}
   Execute JavaScript  $("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_${index}']").trigger('change')
-#  Execute JavaScript  document.querySelector("decimal-mask-input[data='lot.minimalStep.amount'] input[type='number']").value=${value}
-#  Execute JavaScript  $("decimal-mask-input[data='lot.minimalStep.amount'] input[type='number']").trigger('change')
 
 
 Заповнити інформацію про лот
@@ -920,7 +918,7 @@ add feature
   Run Keyword If    '${status}' == 'PASS'   Опрацювати дотаткові класифікації  ${item.additionalClassifications}  ${index}  ${lot_index}
   run keyword if  '${procedureType}' != 'esco'  Заповнити дату за наявності  ${item}  ${index}  ${lot_index}
   Wait and Select By Label  id=region_${lot_index}${index}  ${item.deliveryAddress.region}
-  Run Keyword If  '${item.deliveryAddress.region}' != 'місто Київ'  Input text  xpath=//input[@name="otherCity_${lot_index}${index}"]  ${locality}
+  Run Keyword If  '${item.deliveryAddress.region}' != 'м. Київ'  Input text  xpath=//input[@name="otherCity_${lot_index}${index}"]  ${locality}
   Wait and Input    id=street_${lot_index}${index}   ${item.deliveryAddress.streetAddress}
   Wait and Input    id=postIndex_${lot_index}${index}    ${item.deliveryAddress.postalCode}
 
@@ -1350,6 +1348,10 @@ add feature
   Run Keyword And Return  Wait and Get Attribute  xpath=//span[@id='lotValue_${n}' and @class='hidden-xs fwn pl15 ng-binding']  value
 
 
+Отримати інформацію про lots[${n}].title
+  Run Keyword And Return  Wait and Get Text  xpath=//span[.="Назва окремої частини предмета закупівлі (лота):"]/parent::div//following-sibling::div/*[@id="lotTitle_${n}"]
+
+
 Мінімальний степ для рамкових
   [Arguments]  ${n}
   ${result}=  Wait and Get Text  id=lotMinimalStep_${n}
@@ -1754,13 +1756,22 @@ Input String
   Execute JavaScript  $("decimal-mask-input[data='lot.value.amount'] input[name='lotValue_0']").trigger('change')
   Capture Page Screenshot
 
+
 Редагувати поле лота minimalStep.amount
   [Arguments]  ${lot_id}  ${new_value}
   ${new_value}=  float_to_string_2f  ${new_value}  # at least 2 fractional point precision, avoid rounding
+  Log  ${global_procedure_type}
+  Run Keyword And Return If  '${global_procedure_type}'=='closeFrameworkAgreementSelectionUA'  Редагувати поле лота minimalStep.amount для selection процедури  ${new_value}
   Execute JavaScript  document.querySelector("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_0']").value=${new_value}
   Execute JavaScript  $("decimal-mask-input[data='lot.minimalStep.amount'] input[id='minimalStep_0']").trigger('change')
   Capture Page Screenshot
 
+
+Редагувати поле лота minimalStep.amount для selection процедури
+  [Arguments]  ${value}
+  Execute JavaScript  document.querySelector("decimal-mask-input[data='data.lots[0].minimalStep.amount'] input[id='minimalStep']").value=${value}
+  Execute JavaScript  $("decimal-mask-input[data='data.lots[0].minimalStep.amount'] input[id='minimalStep']").trigger('change')
+  Capture Page Screenshot
 
 Редагувати поле лота description
   [Arguments]  ${lot_id}  ${new_value}
@@ -2584,8 +2595,8 @@ Input String
   # TODO: use qualified from dict
   Run Keyword And Ignore Error  Wait Scroll Click  xpath=//div[@ng-if="!detailes.isLimitedReporting"]//input[1]  # Відповідність кваліфікаційним критеріям: Відповідає
   Select From List By Label  xpath=//select[@ng-model="data.country"]  ${countryName}
-  Run Keyword If  '${region}' == 'місто Київ'  Select From List By Label  xpath=//*[contains(@id,"_region")]  місто Київ
-  Run Keyword If  '${region}' != 'місто Київ'  Run Keywords
+  Run Keyword If  '${region}' == 'м. Київ'  Select From List By Label  xpath=//*[contains(@id,"_region")]  м. Київ
+  Run Keyword If  '${region}' != 'м. Київ'  Run Keywords
   ...  Select From List By Label  xpath=//*[contains(@id,"_region")]     ${region}
   ...  AND  Input text            xpath=//*[contains(@name,"_newCity")]  ${locality}
   Input text  xpath=//*[contains(@name,"_addressStr")]  ${streetAddress}
@@ -2654,6 +2665,14 @@ Wait for upload before signing
   Page Should Not Contain  Не всі документи экспортовано до Центральної бази.
   Wait Until Element Is Visible  id=CAsServersSelect
 
+
+Почекати автоперевірки підпису контракту
+  # ECP freezes screen to checkout signature. Time varies from 5..20 seconds. Diff btns, cause of procedure_type
+  Reload Page
+  Sleep  30  # ждем автопроверки ЕЦП
+  Click One Of Button  id=qa_finishTender  id=qa_finishTenderReporting
+
+
 Підтвердити підписання контракту
   [Arguments]  ${username}  ${tender_uaid}  ${contract_index}
   Перейти на сторінку контракту за потреби
@@ -2683,9 +2702,7 @@ Wait for upload before signing
   Run Keyword And Ignore Error  Відкрити розділ Деталі Закупівлі
   Run Keyword And Ignore Error  Wait Scroll Click     id=qa_EditContractInfo
   Run Keyword And Ignore Error  Підтвердити контракт додаванням ЕЦП
-  Sleep  20  # ждем автопроверки ЕЦП
-  Click One Of Button  id=qa_finishTender  id=qa_finishTenderReporting
-  Capture Page Screenshot
+  Wait Until Keyword Succeeds  5 x  10 s  Почекати автоперевірки підпису контракту
 #  Wait Until Page Contains  Підтверджено!  60
 
 
@@ -3085,6 +3102,8 @@ Wait for doc upload in qualification
 
 Підтвердити кваліфікацію
   [Arguments]  ${username}  ${tender_uaid}  ${qualification_num_p}
+  Reload Page
+  Sleep  5
   ${qualification_num}=  Set Variable  ${qualification_num_p}
   ${qualification_num}=     get_modulus_from_number   ${qualification_num}
 # Upload document to qualification object
@@ -3269,12 +3288,17 @@ Wait for doc upload in qualification
   Дочекатись зникнення blockUI
 
 
-Створити зміну до угоди
+Почекати автоперевірки підпису угоди
+  # ECP freezes screen to checkout signature. Time varies from 5..20 seconds.
   Дочекатись зникнення blockUI
-  Sleep  5
-  Run Keyword And Ignore Error  Location Should Contain  agreementDetailes
+  Reload Page
+  Sleep  30  # ждем автопроверки ЕЦП
   Wait Scroll Click    xpath=//button[@name="changeForm"]
   Дочекатись зникнення blockUI
+
+
+Створити зміну до угоди
+  Wait Until Keyword Succeeds  5 x  10 s  Почекати автоперевірки підпису угоди
 
 
 Отримати доступ до угоди
@@ -3300,7 +3324,7 @@ Wait for doc upload in qualification
   run keyword if  '${rationalType}'=='thirdParty'  Внести зміни thirdParty  ${username}  ${agreement_uaid}  ${change_data}
   run keyword if  '${rationalType}'=='partyWithdrawal'  Внести зміни partyWithdrawal  ${username}  ${agreement_uaid}  ${change_data}
   Sleep  5
-  Wait Scroll Click  xpath=//*[@ng-click="changeAgreementApply(changingData)"]
+  Wait Scroll Click  id=qa_createChange
   Дочекатись зникнення blockUI
   Sleep  10
 
@@ -3312,7 +3336,6 @@ Wait for doc upload in qualification
   Sleep  30
   Reload page
   Sleep  10
-
 
 
 Внести зміни taxRate
@@ -3345,6 +3368,7 @@ Wait for doc upload in qualification
   Wait and Input  id=rationale  ${rationale}
   select from list by index  id=provider  3
 
+
 Адаптувати відсотки для поля change_factor
   [Arguments]  ${factor}
   Run Keyword And Return  get_agreement_change_factor  ${factor}
@@ -3353,6 +3377,7 @@ Wait for doc upload in qualification
 Оновити властивості угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${data}
   Log  ${data}
+  Wait Until Keyword Succeeds  5 x  10 s  Почекати автоперевірки підпису угоди
   Дочекатись зникнення blockUI
   ${status}  ${addend}=  run keyword and ignore error  Get From Dictionary  ${data.data.modifications[0]}  addend
   ${status}  ${factor}=  run keyword and ignore error  Get From Dictionary  ${data.data.modifications[0]}  factor
@@ -3366,14 +3391,21 @@ Wait for doc upload in qualification
   run keyword and ignore error  Wait and Input  id=factor_0  ${factor}
   Capture Page Screenshot
   Sleep  10
-  Wait and Click  xpath=//button[@click-and-block="updateAgreementChange(change)"]
+  # click Зберегти зміну
+  Run Keyword And Ignore Error  Wait and Click  xpath=//button[@click-and-block="updateAgreementChange(change)"]
   Дочекатись зникнення blockUI
-  Sleep  5
+  Wait Until Keyword Succeeds  5 x  10 s  Почекати автоперевірки підпису угоди
+
+
+Активувати зміну за допомогою ЕЦП
+  Wait and Click  xpath=//button[@ng-click="activePendingChange(change, pendingChangeForm)"]
+  Run Keyword And Ignore Error  Підписати ЕЦП
+  Wait Until Keyword Succeeds  5 x  10 s  Почекати автоперевірки підпису угоди
 
 
 Застосувати зміну для угоди
   [Arguments]  ${username}  ${agreement_uaid}  ${dateSigned}  ${status}
-  run keyword if  '${status}'=='active'  Wait and Click  xpath=//button[@ng-click="activePendingChange(change, pendingChangeForm)"]
+  run keyword if  '${status}'=='active'  Активувати зміну за допомогою ЕЦП
   run keyword if  '${status}'=='cancelled'  Wait and Click  xpath=//button[@ng-click="cancellePendingChange(change.id)"]
   Дочекатись зникнення blockUI
 
@@ -3408,8 +3440,7 @@ Wait for doc upload in qualification
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].itemId
   [Documentation]  Позиція
-  ${item_descr}=  Wait and Get Text  id=qa_modifiItemApiid${n}
-  [Return]  ${item_descr.split(':')[0]}
+  Run Keyword And Return  Wait and Get Attribute  xpath=(//*[@ng-bind="modifi.item.description"])[last()]  data-api-id
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].addend
@@ -3423,9 +3454,11 @@ Wait for doc upload in qualification
 
 Отримати інформацію із угоди про changes[${n}].modifications[${i}].factor
   [Documentation]  Зазначення % зміни ціни
-  ${item_factor}=  Wait and Get Text  xpath=(//*[contains(@id, "qa_modifiItemFactor")])[last()]
-  Run Keyword And Return  convert to number  ${item_factor.split(':')[0]}
+#  ${item_factor}=  Wait and Get Text  xpath=(//*[contains(@id, "qa_modifiItemFactor")])[last()]/@data-factor
+  ${item_factor}=  Wait and Get Attribute  xpath=(//*[contains(@id, "qa_modifiItemFactor")])[last()]  data-factor
+  ${item_factor}=  get_numbers_from_string  ${item_factor}
+  Run Keyword And Return  convert to number  ${item_factor}
 
 
 Отримати інформацію із угоди про changes[${n}].modifications[${i}].contractId
-  Run Keyword And Return  Wait and Get Text  xpath=(//*[contains(@id, "qa_ContractId")])[last()]
+  Run Keyword And Return  Wait and Get Attribute  xpath=//*[@ng-bind = "data.modifications[${i}].contract.suppliers[${i}].name"]  data-contract-id
