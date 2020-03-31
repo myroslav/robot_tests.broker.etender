@@ -1168,8 +1168,8 @@ add feature
   Sleep  1
 
 Пітдвердити чекбокси пропозиції
-  Select Checkbox  id=selfEligible
-  Select Checkbox  id=selfQualified
+  Select Checkbox  xpath=//input[contains(@id, "selfEligible")]
+  Select Checkbox  xpath=//input[contains(@id, "selfQualified")]
 
 
 Скорегувати сумму пропозиції для рамок
