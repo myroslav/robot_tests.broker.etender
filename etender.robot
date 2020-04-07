@@ -291,7 +291,6 @@ Login
   ${methodType}=  Get From Dictionary  ${tender_data}  procurementMethodType
   set global variable  ${global_procedure_type}  ${methodType}
   Sleep  15
-  Wait and Select By Label  xpath=//select[@id='guarantee_0']  Відсутнє
   Wait and Click  xpath=//input[@type= 'checkbox']
   Sleep  5
   Wait Scroll Click  id=createTender
