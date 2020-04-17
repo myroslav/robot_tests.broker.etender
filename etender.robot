@@ -1491,7 +1491,8 @@ add feature
 Створити чернетку вимоги
   [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${target}  ${award_index}=-1
   Відкрити розділ вимог і скарг
-  Wait Scroll Click     id=btnCanCreateClaimForTender
+  Run Keyword If  '${target}'=='award'  Wait Scroll Click  id=btnCanUserCreateClaimOnAward
+  ...  ELSE  Wait Scroll Click  id=btnCanCreateClaimForTender
   Sleep  1
   Wait and Input        id=title            ${claim.data.title}
   Input Text            id=description      ${claim.data.description}
