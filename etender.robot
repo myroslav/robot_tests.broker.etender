@@ -291,6 +291,7 @@ Login
   ${methodType}=  Get From Dictionary  ${tender_data}  procurementMethodType
   set global variable  ${global_procedure_type}  ${methodType}
   Sleep  15
+  Wait and Select By Label  xpath=//select[@id='guarantee_0']  Ні
   Wait and Click  xpath=//input[@type= 'checkbox']
   Sleep  5
   Wait Scroll Click  id=createTender
@@ -1470,6 +1471,8 @@ add feature
   ${complaintID}=  Створити чернетку вимоги  ${username}  ${tender_uaid}  ${claim}  ${target}  ${award_index}
   Завантажити док  ${username}  ${file}  xpath=//div[contains(@id,"${complaintID}")]//button[@id="addClaimDoc"]
   Відкрити розділ вимог і скарг
+  Sleep  30
+  reload page
   Wait Scroll Click     id=qa_SetClaimActiveStatus
   Sleep  15
   [Return]  ${complaintID}
@@ -1488,7 +1491,7 @@ add feature
 Створити чернетку вимоги
   [Arguments]  ${username}  ${tender_uaid}  ${claim}  ${target}  ${award_index}=-1
   Відкрити розділ вимог і скарг
-  Wait Scroll Click     id=addClaim
+  Wait Scroll Click     id=btnCanCreateClaimForTender
   Sleep  1
   Wait and Input        id=title            ${claim.data.title}
   Input Text            id=description      ${claim.data.description}
@@ -3420,6 +3423,8 @@ Wait for doc upload in qualification
   [Documentation]  Причина зміни
   # TODO: assert agreementDetailes in get location if no - click btn
   Перейти на сторінку agreementDetails за потреби
+  reload page
+  Sleep  10
   ${rationaleType}=  Wait and Get Text  id=qa_rationaleType${n}
   ${tax_status}=  Set Variable  'taxRate'
   Return From Keyword If  '${rationaleType}'==u'Зміна ціни у зв’язку із зміною ставок податків і зборів'  ${tax_status}
@@ -3429,6 +3434,8 @@ Wait for doc upload in qualification
 Отримати інформацію із угоди про changes[${n}].rationale
   [Documentation]  Опис причини внесення змін
   Дочекатись зникнення blockUI
+  reload page
+  Sleep  10
   Run Keyword And Return  Wait and Get Text  id=qa_rationale${n}
 
 
@@ -3439,6 +3446,8 @@ Wait for doc upload in qualification
 
 Отримати інформацію із угоди про changes[${n}].modifications[${n}].itemId
   [Documentation]  Позиція
+  Reload Page
+  Sleep  10
   Run Keyword And Return  Wait and Get Attribute  xpath=(//*[@ng-bind="modifi.item.description"])[last()]  data-api-id
 
 
