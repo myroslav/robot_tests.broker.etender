@@ -30,7 +30,7 @@ def get_all_etender_dates(initial_tender_data):
 def get_procedure_type(methodType):
     return {
         'aboveThresholdUA': 'Відкриті торги',
-        'belowThreshold': 'Допорогові закупівлі',
+        'belowThreshold': 'Спрощена/Допорогова закупівля',
         'negotiation': 'Переговорна процедура',
         'aboveThresholdEU': 'Відкриті торги з публікацією англійською мовою',
         'aboveThresholdUA.defense': 'Переговорна процедура для потреб оборони',
@@ -49,7 +49,7 @@ def get_procedure_type(methodType):
 def get_method_type(procedure_name):
     return {
         u'переговорна процедура для потреб оборони': 'aboveThresholdUA.defense',
-        u'допорогові закупівлі': 'belowThreshold',
+        u'спрощена/допорогова закупівля': 'belowThreshold',
         u'відкриті торги з публікацією англійською мовою': 'aboveThresholdEU',
         u'переговорна процедура': 'negotiation',
         u'відкриті торги': 'aboveThresholdUA',

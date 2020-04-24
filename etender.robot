@@ -1390,7 +1390,7 @@ add feature
 
 
 Отримати інформацію про value пропозиції
-  ${value}=     Get Text        id=bidAmount0
+  ${value}=     Get Text        id=bidAmount00
   ${value}=     parse_currency_value_with_spaces    ${value}
   Run Keyword And Return  Convert To Number  ${value}
 
