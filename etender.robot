@@ -47,11 +47,11 @@ ${locator.awards[0].status}                                    xpath=//div[@clas
 ${locator.awards[0].value.valueAddedTaxIncluded}               xpath=//div[@class = 'row']/div[contains(.,'Остаточна пропозиція:')]/following-sibling::div/span/i
 ${locator.awards[0].value.currency}                            xpath=//div[@class = 'row']/div[contains(.,'Остаточна пропозиція:')]/following-sibling::div/span
 ${locator.awards[0].value.amount}                              xpath=//div[@class = 'row']/div[contains(.,'Остаточна пропозиція:')]/following-sibling::div/span
-${locator.awards[0].suppliers[0].address.countryName}          id=awardCountry_0
-${locator.awards[0].suppliers[0].address.locality}             id=awardCity_0
-${locator.awards[0].suppliers[0].address.postalCode}           id=awardIndex_0
-${locator.awards[0].suppliers[0].address.region}               id=awardRegion_0
-${locator.awards[0].suppliers[0].address.streetAddress}        id=awardAddressStr_0
+${locator.awards[0].suppliers[0].address.countryName}          id=awardCountry0_0
+${locator.awards[0].suppliers[0].address.locality}             id=awardCity0_0
+${locator.awards[0].suppliers[0].address.postalCode}           id=awardIndex0_0
+${locator.awards[0].suppliers[0].address.region}               id=awardRegion0_0
+${locator.awards[0].suppliers[0].address.streetAddress}        id=awardAddressStr0_0
 ${locator.awards[0].suppliers[0].name}                         xpath=//span[@id="awardContactPoint"]/u
 ${locator.awards[0].suppliers[0].contactPoint.telephone}       xpath=//span[@id="awardContactPoint"]/following-sibling::div//p[contains(.,"Телефон:")]
 ${locator.awards[0].suppliers[0].contactPoint.name}            xpath=//span[@id="awardContactPoint"]/following-sibling::div//p[contains(.,"Контактна особа:")]
@@ -541,7 +541,7 @@ Login
 
 Додати дати при наявності
   [Arguments]  ${tender_data}  ${methodType}
-  Run Keyword If  '${methodType}' == 'esco'  Run Keyword and Return  Додати дати при наявності ESCO  ${tender_data}
+  #Run Keyword If  '${methodType}' == 'esco'  Run Keyword and Return  Додати дати при наявності ESCO  ${tender_data}
   ${status}  ${data}=  Run Keyword And Ignore Error  get_all_etender_dates  ${tender_data}
   Return From Keyword If  '${status}' != 'PASS'
   Input text  id=TenderPeriod           ${data.tenderEnd.date}
@@ -1391,7 +1391,8 @@ add feature
 
 Отримати інформацію про value пропозиції
   ${value}=     Get Text        id=bidAmount00
-  ${value}=     parse_currency_value_with_spaces    ${value}
+  ${value}=  Set Variable  ${value.replace(',', '.')}
+  #${value}=     parse_currency_value_with_spaces    ${value}
   Run Keyword And Return  Convert To Number  ${value}
 
 
@@ -1707,11 +1708,11 @@ Input String
 Редагувати поле tenderPeriod.endDate
   [Arguments]  ${new_value_isodate}
   ${date}=  convert_date_to_etender_format  ${new_value_isodate}
-  run keyword if  '${global_procedure_type}'!='esco'  Input text  id=TenderPeriod  ${date}
-  ...              ELSE                    Input text  id=tenderPeriod_endDate_day  ${date}
+  Input text  id=TenderPeriod  ${date}
+  #...              ELSE                    Input text  id=tenderPeriod_endDate_day  ${date}
   ${time}=  convert_time_to_etender_format  ${new_value_isodate}
-  run keyword if  '${global_procedure_type}'!='esco'  Input text  id=TenderPeriod_time  ${time}
-  ...              ELSE                    Input text  id=tenderPeriod_endDate_time  ${time}
+  Input text  id=TenderPeriod_time  ${time}
+  #...              ELSE                    Input text  id=tenderPeriod_endDate_time  ${time}
 
 
 Редагувати поле description
