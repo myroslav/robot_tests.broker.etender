@@ -2943,9 +2943,9 @@ temporary keyword for title update
 
   Capture Page Screenshot
 #  Reload Page
-  Wait and Click  id=qa_cause0  7
-  Wait and Input  id=qa_qualifCancelDescr  texttexttext
-  Wait and Click  id=qa_disqualifyPrequalification  10
+  Wait and Click  id=qualifyCause_0  7
+  Wait and Input  id=qualifyCauseDesc  texttexttext
+  Wait and Click  id=qualifyRejectionSubmit  10
   Reload Page
   Дочекатись зникнення blockUI
 
@@ -2960,7 +2960,7 @@ temporary keyword for title update
   Reload Page
   Дочекатись зникнення blockUI
   Capture Page Screenshot
-  Run Keyword And Ignore Error  JavascriptClick  '//div[@id="qa_qualification_block_0${bid_index}"]//button[@id="qa_cancelQualification"]'
+  Run Keyword And Ignore Error  JavascriptClick  '//div[@id="qualifiBlock_0_${bid_index}"]//button[contains(@id, "qualifyCancel")]'
   Дочекатись зникнення blockUI
 
 
