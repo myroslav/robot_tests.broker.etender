@@ -47,11 +47,11 @@ ${locator.awards[0].status}                                    xpath=//div[@clas
 ${locator.awards[0].value.valueAddedTaxIncluded}               xpath=//div[@class = 'row']/div[contains(.,'Остаточна пропозиція:')]/following-sibling::div/span/i
 ${locator.awards[0].value.currency}                            xpath=//div[@class = 'row']/div[contains(.,'Остаточна пропозиція:')]/following-sibling::div/span
 ${locator.awards[0].value.amount}                              xpath=//div[@class = 'row']/div[contains(.,'Остаточна пропозиція:')]/following-sibling::div/span
-${locator.awards[0].suppliers[0].address.countryName}          id=awardCountry0_0
-${locator.awards[0].suppliers[0].address.locality}             id=awardCity0_0
-${locator.awards[0].suppliers[0].address.postalCode}           id=awardIndex0_0
-${locator.awards[0].suppliers[0].address.region}               id=awardRegion0_0
-${locator.awards[0].suppliers[0].address.streetAddress}        id=awardAddressStr0_0
+${locator.awards[0].suppliers[0].address.countryName}          id=awardCountry_0_0
+${locator.awards[0].suppliers[0].address.locality}             id=awardCity_0_0
+${locator.awards[0].suppliers[0].address.postalCode}           id=awardIndex_0_0
+${locator.awards[0].suppliers[0].address.region}               id=awardRegion_0_0
+${locator.awards[0].suppliers[0].address.streetAddress}        id=awardAddressStr_0_0
 ${locator.awards[0].suppliers[0].name}                         xpath=//span[@id="awardContactPoint"]/u
 ${locator.awards[0].suppliers[0].contactPoint.telephone}       xpath=//span[@id="awardContactPoint"]/following-sibling::div//p[contains(.,"Телефон:")]
 ${locator.awards[0].suppliers[0].contactPoint.name}            xpath=//span[@id="awardContactPoint"]/following-sibling::div//p[contains(.,"Контактна особа:")]
@@ -1347,7 +1347,6 @@ add feature
 Отримати інформацію про lots[${n}].value.amount
   Run Keyword And Return  Wait and Get Attribute  xpath=//span[@id='lotValue_${n}' and @class='hidden-xs fwn pl15 ng-binding']  value
 
-
 Отримати інформацію про lots[${n}].title
   Run Keyword And Return  Wait and Get Text  xpath=//span[.="Назва окремої частини предмета закупівлі (лота):"]/parent::div//following-sibling::div/*[@id="lotTitle_${n}"]
 
@@ -1392,8 +1391,10 @@ add feature
 Отримати інформацію про value пропозиції
   ${value}=     Get Text        id=bidAmount00
   ${value}=  Set Variable  ${value.replace(',', '.')}
+  ${value}=  Set Variable  ${value.replace(' ', '')}
   #${value}=     parse_currency_value_with_spaces    ${value}
   Run Keyword And Return  Convert To Number  ${value}
+  #[Return]  ${value}
 
 
 Отримати інформацію про status пропозиції
