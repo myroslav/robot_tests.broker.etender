@@ -2944,7 +2944,7 @@ temporary keyword for title update
 
   Capture Page Screenshot
 #  Reload Page
-  Wait and Click  id=qualifyCause_0  7
+  Wait and Click  id=qualifyCause_0
   Wait and Input  id=qualifyCauseDesc  texttexttext
   Wait and Click  id=qualifyRejectionSubmit  10
   Reload Page
