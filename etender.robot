@@ -2937,16 +2937,16 @@ temporary keyword for title update
   [Arguments]  ${username}  ${tender_uaid}  ${bid_index}
   Reload Page
   Дочекатись зникнення blockUI
-  ${is_btn_visible}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//button[@id = '#qa_rejectQualif' and @data-target='#cansel-0-${bid_index}']
-  run keyword if  '${is_btn_visible}'=='True'  Wait Scroll Click  xpath=//button[@id = '#qa_rejectQualif' and @data-target='#cansel-0-${bid_index}']  15
+  ${is_btn_visible}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//button[contains(@id, "qualifyReject_0_${bid_index}")]
+  run keyword if  '${is_btn_visible}'=='True'  Wait Scroll Click  xpath=//button[contains(@id, "qualifyReject_0_${bid_index}")]  15
   Capture Page Screenshot
-  Wait Until Page Contains  Підстави для скасування  60
-
+#  Wait Until Page Contains  Підстави для скасування  60
+  Sleep  10
   Capture Page Screenshot
-#  Reload Page
-  Wait and Click  id=qualifyCause_0
-  Wait and Input  id=qualifyCauseDesc  texttexttext
-  Wait and Click  id=qualifyRejectionSubmit  10
+  Reload Page
+  Wait and Click  xpath=//div[@id="qualifyBlock_0_${bid_index}"]//input[@id="qualifyCause_0"]
+  Wait and Input  xpath=//div[@id="qualifyBlock_0_${bid_index}"]//textarea[@id="qualifyCauseDesc"]  texttexttext
+  Wait and Click  xpath=//div[@id="qualifyBlock_0_${bid_index}"]//button[@id="qualifyRejectionSubmit"]  10
   Reload Page
   Дочекатись зникнення blockUI
 
