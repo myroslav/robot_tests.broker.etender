@@ -629,7 +629,7 @@ add feature
   ${number_of_items}=   Get Length              ${items}
   ${cpv_id}=            Get From Dictionary     ${plan.classification}          id
   ${procurementMethodType}=  Get From Dictionary  ${plan.tender}                procurementMethodType
-  ${procurementMethodTypeStr}=  get procedure type  ${procurementMethodType}
+  #${procurementMethodTypeStr}=  get procedure type  ${procurementMethodType}
   Дочекатись зникнення blockUI
   Wait and Click        id=qa_myPlans
   Wait and Click        xpath=//a[@href="createPlan"]
@@ -637,7 +637,8 @@ add feature
   Заповнити інформацію про buyers при наявності  ${plan.buyers}
 
   ${plan_tender_type}=       Get From Dictionary     ${plan.tender}  procurementMethodType
-  ${tender_type_value}=             get_procedure_type      ${plan_tender_type}
+  ${tender_type_value}=      run keyword if  '${plan_tender_type}' != 'belowThreshold'     get_procedure_type      ${plan_tender_type}
+  ...                        ELSE  get_below_for_plan  ${plan_tender_type}
   Wait and Select By Label  xpath=//select[@name="procedureType"]          ${tender_type_value}
   Sleep  2
   Wait and Input        id=description          ${description}
@@ -650,7 +651,7 @@ add feature
 #  Select From List By Index     xpath=//select[@name="startDateMonth"]          6
   Wait and Input   name=tenderPeriodStartDate  06-2020
 
-  Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
+  #Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
   Wait and Click        id=qa_mainPlanClassification
   Sleep  5
   Wait and Input        id=classificationCode                            ${cpv_id}
@@ -3149,9 +3150,10 @@ Wait for doc upload in qualification
 
 Створити другий етап
   Reload Page
+  Перейти на сторінку тендера за потреби
   Дочекатись зникнення blockUI
   Capture Page Screenshot
-  Click Element  xpath=//button[text()="Оголосити 2-ий етап"]
+  Click Element  xpath=//button[contains( text(), "Оголосити 2-ий етап")]
   Sleep  3
   Reload Page
   Capture Page Screenshot

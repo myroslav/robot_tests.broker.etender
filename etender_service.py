@@ -45,6 +45,10 @@ def get_procedure_type(methodType):
         'closeFrameworkAgreementSelectionUA': 'Відбір для закупівлі за рамковою угодою'
     }[methodType].decode('utf-8')
 
+def get_below_for_plan(methodType):
+    return {
+        'belowThreshold': 'Спрощена/Допорогова закупівля'
+    }[methodType].decode('utf-8')
 
 def get_method_type(procedure_name):
     return {
