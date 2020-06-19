@@ -278,6 +278,7 @@ def get_helper_dictionary():
         u'блокування перед аукціоном': u'active.pre-qualification.stand-still',
         u'прекваліфікація (період оскаржень)': u'active.pre-qualification.stand-still',
         u'перший проміжний етап': u'active.stage2.pending',
+        u'проведення переговорів':'active.stage2.pending',
         u'період аукціону': u'active.auction',
         u'кваліфікація переможця': u'active.qualification',
         u'пропозиції розглянуто': u'active.awarded',

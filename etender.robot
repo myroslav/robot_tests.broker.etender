@@ -629,6 +629,8 @@ add feature
   ${number_of_items}=   Get Length              ${items}
   ${cpv_id}=            Get From Dictionary     ${plan.classification}          id
   ${procurementMethodType}=  Get From Dictionary  ${plan.tender}                procurementMethodType
+  ${identifier}=        Get From Dictionary     ${plan.procuringEntity.identifier}  id
+  ${kind}=              Get From Dictionary     ${plan.procuringEntity}         kind
   #${procurementMethodTypeStr}=  get procedure type  ${procurementMethodType}
   Дочекатись зникнення blockUI
   Wait and Click        id=qa_myPlans
@@ -643,6 +645,11 @@ add feature
   Sleep  2
   Wait and Input        id=description          ${description}
   Input text            id=value                ${amount}
+  Input text            id=procuringEntityEdrpou0  ${identifier}
+  Wait and Click        id=qa_searchProcuringEntityEdrpou
+  run keyword if  '${procurementMethodType}'!='aboveThresholdUA.defense'  Wait and Click        xpath=//select[@name= 'procuringEntityKind']//option[contains(@value, '${kind}')]
+  ...             ELSE  Wait and Click        xpath=//select[@name= 'procuringEntityKind']//option[contains(@value, 'defense')]
+
 
   Заповнити інформацію про breakdown плану  ${breakdown_list}
 
@@ -1223,7 +1230,7 @@ add feature
   :FOR   ${index}    IN RANGE  ${i}
   \      Input String  id=annualCostsReduction0${index}  ${annualCostsReduction[${index}]}
   ${yearlyPaymentsPercentage}=  Evaluate  ${yearlyPaymentsPercentage}*100
-  Input String  id=yearlyPaymentsPercentage0  ${yearlyPaymentsPercentage}
+  Input String  id=yearlyPaymentsPercentage_0  ${yearlyPaymentsPercentage}
   Input String  id=contractPeriod_years0  ${years}
   Input String  id=contractPeriod_days0  ${days}
   Пітдвердити чекбокси пропозиції
