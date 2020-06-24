@@ -848,6 +848,7 @@ add feature
 
 Задати запитання на
   [Arguments]  ${entity}  ${lot_id}  ${question}
+  Sleep  10
   Відкрити розділ запитань
   Wait and Click    id=askQuestion
   Дочекатись зникнення blockUI
@@ -1230,7 +1231,7 @@ add feature
   :FOR   ${index}    IN RANGE  ${i}
   \      Input String  id=annualCostsReduction0${index}  ${annualCostsReduction[${index}]}
   ${yearlyPaymentsPercentage}=  Evaluate  ${yearlyPaymentsPercentage}*100
-  Input String  id=yearlyPaymentsPercentage_0  ${yearlyPaymentsPercentage}
+  Input String  id=yearlyPaymentsPercentage0  ${yearlyPaymentsPercentage}
   Input String  id=contractPeriod_years0  ${years}
   Input String  id=contractPeriod_days0  ${days}
   Пітдвердити чекбокси пропозиції
