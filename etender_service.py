@@ -54,6 +54,7 @@ def get_method_type(procedure_name):
     return {
         u'переговорна процедура для потреб оборони': 'aboveThresholdUA.defense',
         u'допорогова закупівля': 'belowThreshold',
+        u'спрощена/допорогова закупівля':'belowThreshold',
         u'відкриті торги з публікацією англійською мовою': 'aboveThresholdEU',
         u'переговорна процедура': 'negotiation',
         u'відкриті торги': 'aboveThresholdUA',
