@@ -656,7 +656,7 @@ add feature
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
 #  Select From List By Index     xpath=//select[@name="startDateMonth"]          6
-  Wait and Input   name=tenderPeriodStartDate  06-2020
+  Wait and Input   name=tenderPeriodStartDate  08-2020
 
   #Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
   Wait and Click        id=qa_mainPlanClassification
