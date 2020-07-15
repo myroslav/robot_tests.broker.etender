@@ -2757,7 +2757,7 @@ Wait for upload before signing
   Run Keyword And Ignore Error  Wait Scroll Click  id=naviTitle0
   Capture Page Screenshot
   Sleep  15
-  Click One Of Button  id=qa_EditContractInfo  id=qa_FillContractInfo
+  Click One Of Button  xpath=//a[contains(@id, 'qa_EditContractInfo')]  xpath=//a[contains(@id, 'qa_FillContractInfo')]
   Дочекатись зникнення blockUI
   Capture Page Screenshot
   Reload Page
