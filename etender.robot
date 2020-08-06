@@ -609,7 +609,9 @@ add feature
   \    Input Text  id=breakdownDescription${i}    ${breakdown_description}
   \    ${breakdown_amount}=  Get From Dictionary  ${breakdown_list[${i}].value}  amount
   \    ${breakdown_amount}=  float_to_string_2f  ${breakdown_amount}
+  \    Sleep  5
   \    Input Text  id=breakDownValue${i}    ${breakdown_amount}
+  \    Sleep  5
 
 
 Підписати план ЕЦП
@@ -3088,9 +3090,11 @@ temporary keyword for title update
   Return From Keyword If  '${is_expanded}' != 'False'
   ${newis_expanded}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//div[contains(@id, "aply-0-")]//button[@click-and-block="vm.q.active(qualification)"]
   Return From Keyword If  '${newis_expanded}' != 'False'
+  Sleep  5
   RUN KEYWORD IF  '${status}'=='True'  Wait Scroll Click     xpath=//div[@id="accordion-0-${qualification_num}"]//button[contains(.,"Допустити до аукціону") and @data-toggle="collapse"]
-  ...         ELSE  Wait Scroll Click  xpath=//div[contains(@id, "accordion-0-")]//button[contains(.,"Допустити до аукціону") and @data-toggle="collapse"]
-  Sleep  10
+  ...         ELSE  Wait Scroll Click  xpath=//div[contains(@id, "accordion-")]//button[contains(@id ,"qualifyApprove_") and @data-toggle="collapse"]
+  reload page
+  Sleep  15
   Capture Page Screenshot
 
 Wait for doc upload in qualification
@@ -3130,13 +3134,16 @@ Wait for doc upload in qualification
   Sleep  10
   Відкрити подробиці кваліфікації за індексом  ${qualification_num}
   ${newstatus}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//div[@id="aply-0-${qualification_num}"]//input[@ng-model="qualification.eligible"]
+  Sleep  5
   run keyword if  '${newstatus}'=='True'  Wait Scroll Click  xpath=//div[@id="aply-0-${qualification_num}"]//input[@ng-model="qualification.eligible"]
-   ...         ELSE                     Wait Scroll Click  xpath=//div[contains(@id, "aply-0-")]//input[@ng-model="qualification.eligible"]
+   ...         ELSE                     Wait Scroll Click  id=qalifyEligible
+  Sleep  5
   run keyword if  '${newstatus}'=='True'  Wait and Click     xpath=//div[@id="aply-0-${qualification_num}"]//input[@ng-model="qualification.qualified"]
-   ...         ELSE                     Wait and Click     xpath=//div[contains(@id, "aply-0-")]//input[@ng-model="qualification.qualified"]
+   ...         ELSE                     Wait and Click     id=qualifyQualified
   Capture Page Screenshot
+  Sleep  5
   run keyword if  '${newstatus}'=='True'  Wait Scroll Click  xpath=//div[@id="aply-0-${qualification_num}"]//button[@click-and-block="vm.q.active(qualification)"]
-   ...         ELSE                     Wait Scroll Click  xpath=//div[contains(@id, "aply-0-")]//button[@click-and-block="vm.q.active(qualification)"]
+   ...         ELSE                     Wait Scroll Click  id=qualifyApproveSubmit
   Wait Until Page Contains  Пропозицію кваліфіковано!  60
 
 
