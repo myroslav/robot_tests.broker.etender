@@ -2633,7 +2633,7 @@ Input String
   Відкрити всі лоти
   Перейти до оцінки кандидата
   Wait and Select By Label      xpath=//div[@ng-controller="modalGetAwardsCtrl"]//select  Повідомлення про рішення
-  Завантажити док  ${username}  ${document}  xpath=//button[@ng-model="lists.documentsToAdd"]  id=downloadAwardDocs
+  Завантажити док  ${username}  ${document}  xpath=//button[@id='qa_uploadAwardDocument']  id=downloadAwardDocs
   Відкрити розділ Деталі Закупівлі
   Відкрити всі лоти
   Capture Page Screenshot
