@@ -606,6 +606,7 @@ add feature
   \    ${breakdown_title}=  get_breakdown_title_value  ${breakdown_title}
   \    Select From List By Label   id=breakdownTitle${i}  ${breakdown_title}
   \    ${breakdown_description}=  Get From Dictionary  ${breakdown_list[${i}]}  description
+  \    Sleep  5
   \    Input Text  id=breakdownDescription${i}    ${breakdown_description}
   \    ${breakdown_amount}=  Get From Dictionary  ${breakdown_list[${i}].value}  amount
   \    ${breakdown_amount}=  float_to_string_2f  ${breakdown_amount}
@@ -658,7 +659,7 @@ add feature
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
 #  Select From List By Index     xpath=//select[@name="startDateMonth"]          6
-  Wait and Input   name=tenderPeriodStartDate  08-2020
+  Wait and Input   name=tenderPeriodStartDate  10-2020
 
   #Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
   Wait and Click        id=qa_mainPlanClassification
