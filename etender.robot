@@ -815,7 +815,7 @@ add feature
   Wait and Input    xpath=//div[contains(@id, "addClassificationGmdns_") and contains(@class,"modal")]//input  ${id}
   Дочекатись зникнення blockUI
   Wait and Click    xpath=//div[contains(@id, "addClassificationGmdns_")]//td[contains(., '${id}')]
-  Wait and Click    xpath=//div[contains(@id, "addClassificationGmdns_") and contains(@class,"modal")]//*[@id="addClassification_choose"]
+  Wait and Click    xpath=//div[contains(@id, "addClassificationGmdns_") and contains(@class,"modal")]//*[@id="classification_choose"]
   Дочекатись зникнення blockUI
 
 
@@ -2951,14 +2951,16 @@ temporary keyword for title update
   Дочекатись зникнення blockUI
   ${is_btn_visible}=  Run Keyword And Return Status  Element Should Be Visible  xpath=//button[contains(@id, "qualifyReject_0_${bid_index}")]
   run keyword if  '${is_btn_visible}'=='True'  Wait Scroll Click  xpath=//button[contains(@id, "qualifyReject_0_${bid_index}")]  15
+  ...  ELSE  Wait Scroll Click  xpath=//button[contains(@id, "qualifyReject_")]  15
   Capture Page Screenshot
 #  Wait Until Page Contains  Підстави для скасування  60
-  Sleep  10
   Capture Page Screenshot
-  Reload Page
-  Wait and Click  xpath=//div[@id="qualifyBlock_0_${bid_index}"]//input[@id="qualifyCause_0"]
+  ${bid_index}=  evaluate  ${bid_index}-1
+  Sleep  10
+  Wait Scroll Click  xpath=//div[@id="qualifyBlock_0_${bid_index}"]//input[@id="qualifyCause_0"]
   Wait and Input  xpath=//div[@id="qualifyBlock_0_${bid_index}"]//textarea[@id="qualifyCauseDesc"]  texttexttext
   Wait and Click  xpath=//div[@id="qualifyBlock_0_${bid_index}"]//button[@id="qualifyRejectionSubmit"]  10
+  Sleep  5
   Reload Page
   Дочекатись зникнення blockUI
 
