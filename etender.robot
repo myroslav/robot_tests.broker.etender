@@ -782,7 +782,7 @@ add feature
   Wait and Input    xpath=//div[@id="addClassificationInn_${lot_index}_${index}" and contains(@class,"top")]//input  ${description}
   Дочекатись зникнення blockUI
   Wait and Click    xpath=//td[contains(., '${description}')]
-  Wait and Click    xpath=//div[@id="addClassificationInn_${lot_index}_${index}" and contains(@class,"top")]//button[@id="addClassification_choose"]
+  Wait and Click    xpath=//div[@id="addClassificationInn_${lot_index}_${index}" and contains(@class,"top")]//button[@id="classification_choose"]
 
 Вказати додаткову класифікацію
   [Arguments]  ${additionalClassification}  ${index}  ${lot_index}  ${scheme}
@@ -803,7 +803,7 @@ add feature
   Wait and Input    xpath=//div[contains(@id, "addClassificationRoads_") and contains(@class,"modal")]//input  ${id}
   Дочекатись зникнення blockUI
   Wait and Click    xpath=//div[contains(@id, "addClassificationRoads_")]//td[contains(., '${id}')]
-  Wait and Click    xpath=//div[contains(@id, "addClassificationRoads_") and contains(@class,"modal")]//*[@id="addClassification_choose"]
+  Wait and Click    xpath=//div[contains(@id, "addClassificationRoads_") and contains(@class,"modal")]//*[@id="classification_choose"]
   Дочекатись зникнення blockUI
 
 
