@@ -793,7 +793,7 @@ add feature
   Wait and Input    xpath=//div[@id="addClassification" and contains(@class,"modal")]//input  ${description}
   Дочекатись зникнення blockUI
   Wait and Click    xpath=//td[contains(., '${description}')]
-  Wait and Click    xpath=//div[@id="addClassification" and contains(@class,"modal")]//*[@id="addClassification_choose"]
+  Wait and Click    xpath=//div[@id="addClassification" and contains(@class,"modal")]//*[@id="classification_choose"]
 
 Вказати UA-ROAD додаткову класифікацію
   [Arguments]  ${additionalClassification}  ${index}  ${lot_index}
@@ -918,11 +918,11 @@ add feature
   run keyword if  '${procedureType}' != 'esco'  Заповнити певні поля за наявності  ${item}  ${index}  ${lot_index}
 
   Wait Scroll Click     id=openClassificationModal${lot_index}${index}
-  #Sleep 2
-  Wait and Input        id=classificationCode   ${item.classification.id}
+  Sleep  2
+  Wait and Input        xpath=//div[@id='modalClassification']//input[@id='classificationCode']   ${item.classification.id}
   Дочекатись зникнення blockUI
   Wait and Click    xpath=//td[contains(., '${item.classification.id}')]
-  Wait and Click    id=classification_choose
+  Wait and Click    xpath=//div[@id='modalClassification']//button[@id='classification_choose']
   Дочекатись зникнення blockUI
   ${region}=             Get From Dictionary    ${item.deliveryAddress}     region
   ${status}  ${value}=  Run Keyword And Ignore Error  Get From Dictionary  ${item}  additionalClassifications
