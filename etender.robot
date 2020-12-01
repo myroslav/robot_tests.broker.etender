@@ -250,6 +250,10 @@ Login
   Додати нецінові показники при наявності       ${tender_data}
   Sleep   15
   Wait Scroll Click     id=createTender
+  Sleep  10
+  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU', 'competitiveDialogueUA', 'esco', 'aboveThresholdUA', 'aboveThresholdUA.defense')  Wait Scroll Click  id=saveTenderWithCriterias
+  Sleep  10
+  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU', 'competitiveDialogueUA', 'esco', 'aboveThresholdUA', 'aboveThresholdUA.defense')  Wait Scroll Click  id=activateTenderWithCriteria
   Sleep   60
   Reload Page
   Wait Until Keyword Succeeds        10 min  30 sec  Дочекатися завершення обробки тендера
@@ -659,7 +663,7 @@ add feature
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
 #  Select From List By Index     xpath=//select[@name="startDateMonth"]          6
-  Wait and Input   name=tenderPeriodStartDate  10-2020
+  Wait and Input   name=tenderPeriodStartDate  12-2020
 
   #Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
   Wait and Click        id=qa_mainPlanClassification
@@ -1555,6 +1559,30 @@ add feature
   Sleep  1  # wait for full input
   Wait and Input    xpath=//form[@name='setStoppingComplaint']//textarea[@placeholder='Причини відхилення']      ${cancellation_data.data.cancellationReason}
   Click Element     xpath=//form[@name='setStoppingComplaint']//*[@id='btnSetStoppingComplaint']
+
+Створити чернетку скарги про виправлення умов закупівлі
+  [Arguments]  ${username}  ${tender_uaid}  ${complaint}
+  Перейти на сторінку тендера за потреби
+  Відкрити розділ вимог і скарг
+  Wait and Click  id=btncanCreateComplaintForTender
+  Wait and Input  id=title  ${complaint.data.title}
+  Wait and Input  id=description  ${complaint.data.description}
+  Wait and Select By Label  id=complaintFor  тендер
+  Wait and Click  id=btnAddComplaint
+  Sleep  5
+  Run Keyword and Return  Wait and Get Attribute  xpath=//div[@class='complaint-block']//div[@is-open='isopen']  id
+  Log  ${USERS.users['Etender_Provider1'].complaint_data}
+  #Set to Dictionary
+
+Завантажити документацію до вимоги
+   [Arguments]  ${username}  ${tender_uaid}  ${complaintID}  ${doc}
+   Перейти на сторінку тендера за потреби
+   Відкрити розділ вимог і скарг
+   ${status}=  Run Keyword And Return Status  Розкрити інформацію про скаргу  ${complaintID}
+   Run Keyword If  '${status}'=='FAIL'  Run Keywords  Reload Page  AND  Відкрити розділ вимог і скарг  AND  Розкрити інформацію про скаргу  ${complaintID}
+   Завантажити док  ${username}  ${doc}  xpath=//div[contains(@id,"${complaintID}")]//button[@id="addClaimDoc"]
+   Sleep  10
+
 
 Скасувати вимогу про виправлення умов закупівлі
   [Arguments]  @{arguments}
@@ -2680,6 +2708,7 @@ Wait for upload before signing
   Sleep  1
   Page Should Not Contain  Не всі документи експортовані
   Page Should Not Contain  Не всі документи экспортовано до Центральної бази.
+  Sleep  20
   Wait Until Element Is Visible  id=CAsServersSelect
 
 
