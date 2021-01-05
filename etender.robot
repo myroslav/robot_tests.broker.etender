@@ -251,9 +251,9 @@ Login
   Sleep   15
   Wait Scroll Click     id=createTender
   Sleep  10
-  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU', 'competitiveDialogueUA', 'esco', 'aboveThresholdUA', 'aboveThresholdUA.defense')  Wait Scroll Click  id=saveTenderWithCriterias
+  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU', 'competitiveDialogueUA', 'esco', 'aboveThresholdUA')  Wait Scroll Click  id=saveTenderWithCriterias
   Sleep  10
-  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU', 'competitiveDialogueUA', 'esco', 'aboveThresholdUA', 'aboveThresholdUA.defense')  Wait Scroll Click  id=activateTenderWithCriteria
+  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU', 'competitiveDialogueUA', 'esco', 'aboveThresholdUA')  Wait Scroll Click  id=activateTenderWithCriteria
   Sleep   60
   Reload Page
   Wait Until Keyword Succeeds        10 min  30 sec  Дочекатися завершення обробки тендера
