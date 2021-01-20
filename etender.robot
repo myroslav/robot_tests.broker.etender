@@ -436,7 +436,7 @@ Login
   [Arguments]  ${lot}  ${index}
   Wait and Input    id=lotTitle_${index}        ${lot['title']}
   Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' == 'esco'  Run Keyword and Return  Заповнити інформацію про лот ESCO  ${lot}  ${index}
-  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' in ('aboveThresholdEU', 'aboveThresholdUA.defense', 'closeFrameworkAgreementUA','competitiveDialogueEU')  Input Text   id=lotTitleEn_${index}        ${lot['title_en']}
+  Run Keyword If  '${USERS.users['Etender_Owner']['method_type']}' in ('aboveThresholdEU', 'simple.defense', 'closeFrameworkAgreementUA','competitiveDialogueEU')  Input Text   id=lotTitleEn_${index}        ${lot['title_en']}
   Input Text        id=lotDescription_${index}  ${lot['description']}
   Input String      id=lotValue_${index}        ${lot['value']['amount']}
   Run Keyword Unless  '${USERS.users['Etender_Owner']['method_type']}' in ('negotiation')  Заповнити мінімальний крок JavaScript  ${index}  ${lot['minimalStep']['amount']}
@@ -654,7 +654,7 @@ add feature
   Input text            id=value                ${amount}
   Input text            id=procuringEntityEdrpou0  ${identifier}
   Wait and Click        id=qa_searchProcuringEntityEdrpou
-  run keyword if  '${procurementMethodType}'!='aboveThresholdUA.defense'  Wait and Click        xpath=//select[@name= 'procuringEntityKind']//option[contains(@value, '${kind}')]
+  run keyword if  '${procurementMethodType}'!='simple.defense'  Wait and Click        xpath=//select[@name= 'procuringEntityKind']//option[contains(@value, '${kind}')]
   ...             ELSE  Wait and Click        xpath=//select[@name= 'procuringEntityKind']//option[contains(@value, 'defense')]
 
 
@@ -663,7 +663,7 @@ add feature
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
 #  Select From List By Index     xpath=//select[@name="startDateMonth"]          6
-  Wait and Input   name=tenderPeriodStartDate  12-2020
+  Wait and Input   name=tenderPeriodStartDate  02-2021
 
   #Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
   Wait and Click        id=qa_mainPlanClassification
