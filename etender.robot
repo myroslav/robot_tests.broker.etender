@@ -262,6 +262,119 @@ Login
   # TODO FIX ELASTIC ISSUES ON UAT and delete ↑
 
 
+Створити тендер з критеріями
+  [Arguments]  ${username}  ${tender_data}  ${tender_uaid}  ${article_17_data}
+  #Set To Dictionary  ${USERS.users['${username}']}  tender_data=${tender_data}
+  Log  ${tender_uaid}
+  ${tender_data}=       Get From Dictionary     ${tender_data}              data
+  #${article_data}=       Get From Dictionary     ${article_17_data}              data
+
+
+  ${status}  ${methodType}=  Run Keyword And Ignore Error  Get From Dictionary  ${tender_data}  procurementMethodType
+  Log To Console  check presence of procurementMethodType in dictionary: ${status}
+  ${methodType}=  Set Variable IF  '${status}' != 'PASS'       belowThreshold  ${methodType}
+  Set To Dictionary  ${USERS.users['${username}']}  method_type=${methodType}
+
+  Click Element         id=qa_myTenders  # Мої закупівлі
+  Дочекатись зникнення blockUI
+  Wait and Click        xpath=//a[@data-target='#procedureType']
+  set global variable  ${global_procedure_type}  ${methodType}
+  ${procedure_type}=    get_procedure_type  ${methodType}
+  Wait and Select By Label  id=chooseProcedureType  ${procedure_type}
+  Wait and Click        id=goToCreate
+  Дочекатись зникнення blockUI
+#  Wait and Input        xpath=//input[@name="planExternalId"]          ${global_plan_id}
+  Wait and Input  xpath=//input[@name="planUaId0"]  ${tender_uaid}
+  Wait and Click  id=searchPlan
+  Sleep  10
+  Wait and Input    id=title    ${tender_data.title}
+  Wait and Input    id=description            ${tender_data.description}
+  Дочекатись зникнення blockUI
+
+  ${items}=             Get From Dictionary     ${tender_data}              items
+  Log  ${items[0]}
+
+  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU', 'closeFrameworkAgreementUA', 'esco')   Input text    id=titleEN    ${tender_data.title_en}
+  Run Keyword Unless  '${methodType}' in ('closeFrameworkAgreementUA', 'esco')   Wait Scroll Click     id=valueAddedTaxIncluded
+  Select From List By Value  id=mainProcurementCategory     ${tender_data.mainProcurementCategory}
+
+  Run Keyword If  '${methodType}' == 'esco'  Заповнити поля ESCO  ${username}  ${tender_data}  ${methodType}
+  Run Keyword If  '${methodType}' == 'closeFrameworkAgreementUA'  Заповнити поля Framework Agreement  ${username}  ${tender_data}  ${methodType}
+  Run Keyword Unless  '${methodType}' in ('closeFrameworkAgreementUA', 'esco')  Заповнити відомості про предмети та лоти  ${tender_data}  ${items}
+
+# TODO: убрать костыль ▼, на переговорке создается по 2 лишних айтема для каждого лота
+  Додати умови оплати при наявності  ${tender_data}
+  Додати причину з описом при наявності  ${tender_data}
+  Додати донора при наявності  ${tender_data}
+  Додати дати при наявності    ${tender_data}  ${methodType}
+  Додати нецінові показники при наявності       ${tender_data}
+  Sleep   30
+  Wait Scroll Click     id=createTender
+  Sleep  10
+  Run Keyword  Заповнити відомості про критерії  ${username}  ${tender_uaid}  ${article_17_data}
+  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU', 'competitiveDialogueUA', 'esco', 'aboveThresholdUA')  Wait Scroll Click  id=saveTenderWithCriterias
+  Sleep  10
+  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU', 'competitiveDialogueUA', 'esco', 'aboveThresholdUA')  Wait Scroll Click  id=activateTenderWithCriteria
+  Sleep   60
+  Reload Page
+  Wait Until Keyword Succeeds        10 min  30 sec  Дочекатися завершення обробки тендера
+  Зберегти посилання
+  Run Keyword And Return  Get Text  ${locator.tenderId}
+  # TODO FIX ELASTIC ISSUES ON UAT and delete ↑
+
+Заповнити відомості про критерії
+  [Arguments]  ${username}  ${tender_uaid}  ${article_17_data}
+
+  #${article_17_data}=   Get From Dictionary  ${article_17_data}  data
+  Run Keyword and ignore error  Log  ${req}
+  ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
+  Wait and Select By Label      xpath=//select[@id="docType"][1]  Критерії прийнятності
+  Завантажити док  ${username}  ${file_path}  id=tend_doc_add
+  Log  ${article_17_data.data[8].requirementGroups[0].requirements[1]}
+  Run Keyword If  '${article_17_data.data[8].requirementGroups[0].requirements[1].expectedValue}'=='true'  Wait Scroll Click  xpath=//input[@type='checkbox' and @value='optionalReq']
+
+  ${article_count}=  Get Length  ${article_17_data.data}
+  :FOR  ${i}  IN RANGE  9
+  \     Розпакувати критерії  ${article_17_data.data[${i}]}  ${i}
+  ${doc_count}=  Get matching xpath count  xpath=//select[@id='selectedDoc--0']
+  :FOR  ${d}  IN RANGE  ${doc_count}
+  \     ${value}=  Evaluate  ${d}+1
+  \     Wait and Select By Label  xpath=(//select[@id='selectedDoc--0'])[${value}]  ${file_name}
+
+#  Wait and Click  id=addConfirmOption_000
+#  Wait and Click  xpath=//input[@type="radio" and @value='document' and @name='type--0000']
+#  Wait and Input  id=evidences_title_0000  ${article_17_data.data[0].requirementGroups.requirements[0].eligibleEvidences.title}
+#  Wait and Input  id=evidences_description_0000  ${article_17_data[0].data.requirementGroups.requirements[0].eligibleEvidences.description}
+#  Wait and Select By Label  id=selectedDoc--0  ${file_name}
+#
+#  Wait and Click  id=addConfirmOption_010
+#  Wait and Click  xpath=//input[@name='type--0100']
+#  Wait and Input  id=evidences_title_0100  ${article_17_data.data[0].requirementGroups.requirements[1].eligibleEvidences.title}
+#  Wait and Input  id=evidences_description_0100  ${article_17_data.data[0].requirementGroups.requirements[1].eligibleEvidences.description}
+#  Wait and Select By Label  //div[@class='tender_criteria_item_body ng-scope'][2]//select[@id='selectedDoc--0']  ${file_name}
+
+
+Розпакувати критерії
+  [Arguments]  ${article_data}  ${index}
+  ${req_count}=  Get Length  ${article_data.requirementGroups}
+  :FOR  ${j}  IN RANGE  ${req_count}
+  \            Заповнити критерії  ${index}  ${j}  ${article_data.requirementGroups[${j}]}
+
+Заповнити критерії
+  [Arguments]  ${index}  ${req_index}  ${article_data}
+  ${elig_count}=  Get Length  ${article_data.requirements}
+  :FOR  ${k}  IN RANGE  ${elig_count}
+  \            Sleep  2
+  \            Wait Scroll Click  id=addConfirmOption_${index}${req_index}${k}
+  \            Sleep  2
+  \            Wait Scroll Click  xpath=//input[@name='type--${index}${req_index}${k}0']
+  \            Sleep  2
+  \            Wait and Input  id=evidences_title_${index}${req_index}${k}0   ${article_data.requirements[${k}].eligibleEvidences[0].title}
+  \            Sleep  2
+  \            Wait and Input  id=evidences_description_${index}${req_index}${k}0  ${article_data.requirements[${k}].eligibleEvidences[0].description}
+  \            Sleep  2
+
+
 Заповнити відомості про предмети та лоти
   [Arguments]  ${tender_data}  ${items}
   ${budget}=            Get From Dictionary     ${tender_data.value}        amount
@@ -1219,6 +1332,74 @@ add feature
   Click Element     id=createBid_0
   Дочекатись зникнення blockUI
   sleep  3
+
+
+Подати цінову пропозицію в статусі draft
+  [Arguments]  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}=None
+  Перейти на сторінку тендера за потреби
+  sleep  5
+  Відкрити розділ Деталі Закупівлі
+  ${methodType}=  Get Text  id=procedureType
+  ${methodType}=  get_method_type   ${methodType.lower()}
+  Run Keyword If  '${methodType}' == 'esco'  Run Keyword And Return  Подати цінову пропозицію ESCO  ${username}  ${tender_uaid}  ${bid_data}  ${lots_ids}  ${features_ids}
+  ${amount}=    Run Keyword If  ${lots_ids} is None  Set Variable  ${bid_data.data.value.amount}
+  ...           ELSE  Set Variable  ${bid_data.data.lotValues[0].value.amount}
+  ${amountTmp}=  Set Variable  ${amount}
+  ${x}=  Run Keyword  Отримати інформацію про procurementMethodType
+  Set Global Variable  ${global_procedure_type}  ${x}
+
+  ${amount}=  Run Keyword If  '${global_procedure_type}' in ('closeFrameworkAgreementSelectionUA')  Скорегувати сумму пропозиції для рамок  ${amount}
+  ...  ELSE  Set Variable  ${amountTmp}
+  Run Keyword And Ignore Error      Wait Scroll Click  id=selfQualified0
+  Run Keyword And Ignore Error      Input String      id=amount0      ${amount}
+  Run Keyword And Ignore Error      Пітдвердити чекбокси пропозиції
+  Run Keyword And Return If  '${global_procedure_type}' in ('competitiveDialogueUA', 'competitiveDialogueEU', 'closeFrameworkAgreementSelectionUA')  Пропустити заповнення нецінових показників
+  Run Keyword Unless  ${features_ids} is None  Заповнити нецінові критерії  ${features_ids}  ${bid_data.data.parameters}
+  Sleep  7
+  Click Element     id=createBid_0
+  Sleep  7
+  ${file_path}  ${file_name}  ${file_content}=   create_fake_doc
+  Wait and Select By Label      xpath=(//select[@id="bidDocType_"])[1]  Документи, що підтверджують відповідність
+  Завантажити док  ${username}  ${file_path}  xpath=(//button[@ng-model='files'])[2]
+  Wait and Click  id=editBid_0
+  Надати відповідь на критерії  ${username}  ${tender_uaid}  ${file_name}
+  Дочекатись зникнення blockUI
+  sleep  3
+
+
+Надати відповідь на критерії
+  [Arguments]  ${username}  ${tender_uaid}  ${file_name}
+  #(//select[@ng-model='vm.relatedDocument'])[]
+
+  Wait Scroll Click  id=exportDraftDocs_0
+  Sleep  15
+  ${status}=  Run Keyword and Return Status  Element Should Be Visible  xpath=//button[contains(@id, 'update-export-button')]
+  Run Keyword If  '${status}'=='False'  Wait and Click  xpath=//label[@for='showBidDocs00']
+  Wait Scroll Click  xpath=//button[contains(@id, 'update-export-button')]
+  Дочекатись зникнення blockUI
+
+  Wait Scroll Click  xpath=(//input[@type='radio'])[1]
+  Wait Scroll Click  xpath=(//input[@type='radio'])[3]
+  Wait Scroll Click  xpath=(//input[@type='radio'])[4]
+  Wait Scroll Click  xpath=(//input[@type='radio'])[5]
+  Wait Scroll Click  xpath=(//input[contains(@id, 'requirement_title_cb')])[1]
+  Wait Scroll Click  xpath=(//input[@type='radio'])[6]
+  Wait Scroll Click  xpath=(//input[@type='radio'])[8]
+  Wait Scroll Click  xpath=(//input[@type='radio'])[9]
+  Wait Scroll Click  xpath=(//input[contains(@id, 'requirement_title_cb')])[2]
+  Wait Scroll Click  xpath=(//input[contains(@id, 'requirement_title_cb')])[3]
+  Wait Scroll Click  xpath=(//input[@type='radio'])[10]
+
+  ${text_field_count}=  Get matching xpath count  xpath=//input[@type='text' and contains(@id, 'evidence')]
+  :FOR  ${i}  IN RANGE  ${text_field_count}
+  \     ${value}=  Evaluate  ${i}+1
+  \     Wait and Input  xpath=(//input[@type='text' and contains(@id, 'evidence')])[${value}]  Документальне підтвердження
+
+  ${doc_count}=  Get matching xpath count  xpath=//select[@ng-model='vm.relatedDocument']
+  :FOR  ${d}  IN RANGE  ${doc_count}
+  \     ${value}=  Evaluate  ${d}+1
+  \     Wait and Select By Label  xpath=(//select[@ng-model='vm.relatedDocument'])[${value}]  ${file_name}
+
 
 Пропустити заповнення нецінових показників
   Click Element     id=createBid_0
