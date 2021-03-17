@@ -33,7 +33,7 @@ def get_procedure_type(methodType):
         'belowThreshold': 'Допорогова закупівля',
         'negotiation': 'Переговорна процедура',
         'aboveThresholdEU': 'Відкриті торги з публікацією англійською мовою',
-        'aboveThresholdUA.defense': 'Переговорна процедура для потреб оборони',
+        'simple.defense': 'Спрощені торги із застосуванням електронної системи закупівель',
         'reporting': 'Закупівля без використання електронної системи',
         'competitiveDialogueEU': 'Конкурентний діалог з публікацією англійською мовою 1-ий етап',
         'competitiveDialogueUA': 'Конкурентний діалог 1-ий етап',

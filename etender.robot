@@ -251,9 +251,7 @@ Login
   Sleep   15
   Wait Scroll Click     id=createTender
   Sleep  10
-  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU', 'competitiveDialogueUA', 'esco', 'aboveThresholdUA')  Wait Scroll Click  id=saveTenderWithCriterias
-  Sleep  10
-  Run Keyword If    '${methodType}' in ('aboveThresholdEU', 'competitiveDialogueEU', 'competitiveDialogueUA', 'esco', 'aboveThresholdUA')  Wait Scroll Click  id=activateTenderWithCriteria
+  Wait and Click  id=goToTender
   Sleep   60
   Reload Page
   Wait Until Keyword Succeeds        10 min  30 sec  Дочекатися завершення обробки тендера
@@ -776,7 +774,7 @@ add feature
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.startDate"]     2020
   Select From List By Label     xpath=//select[@ng-model="data.projectBudget.period.endDate"]       2020
 #  Select From List By Index     xpath=//select[@name="startDateMonth"]          6
-  Wait and Input   name=tenderPeriodStartDate  02-2021
+  Wait and Input   name=tenderPeriodStartDate  05-2021
 
   #Select From List By Label     xpath=//select[@name = 'procedureType']  ${procurementMethodTypeStr}
   Wait and Click        id=qa_mainPlanClassification
@@ -1008,6 +1006,10 @@ add feature
   [Arguments]  ${username}  ${file}  ${tender_uaid}
   [Documentation]
   ...   Загрузка дока в тендер
+  ${status}=  Run Keyword and Return Status  Element Should be Visible  id=update_tender_btn
+  Run Keyword If  '${status}'=='True'  Перейти до редагування тендера    ${username}  ${tender_uaid}
+  ${status}=  Run Keyword and Return Status  Element Should be Visible  xpath=//span[@ng-show='needToShowCriteriaTab']
+  Run Keyword If  '${status}'=='True'  Wait and Click  xpath=//span[@ng-show='needToShowCriteriaTab']
   Wait and Select By Label      xpath=//select[@id="docType"][1]  Інші
   #Wait and Click      xpath=//select[@id="docType"][1]//option[contains(@label, 'Інші')]
   Завантажити док  ${username}  ${file}  id=tend_doc_add
